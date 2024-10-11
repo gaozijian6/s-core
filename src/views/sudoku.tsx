@@ -8,6 +8,7 @@ const Sudoku: React.FC = () => {
       .map(() => Array(9).fill(null))
   );
   const [selectedNumber, setSelectedNumber] = useState<number | null>(null);
+  const [solution, setSolution] = useState<number[][]>([]);
 
   const generateBoard = () => {
     // 困难
@@ -35,6 +36,11 @@ const Sudoku: React.FC = () => {
       [null, 2, null, 7, null, null, 6, null, null],
     ];
     setBoard(newBoard);
+    
+    // 生成解决方案
+    const solvedBoard = [...newBoard.map(row => [...row])];
+    solve(solvedBoard);
+    setSolution(solvedBoard as number[][]);
   };
 
   useEffect(() => {
@@ -45,6 +51,16 @@ const Sudoku: React.FC = () => {
     const newBoard = [...board];
     newBoard[row][col] = selectedNumber;
     setBoard(newBoard);
+
+    // 检查填入的数字是否正确
+    const handleNumberInput = () => {
+      if (selectedNumber === solution[row][col]) {
+        message.success("填入正确！");
+      } else {
+        message.error("填入错误，请重试。");
+      }
+    };
+    handleNumberInput();
   };
 
   const checkSolution = () => {
