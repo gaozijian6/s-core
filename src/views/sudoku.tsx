@@ -1,23 +1,38 @@
-import React, { useState, useEffect } from 'react';
-import { Card, Input, Button, message } from 'antd';
+import React, { useState, useEffect } from "react";
+import { Card, Input, Button, message } from "antd";
 
 const Sudoku: React.FC = () => {
-  const [board, setBoard] = useState<(number | null)[][]>(Array(9).fill(null).map(() => Array(9).fill(null)));
+  const [board, setBoard] = useState<(number | null)[][]>(
+    Array(9)
+      .fill(null)
+      .map(() => Array(9).fill(null))
+  );
   const [selectedNumber, setSelectedNumber] = useState<number | null>(null);
 
   const generateBoard = () => {
-    // 这里应该实现生成有效数独的逻辑
-    // 为了简化,我们只生成一个简单的示例棋盘
+    // 困难
+    // const newBoard = [
+    //   [8, null, 5, null, null, null, 4, null, null],
+    //   [null, null, null, null, 4, 2, null, null, null],
+    //   [null, null, null, null, 1, null, null, null, 9],
+    //   [null, null, null, null, null, null, 6, null, 4],
+    //   [null, null, 8, 9, null, null, null, null, null],
+    //   [null, 3, null, 6, null, null, null, 2, null],
+    //   [1, null, null, null, 3, null, null, null, 7],
+    //   [null, 7, null, null, null, 6, null, 8, null],
+    //   [null, null, 2, 7, null, 1, null, null, 3]
+    // ];
+    // 简单
     const newBoard = [
-      [5, 3, null, null, 7, null, null, null, null],
-      [6, null, null, 1, 9, 5, null, null, null],
-      [null, 9, 8, null, null, null, null, 6, null],
-      [8, null, null, null, 6, null, null, null, 3],
-      [4, null, null, 8, null, 3, null, null, 1],
-      [7, null, null, null, 2, null, null, null, 6],
-      [null, 6, null, null, null, null, 2, 8, null],
-      [null, null, null, 4, 1, 9, null, null, 5],
-      [null, null, null, null, 8, null, null, 7, 9]
+      [6, null, null, 5, 9, null, null, null, 4],
+      [9, null, 1, 8, null, null, null, 2, null],
+      [null, null, 5, null, null, null, null, 6, 3],
+      [null, 5, null, null, 1, null, null, 9, 6],
+      [null, null, null, null, null, 3, 7, 5, null],
+      [null, 9, 6, null, 5, 7, null, null, null],
+      [5, 7, null, null, null, null, 8, null, 1],
+      [null, null, null, null, 8, 5, 2, null, null],
+      [null, 2, null, 7, null, null, 6, null, null],
     ];
     setBoard(newBoard);
   };
@@ -35,11 +50,11 @@ const Sudoku: React.FC = () => {
   const checkSolution = () => {
     // 这里应该实现检查数独解法是否正确的逻辑
     // 为了简化,我们只检查是否所有格子都已填写
-    const isSolved = board.every(row => row.every(cell => cell !== null));
+    const isSolved = board.every((row) => row.every((cell) => cell !== null));
     if (isSolved) {
-      message.success('恭喜你完成了数独!');
+      message.success("恭喜你完成了数独!");
     } else {
-      message.warning('数独还未完成,请继续努力!');
+      message.warning("数独还未完成,请继续努力!");
     }
   };
 
@@ -47,9 +62,9 @@ const Sudoku: React.FC = () => {
     const solvedBoard = [...board];
     if (solve(solvedBoard)) {
       setBoard(solvedBoard);
-      message.success('数独已解决！');
+      message.success("数独已解决！");
     } else {
-      message.error('无法解决此数独！');
+      message.error("无法解决此数独！");
     }
   };
 
@@ -73,7 +88,12 @@ const Sudoku: React.FC = () => {
     return true;
   };
 
-  const isValid = (board: (number | null)[][], row: number, col: number, num: number): boolean => {
+  const isValid = (
+    board: (number | null)[][],
+    row: number,
+    col: number,
+    num: number
+  ): boolean => {
     // 检查行
     for (let x = 0; x < 9; x++) {
       if (board[row][x] === num) return false;
@@ -97,47 +117,62 @@ const Sudoku: React.FC = () => {
   };
 
   return (
-    <Card title="数独游戏" extra={<Button onClick={generateBoard}>新游戏</Button>}>
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(9, 1fr)',
-        gap: '1px',
-        width: '360px',
-        margin: '0 auto'
-      }}>
+    <Card
+      title="数独游戏"
+      extra={<Button onClick={generateBoard}>新游戏</Button>}
+    >
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(9, 1fr)",
+          gap: "1px",
+          width: "360px",
+          margin: "0 auto",
+        }}
+      >
         {board.map((row, rowIndex) =>
           row.map((cell, colIndex) => (
             <Input
               key={`${rowIndex}-${colIndex}`}
-              value={cell?.toString() ?? ''}
+              value={cell?.toString() ?? ""}
               onClick={() => handleCellChange(rowIndex, colIndex)}
               readOnly
               style={{
-                width: '40px',
-                height: '40px',
-                textAlign: 'center',
-                fontSize: '18px',
-                cursor: 'pointer'
+                width: "40px",
+                height: "40px",
+                textAlign: "center",
+                fontSize: "18px",
+                cursor: "pointer",
               }}
             />
           ))
         )}
       </div>
-      <Button style={{ marginTop: '20px' }} onClick={checkSolution}>
+      <Button style={{ marginTop: "20px" }} onClick={checkSolution}>
         检查解法
       </Button>
-      <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'center', gap: '10px' }}>
-        {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
+      <div
+        style={{
+          marginTop: "20px",
+          display: "flex",
+          justifyContent: "center",
+          gap: "10px",
+        }}
+      >
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
           <Button
             key={num}
             onClick={() => setSelectedNumber(num)}
-            type={selectedNumber === num ? 'primary' : 'default'}
+            type={selectedNumber === num ? "primary" : "default"}
           >
             {num}
           </Button>
         ))}
       </div>
-      <Button style={{ marginTop: '20px', marginLeft: '10px' }} onClick={solveSudoku}>
+      <Button
+        style={{ marginTop: "20px", marginLeft: "10px" }}
+        onClick={solveSudoku}
+      >
         求解数独
       </Button>
     </Card>
