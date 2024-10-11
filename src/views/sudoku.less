@@ -1,0 +1,81 @@
+.gameInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 360px;
+  margin: 0 auto 20px;
+}
+.sudokuGrid {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    gap: 1px;
+    width: 360px;
+    margin: 0 auto;
+  
+    .sudokuCell {
+      width: 40px;
+      height: 40px;
+      border: 1px solid #d9d9d9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 18px;
+      cursor: pointer;
+      background-color: white;
+      transition: background-color 0.3s;
+  
+      &.emptySudokuCell {
+        &:hover {
+          background-color: #f0f0f0;
+        }
+      }
+  
+      .candidatesGrid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1px;
+        width: 100%;
+        height: 100%;
+
+        .candidateCell {
+          font-size: 8px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+      }
+  
+      &.givenNumber {
+        font-weight: bold;
+        color: #1890ff; // 使用蓝色来表示给定的数字
+      }
+    }
+}
+
+.controlButtons, .numberButtons {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap; // 允许按钮换行
+}
+
+.numberButtons {
+    margin-top: 10px; // 稍微减少与上方按钮的间距
+}
+
+.solveButton {
+    margin-top: 20px;
+    display: block; // 使按钮独占一行
+    margin-left: auto;
+    margin-right: auto; // 左右自动边距使按钮居中
+    width: fit-content; // 按钮宽度适应内容
+}
+
+.visualHint {
+    background-color: #90EE90 !important;
+}
+
+.selectedNumber {
+    background-color: #32CD32 !important;
+}

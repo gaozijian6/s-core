@@ -1,46 +1,56 @@
 import React, { useState, useEffect } from "react";
-import { Card, Input, Button, message } from "antd";
+import { Card, Button, message } from "antd";
+import { useTimer } from "../tools/ticker";
+import isValid from "../tools/isValid";
+import solve from "../tools/solve";
+import "./sudoku.less";
+
+export interface CellData {
+  value: number | null;
+  isGiven: boolean;
+}
+
+interface Move {
+  row: number;
+  col: number;
+  previousValue: number | null;
+  newValue: number | null;
+}
 
 const Sudoku: React.FC = () => {
-  const [board, setBoard] = useState<(number | null)[][]>(
+  const [board, setBoard] = useState<CellData[][]>(
     Array(9)
       .fill(null)
-      .map(() => Array(9).fill(null))
+      .map(() => Array(9).fill({ value: null, isGiven: false }))
   );
   const [selectedNumber, setSelectedNumber] = useState<number | null>(null);
   const [solution, setSolution] = useState<number[][]>([]);
+  const [showCandidates, setShowCandidates] = useState<boolean>(false);
+  const [visualHint, setVisualHint] = useState<boolean>(false);
+  const [errorCount, setErrorCount] = useState<number>(0);
+  const [moveHistory, setMoveHistory] = useState<Move[]>([]);
+  const [redoHistory, setRedoHistory] = useState<Move[]>([]);
+  const [eraseMode, setEraseMode] = useState<boolean>(false);
+  const time = useTimer();
 
   const generateBoard = () => {
-    // 困难
-    // const newBoard = [
-    //   [8, null, 5, null, null, null, 4, null, null],
-    //   [null, null, null, null, 4, 2, null, null, null],
-    //   [null, null, null, null, 1, null, null, null, 9],
-    //   [null, null, null, null, null, null, 6, null, 4],
-    //   [null, null, 8, 9, null, null, null, null, null],
-    //   [null, 3, null, 6, null, null, null, 2, null],
-    //   [1, null, null, null, 3, null, null, null, 7],
-    //   [null, 7, null, null, null, 6, null, 8, null],
-    //   [null, null, 2, 7, null, 1, null, null, 3]
-    // ];
-    // 简单
-    const newBoard = [
-      [6, null, null, 5, 9, null, null, null, 4],
-      [9, null, 1, 8, null, null, null, 2, null],
-      [null, null, 5, null, null, null, null, 6, 3],
-      [null, 5, null, null, 1, null, null, 9, 6],
-      [null, null, null, null, null, 3, 7, 5, null],
-      [null, 9, 6, null, 5, 7, null, null, null],
-      [5, 7, null, null, null, null, 8, null, 1],
-      [null, null, null, null, 8, 5, 2, null, null],
-      [null, 2, null, 7, null, null, 6, null, null],
+    const newBoard: CellData[][] = [
+      [{ value: 6, isGiven: true }, { value: null, isGiven: false }, { value: null, isGiven: false }, { value: 5, isGiven: true }, { value: 9, isGiven: true }, { value: null, isGiven: false }, { value: null, isGiven: false }, { value: null, isGiven: false }, { value: 4, isGiven: true }],
+      [{ value: 9, isGiven: true }, { value: null, isGiven: false }, { value: 1, isGiven: true }, { value: 8, isGiven: true }, { value: null, isGiven: false }, { value: null, isGiven: false }, { value: null, isGiven: false }, { value: 2, isGiven: true }, { value: null, isGiven: false }],
+      [{ value: null, isGiven: false }, { value: null, isGiven: false }, { value: 5, isGiven: true }, { value: null, isGiven: false }, { value: null, isGiven: false }, { value: null, isGiven: false }, { value: null, isGiven: false }, { value: 6, isGiven: true }, { value: 3, isGiven: true }],
+      [{ value: null, isGiven: false }, { value: 5, isGiven: true }, { value: null, isGiven: false }, { value: null, isGiven: false }, { value: 1, isGiven: true }, { value: null, isGiven: false }, { value: null, isGiven: false }, { value: 9, isGiven: true }, { value: 6, isGiven: true }],
+      [{ value: null, isGiven: false }, { value: null, isGiven: false }, { value: null, isGiven: false }, { value: null, isGiven: false }, { value: null, isGiven: false }, { value: 3, isGiven: true }, { value: 7, isGiven: true }, { value: 5, isGiven: true }, { value: null, isGiven: false }],
+      [{ value: null, isGiven: false }, { value: 9, isGiven: true }, { value: 6, isGiven: true }, { value: null, isGiven: false }, { value: 5, isGiven: true }, { value: 7, isGiven: true }, { value: null, isGiven: false }, { value: null, isGiven: false }, { value: null, isGiven: false }],
+      [{ value: 5, isGiven: true }, { value: 7, isGiven: true }, { value: null, isGiven: false }, { value: null, isGiven: false }, { value: null, isGiven: false }, { value: null, isGiven: false }, { value: 8, isGiven: true }, { value: null, isGiven: false }, { value: 1, isGiven: true }],
+      [{ value: null, isGiven: false }, { value: null, isGiven: false }, { value: null, isGiven: false }, { value: null, isGiven: false }, { value: 8, isGiven: true }, { value: 5, isGiven: true }, { value: 2, isGiven: true }, { value: null, isGiven: false }, { value: null, isGiven: false }],
+      [{ value: null, isGiven: false }, { value: 2, isGiven: true }, { value: null, isGiven: false }, { value: 7, isGiven: true }, { value: null, isGiven: false }, { value: null, isGiven: false }, { value: 6, isGiven: true }, { value: null, isGiven: false }, { value: null, isGiven: false }]
     ];
     setBoard(newBoard);
-    
+
     // 生成解决方案
-    const solvedBoard = [...newBoard.map(row => [...row])];
+    const solvedBoard = newBoard.map(row => row.map(cell => ({ ...cell })));
     solve(solvedBoard);
-    setSolution(solvedBoard as number[][]);
+    setSolution(solvedBoard.map(row => row.map(cell => cell.value)) as number[][]);
   };
 
   useEffect(() => {
@@ -48,34 +58,122 @@ const Sudoku: React.FC = () => {
   }, []);
 
   const handleCellChange = (row: number, col: number) => {
-    const newBoard = [...board];
-    newBoard[row][col] = selectedNumber;
-    setBoard(newBoard);
+    if (!board[row][col].isGiven) {
+      const newBoard = board.map(r => r.map(c => ({ ...c })));
+      const previousValue = newBoard[row][col].value;
+      let newValue: number | null = null;
 
-    // 检查填入的数字是否正确
-    const handleNumberInput = () => {
-      if (selectedNumber === solution[row][col]) {
-        message.success("填入正确！");
-      } else {
-        message.error("填入错误，请重试。");
+      if (eraseMode) {
+        if (!newBoard[row][col].isGiven) {
+          newBoard[row][col].value = null;
+          newValue = null;
+        }
+      } else if (selectedNumber) {
+        const candidates = getCandidates(row, col);
+        if (candidates.includes(selectedNumber)) {
+          newBoard[row][col].value = selectedNumber;
+          newValue = selectedNumber;
+        } else {
+          setErrorCount(errorCount + 1);
+          message.error("输入错误，请重试。");
+          return;
+        }
       }
-    };
-    handleNumberInput();
-  };
 
-  const checkSolution = () => {
-    // 这里应该实现检查数独解法是否正确的逻辑
-    // 为了简化,我们只检查是否所有格子都已填写
-    const isSolved = board.every((row) => row.every((cell) => cell !== null));
-    if (isSolved) {
-      message.success("恭喜你完成了数独!");
-    } else {
-      message.warning("数独还未完成,请继续努力!");
+      if (newValue !== previousValue) {
+        setMoveHistory([...moveHistory, { row, col, previousValue, newValue }]);
+        setRedoHistory([]);
+        setBoard(newBoard);
+      }
     }
   };
 
+  // 撤销
+  const handleUndo = () => {
+    if (moveHistory.length > 0) {
+      const newMoveHistory = [...moveHistory];
+      const lastMove = newMoveHistory.pop();
+      if (lastMove) {
+        const { row, col, previousValue } = lastMove;
+        const newBoard = board.map(r => r.map(c => ({ ...c })));
+        newBoard[row][col].value = previousValue;
+        setBoard(newBoard);
+        setMoveHistory(newMoveHistory);
+        setRedoHistory([lastMove, ...redoHistory]);
+      }
+    }
+  };
+
+  // 回撤
+  const handleRedo = () => {
+    if (redoHistory.length > 0) {
+      const newRedoHistory = [...redoHistory];
+      const nextMove = newRedoHistory.shift();
+      if (nextMove) {
+        const { row, col, newValue } = nextMove;
+        const newBoard = board.map(r => r.map(c => ({ ...c })));
+        newBoard[row][col].value = newValue;
+        setBoard(newBoard);
+        setRedoHistory(newRedoHistory);
+        setMoveHistory([...moveHistory, nextMove]);
+      }
+    }
+  };
+
+  const getCandidates = (row: number, col: number): number[] => {
+    if (board[row][col].value !== null) return [];
+    const candidates = [];
+    for (let num = 1; num <= 9; num++) {
+      if (isValid(board, row, col, num)) {
+        candidates.push(num);
+      }
+    }
+    return candidates;
+  };
+
+  const getCellClassName = (rowIndex: number, colIndex: number) => {
+    const cell = board[rowIndex][colIndex];
+    const baseClass = `sudokuCell ${
+      cell.value === null ? "emptySudokuCell" : ""
+    } ${cell.isGiven ? "givenNumber" : ""}`;
+
+    if (selectedNumber !== null) {
+      if (board[rowIndex][colIndex].value === selectedNumber) {
+        return `${baseClass} selectedNumber`;
+      }
+
+      if (visualHint) {
+        const isInSameRow = board[rowIndex].some(
+          (c) => c.value === selectedNumber
+        );
+        const isInSameCol = board.some(
+          (row) => row[colIndex].value === selectedNumber
+        );
+
+        const startRow = Math.floor(rowIndex / 3) * 3;
+        const startCol = Math.floor(colIndex / 3) * 3;
+        let isInSameBox = false;
+        for (let i = 0; i < 3; i++) {
+          for (let j = 0; j < 3; j++) {
+            if (board[startRow + i][startCol + j].value === selectedNumber) {
+              isInSameBox = true;
+              break;
+            }
+          }
+          if (isInSameBox) break;
+        }
+
+        if (isInSameRow || isInSameCol || isInSameBox) {
+          return `${baseClass} visualHint`;
+        }
+      }
+    }
+
+    return baseClass;
+  };
+
   const solveSudoku = () => {
-    const solvedBoard = [...board];
+    const solvedBoard = board.map(row => row.map(cell => ({ ...cell })));
     if (solve(solvedBoard)) {
       setBoard(solvedBoard);
       message.success("数独已解决！");
@@ -84,111 +182,82 @@ const Sudoku: React.FC = () => {
     }
   };
 
-  const solve = (board: (number | null)[][]): boolean => {
-    for (let row = 0; row < 9; row++) {
-      for (let col = 0; col < 9; col++) {
-        if (board[row][col] === null) {
-          for (let num = 1; num <= 9; num++) {
-            if (isValid(board, row, col, num)) {
-              board[row][col] = num;
-              if (solve(board)) {
-                return true;
-              }
-              board[row][col] = null;
-            }
-          }
-          return false;
-        }
-      }
-    }
-    return true;
+  const handleEraseMode = () => {
+    setEraseMode(!eraseMode);
+    setSelectedNumber(null);
   };
 
-  const isValid = (
-    board: (number | null)[][],
-    row: number,
-    col: number,
-    num: number
-  ): boolean => {
-    // 检查行
-    for (let x = 0; x < 9; x++) {
-      if (board[row][x] === num) return false;
-    }
-
-    // 检查列
-    for (let x = 0; x < 9; x++) {
-      if (board[x][col] === num) return false;
-    }
-
-    // 检查3x3方格
-    const startRow = Math.floor(row / 3) * 3;
-    const startCol = Math.floor(col / 3) * 3;
-    for (let i = 0; i < 3; i++) {
-      for (let j = 0; j < 3; j++) {
-        if (board[i + startRow][j + startCol] === num) return false;
-      }
-    }
-
-    return true;
+  const handleNumberSelect = (num: number) => {
+    setSelectedNumber(num);
+    setEraseMode(false);
   };
 
   return (
-    <Card
-      title="数独游戏"
-      extra={<Button onClick={generateBoard}>新游戏</Button>}
-    >
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(9, 1fr)",
-          gap: "1px",
-          width: "360px",
-          margin: "0 auto",
-        }}
-      >
+    <Card title="数独游戏">
+      <div className="gameInfo">
+        <span>错误次数：{errorCount}</span>
+        <span>{time}</span>
+      </div>
+      <div className="sudokuGrid">
         {board.map((row, rowIndex) =>
           row.map((cell, colIndex) => (
-            <Input
+            <div
               key={`${rowIndex}-${colIndex}`}
-              value={cell?.toString() ?? ""}
               onClick={() => handleCellChange(rowIndex, colIndex)}
-              readOnly
-              style={{
-                width: "40px",
-                height: "40px",
-                textAlign: "center",
-                fontSize: "18px",
-                cursor: "pointer",
-              }}
-            />
+              className={getCellClassName(rowIndex, colIndex)}
+            >
+              {cell.value !== null ? (
+                cell.value
+              ) : showCandidates ? (
+                <div className="candidatesGrid">
+                  {getCandidates(rowIndex, colIndex).map((candidate) => (
+                    <div key={candidate} className="candidateCell">
+                      {candidate}
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+            </div>
           ))
         )}
       </div>
-      <Button style={{ marginTop: "20px" }} onClick={checkSolution}>
-        检查解法
-      </Button>
-      <div
-        style={{
-          marginTop: "20px",
-          display: "flex",
-          justifyContent: "center",
-          gap: "10px",
-        }}
-      >
+      <div className="controlButtons">
+        <Button onClick={handleUndo} disabled={moveHistory.length === 0}>撤销</Button>
+        <Button onClick={handleRedo} disabled={redoHistory.length === 0}>回撤</Button>
+        
+        <Button
+          onClick={handleEraseMode}
+          type={eraseMode ? "primary" : "default"}
+        >
+          擦除
+        </Button>
+        <Button>我的草稿</Button>
+        <Button
+          onClick={() => setShowCandidates(!showCandidates)}
+          type={showCandidates ? "primary" : "default"}
+        >
+          官方草稿
+        </Button>
+        <Button
+          onClick={() => setVisualHint(!visualHint)}
+          type={visualHint ? "primary" : "default"}
+        >
+          视觉辅助
+        </Button>
+        <Button>提示</Button>
+      </div>
+      <div className="numberButtons">
         {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
           <Button
             key={num}
-            onClick={() => setSelectedNumber(num)}
+            onClick={() => handleNumberSelect(num)}
             type={selectedNumber === num ? "primary" : "default"}
           >
             {num}
           </Button>
         ))}
       </div>
-      <Button
-        style={{ marginTop: "20px", marginLeft: "10px" }}
-        onClick={solveSudoku}
-      >
+      <Button className="solveButton" onClick={solveSudoku}>
         求解数独
       </Button>
     </Card>
