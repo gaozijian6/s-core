@@ -125,8 +125,8 @@ export const getCellClassName = (
   return baseClass;
 };
 
-// 检测数独是否有唯一解
-export const hasUniqueSolution = (board: CellData[][]): boolean => {
+// 检测数独解的情况
+export const checkSolutionStatus = (board: CellData[][]): '无解' | '有唯一解' | '有多解' => {
   let solutionCount = 0;
   const emptyCells: [number, number][] = [];
 
@@ -139,7 +139,7 @@ export const hasUniqueSolution = (board: CellData[][]): boolean => {
     }
   }
 
-  const backtrack = (index: number) => {
+  const backtrack = (index: number): boolean => {
     if (index === emptyCells.length) {
       solutionCount++;
       return solutionCount > 1;
@@ -159,5 +159,12 @@ export const hasUniqueSolution = (board: CellData[][]): boolean => {
   };
 
   backtrack(0);
-  return solutionCount === 1;
+
+  if (solutionCount === 0) {
+    return '无解';
+  } else if (solutionCount === 1) {
+    return '有唯一解';
+  } else {
+    return '有多解';
+  }
 };

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Card, Button, message } from "antd";
-import { useTimer, isValid, solve, getCellClassName, hasUniqueSolution } from "../tools";
+import { useTimer, isValid, solve, getCellClassName, hasUniqueSolution, checkSolutionStatus } from "../tools";
 import "./sudoku.less";
 
 export interface CellData {
@@ -202,7 +202,7 @@ const Sudoku: React.FC = () => {
     if (solve(solvedBoard)) {
       setBoard(solvedBoard);
     }
-    message.info(`唯一解: ${hasUniqueSolution(solvedBoard) ? '是' : '否'}`);
+    message.info(`解的情况: ${checkSolutionStatus(solvedBoard)}`);
   };
 
   const handleEraseMode = () => {
