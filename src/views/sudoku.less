@@ -111,9 +111,14 @@
       justify-content: center;
       align-items: center;
     }
+
+    &.selectedCell {
+      background-color: #e6f7ff; // 浅蓝色背景
+      border: 2px solid #1890ff; // 蓝色边框
+    }
   }
 }
-
+.selectMode,
 .controlButtons,
 .numberButtons {
   margin-top: 20px;
@@ -157,16 +162,12 @@
   width: fit-content; // 按钮宽度适应内容
 }
 
-.visualHint {
-  background-color: #fca6a6 !important;
-}
-
 .visualHint2 {
-  background-color: #7df791 !important;
+  background-color: #9bf9ab !important;
 }
 
 .selectedNumber {
-  background-color: #ff2020 !important;
+  background-color: #9bf9ab !important;
 }
 
 @keyframes errorFlash {
