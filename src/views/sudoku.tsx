@@ -8,6 +8,7 @@ import "./sudoku.less";
 export interface CellData {
   value: number | null;
   isGiven: boolean;
+  draft: number[]; // 添加草稿数字数组
 }
 
 interface Move {
@@ -21,7 +22,7 @@ const Sudoku: React.FC = () => {
   const [board, setBoard] = useState<CellData[][]>(
     Array(9)
       .fill(null)
-      .map(() => Array(9).fill({ value: null, isGiven: false }))
+      .map(() => Array(9).fill({ value: null, isGiven: false, draft: [] }))
   );
   const [selectedNumber, setSelectedNumber] = useState<number | null>(null);
   const [solution, setSolution] = useState<number[][]>([]);
@@ -31,26 +32,36 @@ const Sudoku: React.FC = () => {
   const [moveHistory, setMoveHistory] = useState<Move[]>([]);
   const [redoHistory, setRedoHistory] = useState<Move[]>([]);
   const [eraseMode, setEraseMode] = useState<boolean>(false);
+  const [draftMode, setDraftMode] = useState<boolean>(false);
   const time = useTimer();
 
   const generateBoard = () => {
-    const newBoard: CellData[][] = [
-      [{ value: 6, isGiven: true }, { value: null, isGiven: false }, { value: null, isGiven: false }, { value: 5, isGiven: true }, { value: 9, isGiven: true }, { value: null, isGiven: false }, { value: null, isGiven: false }, { value: null, isGiven: false }, { value: 4, isGiven: true }],
-      [{ value: 9, isGiven: true }, { value: null, isGiven: false }, { value: 1, isGiven: true }, { value: 8, isGiven: true }, { value: null, isGiven: false }, { value: null, isGiven: false }, { value: null, isGiven: false }, { value: 2, isGiven: true }, { value: null, isGiven: false }],
-      [{ value: null, isGiven: false }, { value: null, isGiven: false }, { value: 5, isGiven: true }, { value: null, isGiven: false }, { value: null, isGiven: false }, { value: null, isGiven: false }, { value: null, isGiven: false }, { value: 6, isGiven: true }, { value: 3, isGiven: true }],
-      [{ value: null, isGiven: false }, { value: 5, isGiven: true }, { value: null, isGiven: false }, { value: null, isGiven: false }, { value: 1, isGiven: true }, { value: null, isGiven: false }, { value: null, isGiven: false }, { value: 9, isGiven: true }, { value: 6, isGiven: true }],
-      [{ value: null, isGiven: false }, { value: null, isGiven: false }, { value: null, isGiven: false }, { value: null, isGiven: false }, { value: null, isGiven: false }, { value: 3, isGiven: true }, { value: 7, isGiven: true }, { value: 5, isGiven: true }, { value: null, isGiven: false }],
-      [{ value: null, isGiven: false }, { value: 9, isGiven: true }, { value: 6, isGiven: true }, { value: null, isGiven: false }, { value: 5, isGiven: true }, { value: 7, isGiven: true }, { value: null, isGiven: false }, { value: null, isGiven: false }, { value: null, isGiven: false }],
-      [{ value: 5, isGiven: true }, { value: 7, isGiven: true }, { value: null, isGiven: false }, { value: null, isGiven: false }, { value: null, isGiven: false }, { value: null, isGiven: false }, { value: 8, isGiven: true }, { value: null, isGiven: false }, { value: 1, isGiven: true }],
-      [{ value: null, isGiven: false }, { value: null, isGiven: false }, { value: null, isGiven: false }, { value: null, isGiven: false }, { value: 8, isGiven: true }, { value: 5, isGiven: true }, { value: 2, isGiven: true }, { value: null, isGiven: false }, { value: null, isGiven: false }],
-      [{ value: null, isGiven: false }, { value: 2, isGiven: true }, { value: null, isGiven: false }, { value: 7, isGiven: true }, { value: null, isGiven: false }, { value: null, isGiven: false }, { value: 6, isGiven: true }, { value: null, isGiven: false }, { value: null, isGiven: false }]
+    const initialBoard = [
+      [6, null, null, 5, 9, null, null, null, 4],
+      [9, null, 1, 8, null, null, null, 2, null],
+      [null, null, 5, null, null, null, null, 6, 3],
+      [null, 5, null, null, 1, null, null, 9, 6],
+      [null, null, null, null, null, 3, 7, 5, null],
+      [null, 9, 6, null, 5, 7, null, null, null],
+      [5, 7, null, null, null, null, 8, null, 1],
+      [null, null, null, null, 8, 5, 2, null, null],
+      [null, 2, null, 7, null, null, 6, null, null]
     ];
+
+    const newBoard: CellData[][] = initialBoard.map(row =>
+      row.map(value => ({
+        value,
+        isGiven: value !== null,
+        draft: []
+      }))
+    );
+
     setBoard(newBoard);
 
     // 生成解决方案
     const solvedBoard = newBoard.map(row => row.map(cell => ({ ...cell })));
     solve(solvedBoard);
-    setSolution(solvedBoard.map(row => row.map(cell => cell.value)) as number[][]);
+    setSolution(solvedBoard.map(row => row.map(cell => cell?.value)) as number[][]);
   };
 
   useEffect(() => {
@@ -58,34 +69,32 @@ const Sudoku: React.FC = () => {
   }, []);
 
   const handleCellChange = (row: number, col: number) => {
-    if (!board[row][col].isGiven) {
-      const newBoard = board.map(r => r.map(c => ({ ...c })));
-      const previousValue = newBoard[row][col].value;
-      let newValue: number | null = null;
-
-      if (eraseMode) {
-        if (!newBoard[row][col].isGiven) {
-          newBoard[row][col].value = null;
-          newValue = null;
-        }
-      } else if (selectedNumber) {
-        const candidates = getCandidates(row, col);
-        if (candidates.includes(selectedNumber)) {
-          newBoard[row][col].value = selectedNumber;
-          newValue = selectedNumber;
-        } else {
-          setErrorCount(errorCount + 1);
-          message.error("输入错误，请重试。");
-          return;
-        }
-      }
-
-      if (newValue !== previousValue) {
-        setMoveHistory([...moveHistory, { row, col, previousValue, newValue }]);
-        setRedoHistory([]);
-        setBoard(newBoard);
-      }
+    if (board[row][col]?.isGiven) {
+      return; // 如果是给定的数字，直接返回
     }
+
+    const newBoard = board.map(r => r.map(c => ({ ...c })));
+    const cell = newBoard[row][col];
+
+    if (eraseMode) {
+      cell.value = null;
+      cell.draft = [];
+    } else if (draftMode && selectedNumber) {
+      // 处理草稿模式
+      const draftSet = new Set(cell.draft);
+      if (draftSet.has(selectedNumber)) {
+        draftSet.delete(selectedNumber);
+      } else {
+        draftSet.add(selectedNumber);
+      }
+      cell.draft = Array.from(draftSet).sort((a, b) => a - b);
+    } else if (selectedNumber) {
+      cell.value = selectedNumber;
+      cell.draft = []; // 清除草稿
+    }
+
+    setBoard(newBoard);
+    // ... 其他需要的逻辑，比如检查游戏是否结束等
   };
 
   // 撤销
@@ -187,9 +196,15 @@ const Sudoku: React.FC = () => {
     setSelectedNumber(null);
   };
 
-  const handleNumberSelect = (num: number) => {
-    setSelectedNumber(num);
+  const handleNumberSelect = (number: number) => {
+    setSelectedNumber(prevNumber => prevNumber === number ? null : number);
     setEraseMode(false);
+  };
+
+  const handleDraftMode = () => {
+    setDraftMode(!draftMode);
+    setEraseMode(false);
+    setSelectedNumber(null);
   };
 
   return (
@@ -216,6 +231,14 @@ const Sudoku: React.FC = () => {
                     </div>
                   ))}
                 </div>
+              ) : cell.draft.length > 0 ? (
+                <div className="draftGrid">
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+                    <div key={num} className="draftCell">
+                      {cell.draft.includes(num) ? num : ''}
+                    </div>
+                  ))}
+                </div>
               ) : null}
             </div>
           ))
@@ -231,7 +254,9 @@ const Sudoku: React.FC = () => {
         >
           擦除
         </Button>
-        <Button>我的草稿</Button>
+        <Button onClick={handleDraftMode} type={draftMode ? "primary" : "default"}>
+          打草稿
+        </Button>
         <Button
           onClick={() => setShowCandidates(!showCandidates)}
           type={showCandidates ? "primary" : "default"}
@@ -247,13 +272,13 @@ const Sudoku: React.FC = () => {
         <Button>提示</Button>
       </div>
       <div className="numberButtons">
-        {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((number) => (
           <Button
-            key={num}
-            onClick={() => handleNumberSelect(num)}
-            type={selectedNumber === num ? "primary" : "default"}
+            key={number}
+            onClick={() => handleNumberSelect(number)}
+            type={selectedNumber === number ? "primary" : "default"}
           >
-            {num}
+            {number}
           </Button>
         ))}
       </div>
