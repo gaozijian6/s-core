@@ -2,11 +2,16 @@ import React, { useState, useEffect } from "react";
 import { Card, Button, message } from "antd";
 import {
   useTimer,
-  isValid,
   solve,
   getCellClassName,
   checkSolutionStatus,
+  checkNumberInRowColumnAndBox,
+  updateRelatedCellsDraft,
+  getCandidates,
+  useSudokuBoard,
+  deepCopyBoard,
 } from "../tools";
+import { hiddenSingle, singleCandidate } from "../tools/solution";
 import "./sudoku.less";
 
 export interface CellData {
@@ -15,36 +20,20 @@ export interface CellData {
   draft: number[]; // 添加草稿数字数组
 }
 
-interface Move {
-  row: number;
-  col: number;
-  previousValue: number | null;
-  newValue: number | null;
-  previousDraft: number[]; // 添加这一行
-}
-
 const Sudoku: React.FC = () => {
-  const [board, setBoard] = useState<CellData[][]>(
-    Array(9)
-      .fill(null)
-      .map(() => Array(9).fill({ value: null, isGiven: false, draft: [] }))
-  );
-  const [selectedNumber, setSelectedNumber] = useState<number | null>(null);
-  const [solution, setSolution] = useState<number[][]>([]);
+  const initialBoard = Array(9)
+    .fill(null)
+    .map(() => Array(9).fill({ value: null, isGiven: false, draft: [] }));
+  const { board, updateBoard, undo, redo, history, currentStep } =
+    useSudokuBoard(initialBoard);
+  const [selectedNumber, setSelectedNumber] = useState<number | null>(1);
   const [showCandidates, setShowCandidates] = useState<boolean>(false);
-  const [visualHint2, setVisualHint2] = useState<boolean>(false);
   const [errorCount, setErrorCount] = useState<number>(0);
-  const [moveHistory, setMoveHistory] = useState<Move[]>([]);
-  const [redoHistory, setRedoHistory] = useState<Move[]>([]);
   const [eraseMode, setEraseMode] = useState<boolean>(false);
   const [draftMode, setDraftMode] = useState<boolean>(false);
   const [remainingCounts, setRemainingCounts] = useState<number[]>(
     Array(9).fill(9)
   );
-  const [errorCell, setErrorCell] = useState<{
-    row: number;
-    col: number;
-  } | null>(null);
   const [lastErrorTime, setLastErrorTime] = useState<number | null>(null);
   const errorCooldownPeriod = 1000; // 错误冷却时间，单位毫秒
   const time = useTimer();
@@ -53,20 +42,23 @@ const Sudoku: React.FC = () => {
     col: number;
   } | null>(null);
   const [selectionMode, setSelectionMode] = useState<1 | 2>(1);
+  const [errorCells, setErrorCells] = useState<{ row: number; col: number }[]>(
+    []
+  );
 
   const generateBoard = () => {
-    // const initialBoard = Array(9).fill(null).map(() => Array(9).fill(null));
-    const initialBoard = [
-      [3,null,8,null,2,9,5,7,null],
-      [9,null,5,7,null,null,null,null,null],
-      [null,4,null,null,null,null,9,null,6],
-      [null,null,null,null,9,3,null,4,null],
-      [6,9,null,null,null,null,7,5,null],
-      [8,null,null,null,5,null,null,null,9],
-      [null,null,6,1,null,null,null,9,5],
-      [null,null,9,null,null,null,8,null,3],
-      [null,null,2,9,null,null,null,null,7],
-    ];
+    const initialBoard = Array(9).fill(null).map(() => Array(9).fill(null));
+    // const initialBoard = [
+    //   [5, null, null, 4, null, null, 8, null, null],
+    //   [null, 2, null, null, null, null, 5, null, 7],
+    //   [null, null, null, 1, null, null, null, null, null],
+    //   [null, 9, null, 2, 8, null, null, null, null],
+    //   [null, null, 7, null, null, 9, null, 4, null],
+    //   [8, null, null, null, null, null, null, 2, 5],
+    //   [null, null, null, null, null, null, null, 3, 9],
+    //   [null, null, 5, null, null, 4, null, null, 6],
+    //   [1, null, null, 3, 6, null, null, null, null],
+    // ];
 
     const newBoard: CellData[][] = initialBoard.map((row) =>
       row.map((value) => ({
@@ -76,14 +68,11 @@ const Sudoku: React.FC = () => {
       }))
     );
 
-    setBoard(newBoard);
+    updateBoard(newBoard, "生成新棋盘");
 
     // 生成解决方案
     const solvedBoard = newBoard.map((row) => row.map((cell) => ({ ...cell })));
     solve(solvedBoard);
-    setSolution(
-      solvedBoard.map((row) => row.map((cell) => cell?.value)) as number[][]
-    );
   };
 
   useEffect(() => {
@@ -99,7 +88,51 @@ const Sudoku: React.FC = () => {
       const key = event.key;
       if (/^[1-9]$/.test(key)) {
         const number = parseInt(key);
-        handleNumberSelect(number);
+        if (selectionMode === 2 && selectedCell) {
+          const { row, col } = selectedCell;
+          const cell = board[row][col];
+
+          if (cell.value !== null || cell.isGiven) {
+            return;
+          }
+
+          const newBoard = deepCopyBoard(board);
+          const newCell = newBoard[row][col];
+
+          if (draftMode) {
+            const draftSet = new Set(newCell.draft);
+            if (draftSet.has(number)) {
+              draftSet.delete(number);
+            } else {
+              draftSet.add(number);
+            }
+            newCell.draft = Array.from(draftSet).sort((a, b) => a - b);
+            updateBoard(
+              newBoard,
+              `设置 (${row}, ${col}) 草稿为 ${newCell.draft}`
+            );
+          } else {
+            const candidates = getCandidates(newBoard, row, col);
+            2;
+            if (candidates.includes(number)) {
+              newCell.value = number;
+              newCell.draft = [];
+              updateBoard(newBoard, `设置 (${row}, ${col}) 为 ${number}`);
+            } else {
+              const currentTime = Date.now();
+              if (
+                lastErrorTime === null ||
+                currentTime - lastErrorTime > errorCooldownPeriod
+              ) {
+                setErrorCount((prevCount) => prevCount + 1);
+                setLastErrorTime(currentTime);
+              }
+              return;
+            }
+          }
+        } else {
+          handleNumberSelect(number);
+        }
       } else if (selectionMode === 2 && selectedCell) {
         const { row, col } = selectedCell;
         let newRow = row;
@@ -134,7 +167,20 @@ const Sudoku: React.FC = () => {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [selectionMode, selectedCell, remainingCounts]);
+  }, [
+    selectionMode,
+    selectedCell,
+    remainingCounts,
+    board,
+    draftMode,
+    lastErrorTime,
+  ]);
+
+  useEffect(() => {
+    if (selectionMode === 2 && !selectedCell) {
+      setSelectedCell({ row: 0, col: 0 });
+    }
+  }, [selectionMode, selectedCell]);
 
   const updateRemainingCounts = () => {
     const counts = Array(9).fill(9);
@@ -148,6 +194,7 @@ const Sudoku: React.FC = () => {
     setRemainingCounts(counts);
   };
 
+  // 点击方格的回调函数
   const handleCellChange = (
     row: number,
     col: number,
@@ -158,50 +205,80 @@ const Sudoku: React.FC = () => {
 
       // 在选中模式2下处理右键擦除
       if ((event.button === 2 || eraseMode) && !board[row][col].isGiven) {
-        const newBoard = board.map((r) => r.map((c) => ({ ...c })));
+        const newBoard = deepCopyBoard(board);
         const cell = newBoard[row][col];
-        const previousValue = cell.value;
-        const previousDraft = [...cell.draft];
 
         cell.value = null;
         cell.draft = [];
-        setMoveHistory([
-          ...moveHistory,
-          { row, col, previousValue, newValue: null, previousDraft },
-        ]);
-        setRedoHistory([]);
-        setBoard(newBoard);
+        updateBoard(newBoard, `擦除 (${row}, ${col})`);
       }
 
       return;
     }
 
-    if (board[row][col]?.isGiven || board[row][col]?.value !== null) {
+    if (board[row][col]?.isGiven) {
       return;
     }
 
-    const newBoard = board.map((r) => r.map((c) => ({ ...c })));
+    const newBoard = deepCopyBoard(board);
     const cell = newBoard[row][col];
-    const previousValue = cell.value;
-    const previousDraft = [...cell.draft];
 
+    // 处理擦除操作
     if (event.button === 2 || eraseMode) {
-      // 右键点击或擦除模式
-      if (!draftMode && cell.value === null) {
-        // 在非草稿模式下，如果方格没有值，不执行擦除操作
+      if (cell.isGiven) {
         return;
       }
-      if (cell.value !== null || cell.draft.length > 0) {
+
+      if (cell.value !== null) {
+        // 如果单元格有值，擦除该值
         cell.value = null;
-        cell.draft = [];
-        setMoveHistory([
-          ...moveHistory,
-          { row, col, previousValue, newValue: null, previousDraft },
-        ]);
-        setRedoHistory([]);
+        updateBoard(newBoard, `擦除 (${row}, ${col}) 的值`);
+      } else if (
+        draftMode &&
+        selectedNumber &&
+        cell.draft.includes(selectedNumber)
+      ) {
+        // 如果是草稿模式且有选中的数字，只擦除该候选数字
+        cell.draft = cell.draft.filter((num) => num !== selectedNumber);
+        updateBoard(
+          newBoard,
+          `从 (${row}, ${col}) 擦除草稿数字 ${selectedNumber}`
+        );
+      } else if (!draftMode && cell.draft.length > 0 && selectedNumber) {
+        // 如果不是草稿模式且有草稿数字，擦除对应候选字
+        if (cell.draft.includes(selectedNumber)) {
+          cell.draft = cell.draft.filter((num) => num != selectedNumber);
+          updateBoard(
+            newBoard,
+            `擦除 (${row}, ${col}) 的草稿数字 ${selectedNumber}`
+          );
+        } else {
+          cell.draft.push(selectedNumber);
+          cell.draft.sort((a, b) => a - b);
+          updateBoard(
+            newBoard,
+            `在 (${row}, ${col}) 的草稿中添加 ${selectedNumber}`
+          );
+        }
+      } else {
+        return;
       }
-    } else if (draftMode && selectedNumber) {
-      // 处理草稿模式，不记录在撤销历史中
+      return;
+    }
+    // 处理草稿模式
+    else if (draftMode && selectedNumber) {
+      const conflictCells = checkNumberInRowColumnAndBox(
+        newBoard,
+        row,
+        col,
+        selectedNumber
+      );
+      if (conflictCells.length > 0) {
+        setErrorCells(conflictCells);
+        setTimeout(() => setErrorCells([]), 1000);
+        return;
+      }
+
       const draftSet = new Set(cell.draft);
       if (draftSet.has(selectedNumber)) {
         draftSet.delete(selectedNumber);
@@ -209,18 +286,30 @@ const Sudoku: React.FC = () => {
         draftSet.add(selectedNumber);
       }
       cell.draft = Array.from(draftSet).sort((a, b) => a - b);
-    } else if (selectedNumber) {
+      updateBoard(newBoard, `设置 (${row}, ${col}) 草稿为 ${cell.draft}`);
+    }
+    // 处理非草稿模式
+    else if (selectedNumber) {
       // 验证填入的数字是否为有效候选数字
-      const candidates = getCandidates(row, col);
+      const candidates = getCandidates(newBoard, row, col);
       if (candidates.includes(selectedNumber)) {
         cell.value = selectedNumber;
         cell.draft = [];
-        // 记录填写数字操作
-        setMoveHistory([
-          ...moveHistory,
-          { row, col, previousValue, newValue: selectedNumber, previousDraft },
-        ]);
-        setRedoHistory([]);
+
+        // 更新相关单元格的草稿数字
+        const affectedCells = updateRelatedCellsDraft(
+          newBoard,
+          row,
+          col,
+          selectedNumber,
+          getCandidates
+        );
+
+        updateBoard(
+          newBoard,
+          `设置 (${row}, ${col}) 为 ${selectedNumber}`,
+          affectedCells
+        );
       } else {
         const currentTime = Date.now();
         if (
@@ -228,60 +317,29 @@ const Sudoku: React.FC = () => {
           currentTime - lastErrorTime > errorCooldownPeriod
         ) {
           setErrorCount((prevCount) => prevCount + 1);
-          setErrorCell({ row, col });
+          setErrorCells([{ row, col }]);
           setLastErrorTime(currentTime);
-          setTimeout(() => setErrorCell(null), errorCooldownPeriod);
+          setTimeout(() => setErrorCells([]), errorCooldownPeriod);
         }
         return;
       }
     }
-
-    setBoard(newBoard);
   };
 
   // 撤销
   const handleUndo = () => {
-    const lastMove = moveHistory[moveHistory.length - 1];
-    if (lastMove) {
-      const { row, col, previousValue, previousDraft } = lastMove;
-      const newBoard = board.map((r) => r.map((c) => ({ ...c })));
-      newBoard[row][col].value = previousValue;
-      newBoard[row][col].draft = previousDraft; // 恢复之前的草稿数据
-      setBoard(newBoard);
-      setMoveHistory(moveHistory.slice(0, -1));
-      setRedoHistory([lastMove, ...redoHistory]);
-    }
+    undo();
   };
 
   // 回撤
   const handleRedo = () => {
-    const nextMove = redoHistory[0];
-    if (nextMove) {
-      const { row, col, newValue } = nextMove;
-      const newBoard = board.map((r) => r.map((c) => ({ ...c })));
-      newBoard[row][col].value = newValue;
-      newBoard[row][col].draft = []; // 清除草稿
-      setBoard(newBoard);
-      setRedoHistory(redoHistory.slice(1));
-      setMoveHistory([...moveHistory, nextMove]);
-    }
-  };
-
-  const getCandidates = (row: number, col: number): number[] => {
-    if (board[row][col].value !== null) return [];
-    const candidates = [];
-    for (let num = 1; num <= 9; num++) {
-      if (isValid(board, row, col, num)) {
-        candidates.push(num);
-      }
-    }
-    return candidates;
+    redo();
   };
 
   const solveSudoku = () => {
     const solvedBoard = board.map((row) => row.map((cell) => ({ ...cell })));
     if (solve(solvedBoard)) {
-      setBoard(solvedBoard);
+      updateBoard(solvedBoard, "求解数独");
     }
     message.info(`解的情况: ${checkSolutionStatus(solvedBoard)}`);
   };
@@ -293,24 +351,34 @@ const Sudoku: React.FC = () => {
       const { row, col } = selectedCell;
       handleCellChange(row, col, { button: 2 } as React.MouseEvent);
     }
-    setSelectedNumber(null);
   };
 
+  // 选择数字
   const handleNumberSelect = (number: number) => {
     if (selectionMode === 2 && selectedCell) {
       const { row, col } = selectedCell;
       const cell = board[row][col];
 
-      if (cell.isGiven || cell.value !== null) {
+      if (cell.value !== null || cell.isGiven) {
         return;
       }
 
-      const newBoard = board.map((r) => r.map((c) => ({ ...c })));
+      const newBoard = deepCopyBoard(board);
       const newCell = newBoard[row][col];
-      const previousValue = newCell.value;
-      const previousDraft = [...newCell.draft];
 
       if (draftMode) {
+        const conflictCells = checkNumberInRowColumnAndBox(
+          newBoard,
+          row,
+          col,
+          number
+        );
+        if (conflictCells.length > 0) {
+          setErrorCells(conflictCells);
+          setTimeout(() => setErrorCells([]), 1000);
+          return;
+        }
+
         const draftSet = new Set(newCell.draft);
         if (draftSet.has(number)) {
           draftSet.delete(number);
@@ -318,16 +386,13 @@ const Sudoku: React.FC = () => {
           draftSet.add(number);
         }
         newCell.draft = Array.from(draftSet).sort((a, b) => a - b);
+        updateBoard(newBoard, `设置 (${row}, ${col}) 草稿为 ${newCell.draft}`);
       } else {
-        const candidates = getCandidates(row, col);
+        const candidates = getCandidates(newBoard, row, col);
         if (candidates.includes(number)) {
           newCell.value = number;
           newCell.draft = [];
-          setMoveHistory([
-            ...moveHistory,
-            { row, col, previousValue, newValue: number, previousDraft },
-          ]);
-          setRedoHistory([]);
+          updateBoard(newBoard, `设置 (${row}, ${col}) 为 ${number}`);
         } else {
           const currentTime = Date.now();
           if (
@@ -335,15 +400,11 @@ const Sudoku: React.FC = () => {
             currentTime - lastErrorTime > errorCooldownPeriod
           ) {
             setErrorCount((prevCount) => prevCount + 1);
-            setErrorCell({ row, col });
             setLastErrorTime(currentTime);
-            setTimeout(() => setErrorCell(null), errorCooldownPeriod);
           }
           return;
         }
       }
-
-      setBoard(newBoard);
     } else {
       setSelectedNumber((prevNumber) =>
         prevNumber === number ? null : number
@@ -359,33 +420,55 @@ const Sudoku: React.FC = () => {
 
   const handleShowCandidates = () => {
     setShowCandidates(!showCandidates);
+    handleCopyOfficialDraft();
     setDraftMode(false);
-  };
-
-  const handleVisualHint2 = () => {
-    setVisualHint2(!visualHint2);
-  };
-
-  const handlePrint = () => {
-    console.log(board);
   };
 
   const handleSelectionMode = (mode: 1 | 2) => {
     setSelectionMode(mode);
     setSelectedNumber(null);
-    setSelectedCell(null);
   };
 
   const handleCopyOfficialDraft = () => {
     const newBoard = board.map((row, rowIndex) =>
       row.map((cell, colIndex) => ({
         ...cell,
-        draft: getCandidates(rowIndex, colIndex),
+        draft: getCandidates(board, rowIndex, colIndex),
       }))
     );
-    setBoard(newBoard);
-    setDraftMode(true);
+    updateBoard(newBoard, "复制官方草稿");
     setShowCandidates(false);
+  };
+
+  const handleHint = () => {
+    const solveFunctions = [singleCandidate, hiddenSingle];
+    let result = null;
+
+    for (const solveFunction of solveFunctions) {
+      result = solveFunction(board);
+      if (result) {
+        break;
+      }
+    }
+
+    if (result) {
+      const { row, col, target } = result;
+      const newBoard = deepCopyBoard(board);
+      newBoard[row][col].value = target;
+      newBoard[row][col].draft = [];
+
+      // 更新相关单元格的草稿数字
+      const affectedCells = updateRelatedCellsDraft(
+        newBoard,
+        row,
+        col,
+        target,
+        getCandidates
+      );
+
+      updateBoard(newBoard, `提示：设置 (${row}, ${col}) 为 ${target}`, affectedCells);
+      setSelectedCell({ row, col });
+    }
   };
 
   return (
@@ -404,24 +487,24 @@ const Sudoku: React.FC = () => {
                 e.preventDefault();
                 handleCellChange(rowIndex, colIndex, e);
               }}
-              className={`${getCellClassName(
-                board,
-                rowIndex,
-                colIndex,
-                selectedNumber,
-                visualHint2
-              )} ${
-                errorCell?.row === rowIndex && errorCell?.col === colIndex
-                  ? "errorCell"
-                  : ""
-              }
-              ${
-                selectionMode === 2 &&
-                selectedCell?.row === rowIndex &&
-                selectedCell?.col === colIndex
-                  ? "selectedCell"
-                  : ""
-              }`}
+              className={`
+                ${getCellClassName(board, rowIndex, colIndex, selectedNumber)}
+                ${
+                  errorCells.some(
+                    (errorCell) =>
+                      errorCell.row === rowIndex && errorCell.col === colIndex
+                  )
+                    ? "errorCell"
+                    : ""
+                }
+                ${
+                  selectionMode === 2 &&
+                  selectedCell?.row === rowIndex &&
+                  selectedCell?.col === colIndex
+                    ? "selectedCell"
+                    : ""
+                }
+              `}
             >
               {cell.value !== null ? (
                 cell.value
@@ -429,7 +512,7 @@ const Sudoku: React.FC = () => {
                 <div className="draftGrid">
                   {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
                     <div key={num} className="draftCell">
-                      {getCandidates(rowIndex, colIndex).includes(num)
+                      {getCandidates(board, rowIndex, colIndex).includes(num)
                         ? num
                         : ""}
                     </div>
@@ -463,10 +546,13 @@ const Sudoku: React.FC = () => {
         </Button>
       </div>
       <div className="controlButtons">
-        <Button onClick={handleUndo} disabled={moveHistory.length === 0}>
+        <Button onClick={handleUndo} disabled={currentStep === 0}>
           撤销
         </Button>
-        <Button onClick={handleRedo} disabled={redoHistory.length === 0}>
+        <Button
+          onClick={handleRedo}
+          disabled={currentStep === history.length - 1}
+        >
           回撤
         </Button>
 
@@ -482,20 +568,13 @@ const Sudoku: React.FC = () => {
         >
           我的草稿
         </Button>
-        <Button onClick={handleCopyOfficialDraft}>一键复制</Button>
         <Button
           onClick={handleShowCandidates}
           type={showCandidates ? "primary" : "default"}
         >
-          官方草稿
+          一键草稿
         </Button>
-        <Button
-          onClick={handleVisualHint2}
-          type={visualHint2 ? "primary" : "default"}
-        >
-          视觉辅助2
-        </Button>
-        <Button>提示</Button>
+        <Button onClick={handleHint}>提示</Button>
       </div>
       <div className="numberButtons">
         {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((number) => (
@@ -508,7 +587,7 @@ const Sudoku: React.FC = () => {
                 : "default"
             }
             className="number-button"
-            disabled={remainingCounts[number - 1] === 0}
+            disabled={!draftMode && remainingCounts[number - 1] === 0}
           >
             <div className="selected-number">{number}</div>
             <div className="remaining-count">{remainingCounts[number - 1]}</div>
@@ -517,9 +596,6 @@ const Sudoku: React.FC = () => {
       </div>
       <Button className="solveButton" onClick={solveSudoku}>
         求解数独
-      </Button>
-      <Button className="printButton" onClick={handlePrint}>
-        打印
       </Button>
     </Card>
   );

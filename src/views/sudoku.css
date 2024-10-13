@@ -94,6 +94,25 @@
   background-color: #e6f7ff;
   border: 2px solid #1890ff;
 }
+.sudokuGrid .sudokuCell.selectedCell:hover {
+  background-color: #e6f7ff;
+}
+.sudokuGrid .sudokuCell.selectedCell.errorCell {
+  animation: errorFlashSelected 0.5s ease-in-out 2;
+}
+.sudokuGrid .sudokuCell.selectedNumber {
+  background-color: #1890ff;
+  color: white;
+}
+.sudokuGrid .sudokuCell.selectedNumber.errorCell {
+  animation: errorFlashSelectedNumber 0.5s ease-in-out 2;
+}
+.sudokuGrid .sudokuCell.candidateNumber {
+  background-color: #9bf9ab !important;
+}
+.sudokuGrid .sudokuCell.candidateNumber.errorCell {
+  animation: errorFlashCandidate 0.5s ease-in-out 2;
+}
 .selectMode,
 .controlButtons,
 .numberButtons {
@@ -135,13 +154,37 @@
 .visualHint2 {
   background-color: #9bf9ab !important;
 }
-.selectedNumber {
-  background-color: #9bf9ab !important;
-}
 @keyframes errorFlash {
   0%,
   100% {
     background-color: white;
+  }
+  50% {
+    background-color: #ff6b6b;
+  }
+}
+@keyframes errorFlashSelected {
+  0%,
+  100% {
+    background-color: #e6f7ff;
+  }
+  50% {
+    background-color: #ff6b6b;
+  }
+}
+@keyframes errorFlashSelectedNumber {
+  0%,
+  100% {
+    background-color: #1890ff;
+  }
+  50% {
+    background-color: #ff6b6b;
+  }
+}
+@keyframes errorFlashCandidate {
+  0%,
+  100% {
+    background-color: #9bf9ab;
   }
   50% {
     background-color: #ff6b6b;

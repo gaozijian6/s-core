@@ -76,7 +76,6 @@ export const getCellClassName = (
   rowIndex: number,
   colIndex: number,
   selectedNumber: number | null,
-  visualHint2: boolean
 ) => {
   const cell = board[rowIndex][colIndex];
   const baseClass = `sudokuCell ${
@@ -84,12 +83,10 @@ export const getCellClassName = (
   } ${cell.isGiven ? "givenNumber" : ""}`;
 
   if (selectedNumber !== null) {
-    if (visualHint2 && cell.value === null) {
-      if (isValid(board, rowIndex, colIndex, selectedNumber) && cell.draft.includes(selectedNumber)) {
-        return `${baseClass} visualHint2`;
-      }
-    } else if (!visualHint2 && board[rowIndex][colIndex].value === selectedNumber) {
+    if (cell.value === selectedNumber) {
       return `${baseClass} selectedNumber`;
+    } else if (cell.value === null && cell.draft.includes(selectedNumber)) {
+      return `${baseClass} candidateNumber`;
     }
   }
 
@@ -138,4 +135,168 @@ export const checkSolutionStatus = (board: CellData[][]): '无解' | '有唯一�
   } else {
     return '有多解';
   }
+};
+
+export const checkNumberInRowColumnAndBox = (
+  board: CellData[][],
+  row: number,
+  col: number,
+  num: number
+): { row: number; col: number }[] => {
+  const conflictCells: { row: number; col: number }[] = [];
+
+  // 检查行
+  for (let i = 0; i < 9; i++) {
+    if (board[row][i].value === num) {
+      conflictCells.push({ row, col: i });
+    }
+  }
+
+  // 检查列
+  for (let i = 0; i < 9; i++) {
+    if (board[i][col].value === num) {
+      conflictCells.push({ row: i, col });
+    }
+  }
+
+  // 检查3x3方格
+  const boxRow = Math.floor(row / 3) * 3;
+  const boxCol = Math.floor(col / 3) * 3;
+  for (let i = 0; i < 3; i++) {
+    for (let j = 0; j < 3; j++) {
+      if (board[boxRow + i][boxCol + j].value === num) {
+        conflictCells.push({ row: boxRow + i, col: boxCol + j });
+      }
+    }
+  }
+
+  return conflictCells;
+};
+
+// 添加新的函数来更新相关单元格的草稿数字
+export const updateRelatedCellsDraft = (
+  board: CellData[][],
+  row: number,
+  col: number,
+  value: number,
+  getCandidates: (board: CellData[][], row: number, col: number) => number[],
+  isUndo: boolean = false
+) => {
+  const affectedCells: { row: number; col: number }[] = [];
+
+  // 收集受影响的单元格
+  for (let i = 0; i < 9; i++) {
+    if (i !== col && board[row][i].value === null) {
+      affectedCells.push({ row, col: i });
+    }
+    if (i !== row && board[i][col].value === null) {
+      affectedCells.push({ row: i, col });
+    }
+  }
+
+  const boxRow = Math.floor(row / 3) * 3;
+  const boxCol = Math.floor(col / 3) * 3;
+  for (let i = boxRow; i < boxRow + 3; i++) {
+    for (let j = boxCol; j < boxCol + 3; j++) {
+      if ((i !== row || j !== col) && board[i][j].value === null) {
+        affectedCells.push({ row: i, col: j });
+      }
+    }
+  }
+
+  // 更新受影响的单元格
+  affectedCells.forEach(({ row, col }) => {
+    const cell = board[row][col];
+    const candidates = getCandidates(board, row, col);
+    updateCellDraft(cell, value, candidates, isUndo);
+  });
+
+  return affectedCells;
+};
+
+const updateCellDraft = (
+  cell: CellData,
+  value: number,
+  candidates: number[],
+  isUndo: boolean
+) => {
+  if (isUndo) {
+    // 如果是撤销操作，添加候选数字
+    if (candidates.includes(value) && !cell.draft.includes(value)) {
+      cell.draft.push(value);
+      cell.draft.sort((a, b) => a - b);
+    }
+  } else {
+    // 如果是填入数字操作，移除候选数字
+    cell.draft = cell.draft.filter((num) => num !== value);
+  }
+};
+
+export const getCandidates = (board: CellData[][], row: number, col: number): number[] => {
+  if (board[row][col].value !== null) return [];
+  const candidates = [];
+  for (let num = 1; num <= 9; num++) {
+    if (isValid(board, row, col, num)) {
+      candidates.push(num);
+    }
+  }
+  return candidates;
+};
+
+// 深拷贝棋盘状态
+export const deepCopyBoard = (board: CellData[][]): CellData[][] => {
+  return board.map(row => row.map(cell => ({...cell, draft: [...cell.draft]})));
+};
+
+// 记录操作历史的接口
+interface BoardHistory {
+  board: CellData[][];
+  action: string;
+  affectedCells?: { row: number; col: number }[];
+}
+
+// 创建一个新的 hook 来管理棋盘状态和历史
+export const useSudokuBoard = (initialBoard: CellData[][]) => {
+  const [board, setBoard] = useState<CellData[][]>(initialBoard);
+  const [history, setHistory] = useState<BoardHistory[]>([]);
+  const [currentStep, setCurrentStep] = useState<number>(0);
+
+  const updateBoard = (newBoard: CellData[][], action: string, affectedCells?: { row: number; col: number }[]) => {
+    const newHistory = history.slice(0, currentStep + 1);
+    newHistory.push({ board: deepCopyBoard(newBoard), action, affectedCells });
+    setHistory(newHistory);
+    setCurrentStep(newHistory.length - 1);
+    setBoard(newBoard);
+  };
+
+  const undo = () => {
+    if (currentStep > 0) {
+      const prevStep = currentStep - 1;
+      const prevBoard = deepCopyBoard(history[prevStep].board);
+      const currentAction = history[currentStep].action;
+      const affectedCells = history[currentStep].affectedCells;
+
+      if (currentAction.startsWith('设置') && affectedCells) {
+        const [, , , value] = currentAction.match(/设置 \((\d+), (\d+)\) 为 (\d+)/) || [];
+        if (value) {
+          affectedCells.forEach(({ row, col }) => {
+            const candidates = getCandidates(prevBoard, row, col);
+            updateCellDraft(prevBoard[row][col], parseInt(value), candidates, true);
+          });
+        }
+      }
+
+      setCurrentStep(prevStep);
+      setBoard(prevBoard);
+    }
+  };
+
+  const redo = () => {
+    if (currentStep < history.length - 1) {
+      setCurrentStep(currentStep + 1);
+      setBoard(deepCopyBoard(history[currentStep + 1].board));
+    }
+  };
+
+  return { board, updateBoard, undo, redo, history, currentStep };
 };
