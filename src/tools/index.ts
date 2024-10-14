@@ -254,7 +254,10 @@ export const getCandidates = (board: CellData[][], row: number, col: number): nu
 
 // 深拷贝棋盘状态
 export const deepCopyBoard = (board: CellData[][]): CellData[][] => {
-  return board.map(row => row.map(cell => ({...cell, draft: [...cell.draft]})));
+  return board.map(row => row.map(cell => ({
+    ...cell,
+    draft: [...cell.draft]
+  })));
 };
 
 // 记录操作历史的接口
@@ -272,7 +275,7 @@ export const useSudokuBoard = (initialBoard: CellData[][]) => {
 
   const updateBoard = (newBoard: CellData[][], action: string, affectedCells?: { row: number; col: number }[]) => {
     const newHistory = history.slice(0, currentStep + 1);
-    newHistory.push({ board: deepCopyBoard(newBoard), action, affectedCells });
+    newHistory.push({ board: newBoard, action, affectedCells });
     setHistory(newHistory);
     setCurrentStep(newHistory.length - 1);
     setBoard(newBoard);
@@ -308,4 +311,14 @@ export const useSudokuBoard = (initialBoard: CellData[][]) => {
   };
 
   return { board, updateBoard, undo, redo, history, currentStep };
+};
+
+// 复制官方草稿
+export const copyOfficialDraft = (board: CellData[][]): CellData[][] => {
+  return board.map((row, rowIndex) =>
+    row.map((cell, colIndex) => ({
+      ...cell,
+      draft: getCandidates(board, rowIndex, colIndex),
+    }))
+  );
 };

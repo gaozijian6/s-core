@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Card, Button, message } from "antd";
 import {
   useTimer,
@@ -10,8 +10,15 @@ import {
   getCandidates,
   useSudokuBoard,
   deepCopyBoard,
+  copyOfficialDraft,
 } from "../tools";
-import { hiddenSingle, singleCandidate, blockElimination } from "../tools/solution";
+import {
+  hiddenSingle,
+  singleCandidate,
+  blockElimination,
+  nakedPair,
+  hiddenPair,
+} from "../tools/solution";
 import "./sudoku.less";
 import { SOLUTION_METHODS } from "../constans";
 
@@ -28,7 +35,6 @@ const Sudoku: React.FC = () => {
   const { board, updateBoard, undo, redo, history, currentStep } =
     useSudokuBoard(initialBoard);
   const [selectedNumber, setSelectedNumber] = useState<number | null>(1);
-  const [showCandidates, setShowCandidates] = useState<boolean>(false);
   const [errorCount, setErrorCount] = useState<number>(0);
   const [eraseMode, setEraseMode] = useState<boolean>(false);
   const [draftMode, setDraftMode] = useState<boolean>(false);
@@ -50,15 +56,15 @@ const Sudoku: React.FC = () => {
   const generateBoard = () => {
     // const initialBoard = Array(9).fill(null).map(() => Array(9).fill(null));
     const initialBoard = [
-      [7, null, null, 5, 1, null, null, 4, null],
-      [5, 1, null, 8, 4, null, null, null, 7],
-      [null, null, 4, 2, 7, null, 1, 9, 5],
-      [null, null, null, 4, 3, 8, 7, 5, 1],
-      [null, 3, 7, 1, 9, 5, null, null, null],
-      [null, 5, 1, 7, 6, 2, null, null, null],
-      [1, null, null, null, 8, 4, null, null, 2],
-      [6, null, null, null, 5, 1, 3, null, null],
-      [null, 4, null, null, 2, 7, null, 1, null],
+      [9,null,null,4,3,7,1,8,null],
+      [3,null,null,9,5,null,4,2,7],
+      [4,7,null,null,8,null,3,9,null],
+      [null,4,3,5,null,9,null,null,2],
+      [null,null,null,3,null,null,null,4,9],
+      [null,9,6,8,null,4,null,1,3],
+      [null,3,4,null,9,5,null,null,8],
+      [null,null,null,7,4,3,null,5,1],
+      [null,5,null,6,null,8,null,3,4],
     ];
 
     const newBoard: CellData[][] = initialBoard.map((row) =>
@@ -414,33 +420,20 @@ const Sudoku: React.FC = () => {
 
   const handleDraftMode = () => {
     setDraftMode(!draftMode);
-    setShowCandidates(false);
   };
 
-  const handleShowCandidates = () => {
-    setShowCandidates(!showCandidates);
-    handleCopyOfficialDraft();
-    setDraftMode(false);
-  };
+  const handleShowCandidates = useCallback(() => {
+    const newBoard = copyOfficialDraft(board);
+    updateBoard(newBoard, "复制官方草稿");
+  }, [board, updateBoard]);
 
   const handleSelectionMode = (mode: 1 | 2) => {
     setSelectionMode(mode);
     setSelectedNumber(null);
   };
 
-  const handleCopyOfficialDraft = () => {
-    const newBoard = board.map((row, rowIndex) =>
-      row.map((cell, colIndex) => ({
-        ...cell,
-        draft: getCandidates(board, rowIndex, colIndex),
-      }))
-    );
-    updateBoard(newBoard, "复制官方草稿");
-    setShowCandidates(false);
-  };
-
   const handleHint = () => {
-    const solveFunctions = [singleCandidate, hiddenSingle, blockElimination];
+    const solveFunctions = [singleCandidate, hiddenSingle, blockElimination, nakedPair, hiddenPair];
     let result = null;
 
     for (const solveFunction of solveFunctions) {
@@ -451,24 +444,38 @@ const Sudoku: React.FC = () => {
     }
 
     if (result) {
-      const { position, target, method } = result;
+      const { position, target, method, isFill } = result;
       const newBoard = deepCopyBoard(board);
-      position.forEach(({ row, col }) => {
-        newBoard[row][col].value = target;
-        newBoard[row][col].draft = [];
-      });
+      if (isFill) {
+        position.forEach(({ row, col }) => {
+          newBoard[row][col].value = target[0];
+          newBoard[row][col].draft = [];
+        });
 
-      // 更新相关单元格的草稿数字
-      const affectedCells = updateRelatedCellsDraft(
+        // 更新相关单元格的草稿数字
+        updateRelatedCellsDraft(newBoard, position, target[0], getCandidates);
+        setSelectedCell({ row: position[0].row, col: position[0].col });
+      } else {
+        position.forEach(({ row, col }) => {
+          newBoard[row][col].draft = newBoard[row][col].draft.filter(
+            (num) => !target.includes(num)
+          );
+        });
+      }
+
+      console.log(result.method,result.target);
+
+      updateBoard(
         newBoard,
-        position,
-        target,
-        getCandidates
+        `提示：${SOLUTION_METHODS[method as keyof typeof SOLUTION_METHODS]} (${
+          position[0].row
+        }, ${position[0].col}) 为 ${target.join(', ')}`
       );
-
-      updateBoard(newBoard, `提示：${SOLUTION_METHODS[method as keyof typeof SOLUTION_METHODS]} (${position[0].row}, ${position[0].col}) 为 ${target}`, affectedCells);
-      setSelectedCell({ row: position[0].row, col: position[0].col });
     }
+  };
+
+  const handlePrint = () => {
+    console.log(board);
   };
 
   return (
@@ -508,16 +515,6 @@ const Sudoku: React.FC = () => {
             >
               {cell.value !== null ? (
                 cell.value
-              ) : showCandidates ? (
-                <div className="draftGrid">
-                  {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
-                    <div key={num} className="draftCell">
-                      {getCandidates(board, rowIndex, colIndex).includes(num)
-                        ? num
-                        : ""}
-                    </div>
-                  ))}
-                </div>
               ) : cell.draft.length > 0 ? (
                 <div className="draftGrid">
                   {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
@@ -568,13 +565,9 @@ const Sudoku: React.FC = () => {
         >
           我的草稿
         </Button>
-        <Button
-          onClick={handleShowCandidates}
-          type={showCandidates ? "primary" : "default"}
-        >
-          一键草稿
-        </Button>
+        <Button onClick={handleShowCandidates}>一键草稿</Button>
         <Button onClick={handleHint}>提示</Button>
+        <Button onClick={handlePrint}>打印</Button>
       </div>
       <div className="numberButtons">
         {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((number) => (
