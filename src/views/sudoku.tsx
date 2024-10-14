@@ -11,8 +11,9 @@ import {
   useSudokuBoard,
   deepCopyBoard,
 } from "../tools";
-import { hiddenSingle, singleCandidate } from "../tools/solution";
+import { hiddenSingle, singleCandidate, blockElimination } from "../tools/solution";
 import "./sudoku.less";
+import { SOLUTION_METHODS } from "../constans";
 
 export interface CellData {
   value: number | null;
@@ -47,18 +48,18 @@ const Sudoku: React.FC = () => {
   );
 
   const generateBoard = () => {
-    const initialBoard = Array(9).fill(null).map(() => Array(9).fill(null));
-    // const initialBoard = [
-    //   [5, null, null, 4, null, null, 8, null, null],
-    //   [null, 2, null, null, null, null, 5, null, 7],
-    //   [null, null, null, 1, null, null, null, null, null],
-    //   [null, 9, null, 2, 8, null, null, null, null],
-    //   [null, null, 7, null, null, 9, null, 4, null],
-    //   [8, null, null, null, null, null, null, 2, 5],
-    //   [null, null, null, null, null, null, null, 3, 9],
-    //   [null, null, 5, null, null, 4, null, null, 6],
-    //   [1, null, null, 3, 6, null, null, null, null],
-    // ];
+    // const initialBoard = Array(9).fill(null).map(() => Array(9).fill(null));
+    const initialBoard = [
+      [7, null, null, 5, 1, null, null, 4, null],
+      [5, 1, null, 8, 4, null, null, null, 7],
+      [null, null, 4, 2, 7, null, 1, 9, 5],
+      [null, null, null, 4, 3, 8, 7, 5, 1],
+      [null, 3, 7, 1, 9, 5, null, null, null],
+      [null, 5, 1, 7, 6, 2, null, null, null],
+      [1, null, null, null, 8, 4, null, null, 2],
+      [6, null, null, null, 5, 1, 3, null, null],
+      [null, 4, null, null, 2, 7, null, 1, null],
+    ];
 
     const newBoard: CellData[][] = initialBoard.map((row) =>
       row.map((value) => ({
@@ -113,7 +114,6 @@ const Sudoku: React.FC = () => {
             );
           } else {
             const candidates = getCandidates(newBoard, row, col);
-            2;
             if (candidates.includes(number)) {
               newCell.value = number;
               newCell.draft = [];
@@ -299,8 +299,7 @@ const Sudoku: React.FC = () => {
         // 更新相关单元格的草稿数字
         const affectedCells = updateRelatedCellsDraft(
           newBoard,
-          row,
-          col,
+          [{ row, col }],
           selectedNumber,
           getCandidates
         );
@@ -441,7 +440,7 @@ const Sudoku: React.FC = () => {
   };
 
   const handleHint = () => {
-    const solveFunctions = [singleCandidate, hiddenSingle];
+    const solveFunctions = [singleCandidate, hiddenSingle, blockElimination];
     let result = null;
 
     for (const solveFunction of solveFunctions) {
@@ -452,22 +451,23 @@ const Sudoku: React.FC = () => {
     }
 
     if (result) {
-      const { row, col, target } = result;
+      const { position, target, method } = result;
       const newBoard = deepCopyBoard(board);
-      newBoard[row][col].value = target;
-      newBoard[row][col].draft = [];
+      position.forEach(({ row, col }) => {
+        newBoard[row][col].value = target;
+        newBoard[row][col].draft = [];
+      });
 
       // 更新相关单元格的草稿数字
       const affectedCells = updateRelatedCellsDraft(
         newBoard,
-        row,
-        col,
+        position,
         target,
         getCandidates
       );
 
-      updateBoard(newBoard, `提示：设置 (${row}, ${col}) 为 ${target}`, affectedCells);
-      setSelectedCell({ row, col });
+      updateBoard(newBoard, `提示：${SOLUTION_METHODS[method as keyof typeof SOLUTION_METHODS]} (${position[0].row}, ${position[0].col}) 为 ${target}`, affectedCells);
+      setSelectedCell({ row: position[0].row, col: position[0].col });
     }
   };
 

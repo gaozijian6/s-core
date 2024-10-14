@@ -176,8 +176,7 @@ export const checkNumberInRowColumnAndBox = (
 // 添加新的函数来更新相关单元格的草稿数字
 export const updateRelatedCellsDraft = (
   board: CellData[][],
-  row: number,
-  col: number,
+  position: { row: number; col: number }[],
   value: number,
   getCandidates: (board: CellData[][], row: number, col: number) => number[],
   isUndo: boolean = false
@@ -185,33 +184,43 @@ export const updateRelatedCellsDraft = (
   const affectedCells: { row: number; col: number }[] = [];
 
   // 收集受影响的单元格
-  for (let i = 0; i < 9; i++) {
-    if (i !== col && board[row][i].value === null) {
-      affectedCells.push({ row, col: i });
-    }
-    if (i !== row && board[i][col].value === null) {
-      affectedCells.push({ row: i, col });
-    }
-  }
-
-  const boxRow = Math.floor(row / 3) * 3;
-  const boxCol = Math.floor(col / 3) * 3;
-  for (let i = boxRow; i < boxRow + 3; i++) {
-    for (let j = boxCol; j < boxCol + 3; j++) {
-      if ((i !== row || j !== col) && board[i][j].value === null) {
-        affectedCells.push({ row: i, col: j });
+  position.forEach(({ row, col }) => {
+    for (let i = 0; i < 9; i++) {
+      if (i !== col && board[row][i].value === null) {
+        affectedCells.push({ row, col: i });
+      }
+      if (i !== row && board[i][col].value === null) {
+        affectedCells.push({ row: i, col });
       }
     }
-  }
+
+    const boxRow = Math.floor(row / 3) * 3;
+    const boxCol = Math.floor(col / 3) * 3;
+    for (let i = boxRow; i < boxRow + 3; i++) {
+      for (let j = boxCol; j < boxCol + 3; j++) {
+        if ((i !== row || j !== col) && board[i][j].value === null) {
+          affectedCells.push({ row: i, col: j });
+        }
+      }
+    }
+  });
+
+  // 去重受影响的单元格
+  const uniqueAffectedCells = Array.from(
+    new Set(affectedCells.map((cell) => `${cell.row},${cell.col}`))
+  ).map((str) => {
+    const [row, col] = str.split(',');
+    return { row: Number(row), col: Number(col) };
+  });
 
   // 更新受影响的单元格
-  affectedCells.forEach(({ row, col }) => {
+  uniqueAffectedCells.forEach(({ row, col }) => {
     const cell = board[row][col];
     const candidates = getCandidates(board, row, col);
     updateCellDraft(cell, value, candidates, isUndo);
   });
 
-  return affectedCells;
+  return uniqueAffectedCells;
 };
 
 const updateCellDraft = (

@@ -1,23 +1,33 @@
 import { CellData } from "../views/sudoku";
 import { getCandidates } from "../tools";
 import { SOLUTION_METHODS } from "../constans";
-interface Result {
+
+interface Position {
   row: number;
   col: number;
-  method: number;
+}
+interface Result {
+  // 是否填入数字,true:在position[0]位置填入target数字,false:删除position里所有的值为target的候选数字
+  isFill: boolean;
+  position: Position[];
+  method: string;
   target: number;
 }
 
 // 唯一余数法
 export const singleCandidate = (board: CellData[][]): Result | null => {
-
   for (let row = 0; row < 9; row++) {
     for (let col = 0; col < 9; col++) {
       const cell = board[row][col];
       if (cell?.value === null) {
         const candidates = getCandidates(board, row, col);
         if (candidates.length === 1) {
-          return { row, col, method: SOLUTION_METHODS.SINGLE_CANDIDATE, target: candidates[0] };
+          return {
+            position: [{ row, col }],
+            method: SOLUTION_METHODS.SINGLE_CANDIDATE,
+            target: candidates[0],
+            isFill: true,
+          };
         }
       }
     }
@@ -34,7 +44,7 @@ export const hiddenSingle = (board: CellData[][]): Result | null => {
     for (let col = 0; col < 9; col++) {
       if (board[row][col].value === null) {
         const candidates = getCandidates(board, row, col);
-        candidates.forEach(num => {
+        candidates.forEach((num) => {
           rowCandidates[num] = rowCandidates[num] || [];
           rowCandidates[num].push(col);
         });
@@ -42,7 +52,12 @@ export const hiddenSingle = (board: CellData[][]): Result | null => {
     }
     for (const [num, cols] of Object.entries(rowCandidates)) {
       if (cols.length === 1) {
-        return { row, col: cols[0], method: SOLUTION_METHODS.HIDDEN_SINGLE_ROW, target: Number(num) };
+        return {
+          position: [{ row, col: cols[0] }],
+          method: SOLUTION_METHODS.HIDDEN_SINGLE_ROW,
+          target: Number(num),
+          isFill: true,
+        };
       }
     }
   }
@@ -53,7 +68,7 @@ export const hiddenSingle = (board: CellData[][]): Result | null => {
     for (let row = 0; row < 9; row++) {
       if (board[row][col].value === null) {
         const candidates = getCandidates(board, row, col);
-        candidates.forEach(num => {
+        candidates.forEach((num) => {
           colCandidates[num] = colCandidates[num] || [];
           colCandidates[num].push(row);
         });
@@ -61,7 +76,12 @@ export const hiddenSingle = (board: CellData[][]): Result | null => {
     }
     for (const [num, rows] of Object.entries(colCandidates)) {
       if (rows.length === 1) {
-        return { row: rows[0], col, method: SOLUTION_METHODS.HIDDEN_SINGLE_COLUMN, target: Number(num) };
+        return {
+          position: [{ row: rows[0], col }],
+          method: SOLUTION_METHODS.HIDDEN_SINGLE_COLUMN,
+          target: Number(num),
+          isFill: true,
+        };
       }
     }
   }
@@ -69,14 +89,15 @@ export const hiddenSingle = (board: CellData[][]): Result | null => {
   // 检查每一宫
   for (let boxRow = 0; boxRow < 3; boxRow++) {
     for (let boxCol = 0; boxCol < 3; boxCol++) {
-      const boxCandidates: { [key: number]: { row: number, col: number }[] } = {};
+      const boxCandidates: { [key: number]: { row: number; col: number }[] } =
+        {};
       for (let i = 0; i < 3; i++) {
         for (let j = 0; j < 3; j++) {
           const row = boxRow * 3 + i;
           const col = boxCol * 3 + j;
           if (board[row][col].value === null) {
             const candidates = getCandidates(board, row, col);
-            candidates.forEach(num => {
+            candidates.forEach((num) => {
               boxCandidates[num] = boxCandidates[num] || [];
               boxCandidates[num].push({ row, col });
             });
@@ -85,11 +106,79 @@ export const hiddenSingle = (board: CellData[][]): Result | null => {
       }
       for (const [num, cells] of Object.entries(boxCandidates)) {
         if (cells.length === 1) {
-          return { row: cells[0].row, col: cells[0].col, method: SOLUTION_METHODS.HIDDEN_SINGLE_BOX, target: Number(num) };
+          return {
+            position: [{ row: cells[0].row, col: cells[0].col }],
+            method: SOLUTION_METHODS.HIDDEN_SINGLE_BOX,
+            target: Number(num),
+            isFill: true,
+          };
         }
       }
     }
   }
 
   return null;
-}
+};
+
+// 区块摒除法
+export const blockElimination = (board: CellData[][]): Result | null => {
+  for (let boxRow = 0; boxRow < 3; boxRow++) {
+    for (let boxCol = 0; boxCol < 3; boxCol++) {
+      const boxCandidates: { [key: number]: { row: number; col: number }[] } =
+        {};
+
+      // 收集宫内所有候选数字
+      for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < 3; j++) {
+          const row = boxRow * 3 + i;
+          const col = boxCol * 3 + j;
+          if (board[row][col].value === null) {
+            board[row][col].draft?.forEach((num) => {
+              boxCandidates[num] = boxCandidates[num] || [];
+              boxCandidates[num].push({ row, col });
+            });
+          }
+        }
+      }
+
+      // 检查每个候选数字
+      for (const [num, cells] of Object.entries(boxCandidates)) {
+        const rows = new Set(cells.map((cell) => cell.row));
+        const cols = new Set(cells.map((cell) => cell.col));
+
+        if (rows.size === 1 || cols.size === 1) {
+          const targetRow = rows.size === 1 ? Array.from(rows)[0] : -1;
+          const targetCol = cols.size === 1 ? Array.from(cols)[0] : -1;
+
+          // 检查其他宫的同一行或列
+          const positionsToRemove: { row: number; col: number }[] = [];
+          for (let i = 0; i < 9; i++) {
+            if (targetRow !== -1 && Math.floor(i / 3) !== boxCol) {
+              const cell = board[targetRow][i];
+              if (cell.value === null && cell.draft?.includes?.(Number(num))) {
+                positionsToRemove.push({ row: targetRow, col: i });
+              }
+            }
+            if (targetCol !== -1 && Math.floor(i / 3) !== boxRow) {
+              const cell = board[i][targetCol];
+              if (cell.value === null && cell.draft?.includes?.(Number(num))) {
+                positionsToRemove.push({ row: i, col: targetCol });
+              }
+            }
+          }
+
+          if (positionsToRemove.length > 0) {
+            return {
+              position: positionsToRemove,
+              method: SOLUTION_METHODS.BLOCK_ELIMINATION,
+              target: Number(num),
+              isFill: false,
+            };
+          }
+        }
+      }
+    }
+  }
+
+  return null;
+};
