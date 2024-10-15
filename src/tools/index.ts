@@ -265,6 +265,7 @@ interface BoardHistory {
   board: CellData[][];
   action: string;
   affectedCells?: { row: number; col: number }[];
+  isOfficialDraft?: boolean;
 }
 
 // 创建一个新的 hook 来管理棋盘状态和历史
@@ -273,9 +274,14 @@ export const useSudokuBoard = (initialBoard: CellData[][]) => {
   const [history, setHistory] = useState<BoardHistory[]>([]);
   const [currentStep, setCurrentStep] = useState<number>(0);
 
-  const updateBoard = (newBoard: CellData[][], action: string, affectedCells?: { row: number; col: number }[]) => {
+  const updateBoard = (
+    newBoard: CellData[][],
+    action: string,
+    affectedCells?: { row: number; col: number }[],
+    isOfficialDraft: boolean = false
+  ) => {
     const newHistory = history.slice(0, currentStep + 1);
-    newHistory.push({ board: newBoard, action, affectedCells });
+    newHistory.push({ board: newBoard, action, affectedCells, isOfficialDraft });
     setHistory(newHistory);
     setCurrentStep(newHistory.length - 1);
     setBoard(newBoard);
@@ -286,15 +292,28 @@ export const useSudokuBoard = (initialBoard: CellData[][]) => {
       const prevStep = currentStep - 1;
       const prevBoard = deepCopyBoard(history[prevStep].board);
       const currentAction = history[currentStep].action;
-      const affectedCells = history[currentStep].affectedCells;
+      const isOfficialDraft = history[currentStep].isOfficialDraft;
 
-      if (currentAction.startsWith('设置') && affectedCells) {
-        const [, , , value] = currentAction.match(/设置 \((\d+), (\d+)\) 为 (\d+)/) || [];
-        if (value) {
-          affectedCells.forEach(({ row, col }) => {
-            const candidates = getCandidates(prevBoard, row, col);
-            updateCellDraft(prevBoard[row][col], parseInt(value), candidates, true);
-          });
+      if (currentAction.startsWith('设置')) {
+        const match = currentAction.match(/设置 \((\d+), (\d+)\)/);
+        if (match) {
+          const [, rowStr, colStr] = match;
+          const row = parseInt(rowStr);
+          const col = parseInt(colStr);
+
+          // 恢复被修改的单元格
+          prevBoard[row][col] = { ...history[prevStep].board[row][col] };
+
+          // 如果是一键草稿操作，更新其他单元格的草稿数字
+          if (isOfficialDraft) {
+            for (let i = 0; i < 9; i++) {
+              for (let j = 0; j < 9; j++) {
+                if (i !== row || j !== col) {
+                  prevBoard[i][j].draft = getCandidates(prevBoard, i, j);
+                }
+              }
+            }
+          }
         }
       }
 

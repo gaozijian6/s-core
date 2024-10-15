@@ -52,20 +52,21 @@ const Sudoku: React.FC = () => {
   const [errorCells, setErrorCells] = useState<{ row: number; col: number }[]>(
     []
   );
+  const [officialDraftUsed, setOfficialDraftUsed] = useState<boolean>(false);
 
   const generateBoard = () => {
-    // const initialBoard = Array(9).fill(null).map(() => Array(9).fill(null));
-    const initialBoard = [
-      [9,null,null,4,3,7,1,8,null],
-      [3,null,null,9,5,null,4,2,7],
-      [4,7,null,null,8,null,3,9,null],
-      [null,4,3,5,null,9,null,null,2],
-      [null,null,null,3,null,null,null,4,9],
-      [null,9,6,8,null,4,null,1,3],
-      [null,3,4,null,9,5,null,null,8],
-      [null,null,null,7,4,3,null,5,1],
-      [null,5,null,6,null,8,null,3,4],
-    ];
+    const initialBoard = Array(9).fill(null).map(() => Array(9).fill(null));
+    // const initialBoard = [
+    //   [9,null,null,4,3,7,1,8,null],
+    //   [3,null,null,9,5,null,4,2,7],
+    //   [4,7,null,null,8,null,3,9,null],
+    //   [null,4,3,5,null,9,null,null,2],
+    //   [null,null,null,3,null,null,null,4,9],
+    //   [null,9,6,8,null,4,null,1,3],
+    //   [null,3,4,null,9,5,null,null,8],
+    //   [null,null,null,7,4,3,null,5,1],
+    //   [null,5,null,6,null,8,null,3,4],
+    // ];
 
     const newBoard: CellData[][] = initialBoard.map((row) =>
       row.map((value) => ({
@@ -237,8 +238,22 @@ const Sudoku: React.FC = () => {
 
       if (cell.value !== null) {
         // 如果单元格有值，擦除该值
+        const oldValue = cell.value;
         cell.value = null;
-        updateBoard(newBoard, `擦除 (${row}, ${col}) 的值`);
+        
+        // 只有在使用了一键草稿时才更新相关单元格的草稿数字
+        if (officialDraftUsed) {
+          const affectedCells = updateRelatedCellsDraft(
+            newBoard,
+            [{ row, col }],
+            oldValue,
+            getCandidates,
+            true // 添加 isUndo 参数
+          );
+          updateBoard(newBoard, `擦除 (${row}, ${col}) 的值`, affectedCells);
+        } else {
+          updateBoard(newBoard, `擦除 (${row}, ${col}) 的值`);
+        }
       } else if (
         draftMode &&
         selectedNumber &&
@@ -425,6 +440,7 @@ const Sudoku: React.FC = () => {
   const handleShowCandidates = useCallback(() => {
     const newBoard = copyOfficialDraft(board);
     updateBoard(newBoard, "复制官方草稿");
+    setOfficialDraftUsed(true);
   }, [board, updateBoard]);
 
   const handleSelectionMode = (mode: 1 | 2) => {
