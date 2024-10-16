@@ -32,7 +32,7 @@ const Sudoku: React.FC = () => {
   const initialBoard = Array(9)
     .fill(null)
     .map(() => Array(9).fill({ value: null, isGiven: false, draft: [] }));
-  const { board, updateBoard, undo, redo, history, currentStep, candidateMap } =
+  const { board, updateBoard, undo, redo, history, currentStep, candidateMap, graph } =
     useSudokuBoard(initialBoard);
   const [selectedNumber, setSelectedNumber] = useState<number | null>(1);
   const [errorCount, setErrorCount] = useState<number>(0);
@@ -58,6 +58,8 @@ const Sudoku: React.FC = () => {
     const initialBoard = Array(9)
       .fill(null)
       .map(() => Array(9).fill(null));
+
+
     // const initialBoard = [
     //   [9,null,null,4,3,7,1,8,null],
     //   [3,null,null,9,5,null,4,2,7],
@@ -77,6 +79,25 @@ const Sudoku: React.FC = () => {
         draft: [],
       }))
     );
+
+    // 设置草稿值
+    newBoard[1][5].draft = [3, 8];
+    newBoard[1][6].draft = [3, 8];
+    newBoard[2][4].draft = [3, 8];
+    newBoard[2][8].draft = [3, 8];
+    newBoard[3][2].draft = [2, 3];
+    newBoard[3][6].draft = [2, 3];
+    newBoard[4][1].draft = [3, 8];
+    newBoard[4][7].draft = [3, 8];
+    newBoard[5][1].draft = [2, 8];
+    newBoard[5][4].draft = [3, 4];
+    newBoard[5][5].draft = [3, 4];
+    newBoard[5][6].draft = [2, 8];
+    newBoard[7][1].draft = [2, 3];
+    newBoard[7][7].draft = [2, 3, 8];
+    newBoard[7][8].draft = [3, 8];
+    newBoard[8][2].draft = [2, 3];
+    newBoard[8][7].draft = [2, 3];
 
     updateBoard(newBoard, "生成新棋盘");
 
@@ -506,6 +527,10 @@ const Sudoku: React.FC = () => {
     console.log(candidateMap);
   };
 
+  const handleGraph = () => {
+    console.log(graph);
+  };
+
   return (
     <Card title="数独游戏">
       <div className="gameInfo">
@@ -598,6 +623,7 @@ const Sudoku: React.FC = () => {
         <Button onClick={handlePrint}>打印</Button>
         <Button onClick={handleStrongLink}>强连接判断</Button>
         <Button onClick={handleCandidateMap}>候选数</Button>
+        <Button onClick={handleGraph}>图</Button>
       </div>
       <div className="numberButtons">
         {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((number) => (
