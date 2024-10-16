@@ -11,7 +11,6 @@ import {
   useSudokuBoard,
   deepCopyBoard,
   copyOfficialDraft,
-  isStrongLink,
 } from "../tools";
 import {
   hiddenSingle,
@@ -22,6 +21,7 @@ import {
   xWing,
   xyWing,
   xyzWing,
+  isStrongLink,
 } from "../tools/solution";
 import "./sudoku.less";
 import { SOLUTION_METHODS } from "../constans";
@@ -502,7 +502,7 @@ const Sudoku: React.FC = () => {
   };
 
   const handleStrongLink = () => {
-    const result = isStrongLink(board, 0, 0, 2, 2, 4);
+    const result = isStrongLink(board, { row: 0, col: 0 }, { row: 1, col: 1 }, 1);
     console.log(result);
   };
 

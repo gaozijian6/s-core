@@ -277,6 +277,14 @@ interface BoardHistory {
   isOfficialDraft?: boolean;
 }
 
+interface CandidateMap {
+  [key: number]: Set<{
+    row: number;
+    col: number;
+    candidates: number[];
+  }>;
+}
+
 // 创建一个新的 hook 来管理棋盘状态和历史
 export const useSudokuBoard = (initialBoard: CellData[][]) => {
   const [board, setBoard] = useState<CellData[][]>(initialBoard);
@@ -370,74 +378,4 @@ export const areCellsInSameUnit = (cell1: Position, cell2: Position) => {
     Math.floor(cell1.col / 3) === Math.floor(cell2.col / 3);
 
   return sameRow || sameColumn || sameBox;
-};
-
-// 给定两个坐标和候选数，判断是否为强连接
-export const isStrongLink = (
-  board: CellData[][],
-  row1: number,
-  col1: number,
-  row2: number,
-  col2: number,
-  num: number
-): boolean => {
-  const cell1 = board[row1][col1];
-  const cell2 = board[row2][col2];
-
-  if (!cell1.draft?.includes(num) || !cell2.draft?.includes(num)) {
-    return false;
-  }
-
-  const sameRow = row1 === row2;
-  const sameCol = col1 === col2;
-  const sameBox =
-    Math.floor(row1 / 3) === Math.floor(row2 / 3) &&
-    Math.floor(col1 / 3) === Math.floor(col2 / 3);
-
-  if (!sameRow && !sameCol && !sameBox) {
-    return false;
-  }
-
-  if (cell1.draft?.length === 2 && cell2.draft?.length === 2) {
-    const otherNum1 = cell1.draft?.find((n) => n !== num);
-    const otherNum2 = cell2.draft?.find((n) => n !== num);
-    if (otherNum1 === otherNum2) {
-      return true;
-    }
-  }
-
-  const a = cell1.draft?.find((n) => n !== num);
-  const b = cell2.draft?.find((n) => n !== num);
-
-  if (!a || !b) {
-    return false;
-  }
-
-  const checkCell = (row: number, col: number): boolean => {
-    if ((row === row1 && col === col1) || (row === row2 && col === col2)) {
-      return false;
-    }
-    const cellC = board[row][col];
-    return cellC.draft?.includes(num);
-  };
-
-  if (sameRow) {
-    for (let col = 0; col < 9; col++) {
-      if (checkCell(row1, col)) return false;
-    }
-  } else if (sameCol) {
-    for (let row = 0; row < 9; row++) {
-      if (checkCell(row, col1)) return false;
-    }
-  } else {
-    const boxStartRow = Math.floor(row1 / 3) * 3;
-    const boxStartCol = Math.floor(col1 / 3) * 3;
-    for (let row = boxStartRow; row < boxStartRow + 3; row++) {
-      for (let col = boxStartCol; col < boxStartCol + 3; col++) {
-        if (checkCell(row, col)) return false;
-      }
-    }
-  }
-
-  return true;
 };
