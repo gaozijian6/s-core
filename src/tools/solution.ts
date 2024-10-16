@@ -391,6 +391,7 @@ export const nakedPair = (board: CellData[][]): Result | null => {
     }
   }
 
+  
   return null;
 };
 
