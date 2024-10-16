@@ -11,6 +11,7 @@ import {
   useSudokuBoard,
   deepCopyBoard,
   copyOfficialDraft,
+  isStrongLink,
 } from "../tools";
 import {
   hiddenSingle,
@@ -494,6 +495,11 @@ const Sudoku: React.FC = () => {
     console.log(board);
   };
 
+  const handleStrongLink = () => {
+    const result = isStrongLink(board, 0, 0, 2, 2, 4);
+    console.log(result);
+  };
+
   return (
     <Card title="数独游戏">
       <div className="gameInfo">
@@ -584,6 +590,7 @@ const Sudoku: React.FC = () => {
         <Button onClick={handleShowCandidates}>一键草稿</Button>
         <Button onClick={handleHint}>提示</Button>
         <Button onClick={handlePrint}>打印</Button>
+        <Button onClick={handleStrongLink}>强连接判断</Button>
       </div>
       <div className="numberButtons">
         {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((number) => (

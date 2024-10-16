@@ -75,7 +75,7 @@ export const getCellClassName = (
   board: CellData[][],
   rowIndex: number,
   colIndex: number,
-  selectedNumber: number | null,
+  selectedNumber: number | null
 ) => {
   const cell = board[rowIndex][colIndex];
   const baseClass = `sudokuCell ${
@@ -94,7 +94,9 @@ export const getCellClassName = (
 };
 
 // 检测数独解的情况
-export const checkSolutionStatus = (board: CellData[][]): '无解' | '有唯一解' | '有多解' => {
+export const checkSolutionStatus = (
+  board: CellData[][]
+): "无解" | "有唯一解" | "有多解" => {
   let solutionCount = 0;
   const emptyCells: [number, number][] = [];
 
@@ -129,11 +131,11 @@ export const checkSolutionStatus = (board: CellData[][]): '无解' | '有唯一�
   backtrack(0);
 
   if (solutionCount === 0) {
-    return '无解';
+    return "无解";
   } else if (solutionCount === 1) {
-    return '有唯一解';
+    return "有唯一解";
   } else {
-    return '有多解';
+    return "有多解";
   }
 };
 
@@ -209,7 +211,7 @@ export const updateRelatedCellsDraft = (
   const uniqueAffectedCells = Array.from(
     new Set(affectedCells.map((cell) => `${cell.row},${cell.col}`))
   ).map((str) => {
-    const [row, col] = str.split(',');
+    const [row, col] = str.split(",");
     return { row: Number(row), col: Number(col) };
   });
 
@@ -241,7 +243,11 @@ const updateCellDraft = (
   }
 };
 
-export const getCandidates = (board: CellData[][], row: number, col: number): number[] => {
+export const getCandidates = (
+  board: CellData[][],
+  row: number,
+  col: number
+): number[] => {
   if (board[row][col].value !== null) return [];
   const candidates = [];
   for (let num = 1; num <= 9; num++) {
@@ -254,10 +260,12 @@ export const getCandidates = (board: CellData[][], row: number, col: number): nu
 
 // 深拷贝棋盘状态
 export const deepCopyBoard = (board: CellData[][]): CellData[][] => {
-  return board.map(row => row.map(cell => ({
-    ...cell,
-    draft: [...cell.draft]
-  })));
+  return board.map((row) =>
+    row.map((cell) => ({
+      ...cell,
+      draft: [...cell.draft],
+    }))
+  );
 };
 
 // 记录操作历史的接口
@@ -281,7 +289,12 @@ export const useSudokuBoard = (initialBoard: CellData[][]) => {
     isOfficialDraft: boolean = false
   ) => {
     const newHistory = history.slice(0, currentStep + 1);
-    newHistory.push({ board: newBoard, action, affectedCells, isOfficialDraft });
+    newHistory.push({
+      board: newBoard,
+      action,
+      affectedCells,
+      isOfficialDraft,
+    });
     setHistory(newHistory);
     setCurrentStep(newHistory.length - 1);
     setBoard(newBoard);
@@ -294,7 +307,7 @@ export const useSudokuBoard = (initialBoard: CellData[][]) => {
       const currentAction = history[currentStep].action;
       const isOfficialDraft = history[currentStep].isOfficialDraft;
 
-      if (currentAction.startsWith('设置')) {
+      if (currentAction.startsWith("设置")) {
         const match = currentAction.match(/设置 \((\d+), (\d+)\)/);
         if (match) {
           const [, rowStr, colStr] = match;
@@ -340,4 +353,72 @@ export const copyOfficialDraft = (board: CellData[][]): CellData[][] => {
       draft: getCandidates(board, rowIndex, colIndex),
     }))
   );
+};
+
+// 给定两个坐标和候选数，判断是否为强连接
+export const isStrongLink = (
+  board: CellData[][],
+  row1: number,
+  col1: number,
+  row2: number,
+  col2: number,
+  num: number
+): boolean => {
+  const cell1 = board[row1][col1];
+  const cell2 = board[row2][col2];
+
+  if (!cell1.draft?.includes(num) || !cell2.draft?.includes(num)) {
+    return false;
+  }
+
+  const sameRow = row1 === row2;
+  const sameCol = col1 === col2;
+  const sameBox = Math.floor(row1 / 3) === Math.floor(row2 / 3) && Math.floor(col1 / 3) === Math.floor(col2 / 3);
+
+  if (!sameRow && !sameCol && !sameBox) {
+    return false;
+  }
+
+  if (cell1.draft?.length === 2 && cell2.draft?.length === 2) {
+    const otherNum1 = cell1.draft?.find(n => n !== num);
+    const otherNum2 = cell2.draft?.find(n => n !== num);
+    if (otherNum1 === otherNum2) {
+      return true;
+    }
+  }
+
+  const a = cell1.draft?.find(n => n !== num);
+  const b = cell2.draft?.find(n => n !== num);
+
+  if (!a || !b) {
+    return false;
+  }
+
+  const checkCell = (row: number, col: number): boolean => {
+    if ((row === row1 && col === col1) || (row === row2 && col === col2)) {
+      return false;
+    }
+    const cellC = board[row][col];
+    return cellC.draft?.includes(num);
+  };
+
+  if (sameRow) {
+    for (let col = 0; col < 9; col++) {
+      if (checkCell(row1, col)) return false;
+    }
+  } else if (sameCol) {
+    for (let row = 0; row < 9; row++) {
+      if (checkCell(row, col1)) return false;
+    }
+  } else {
+    const boxStartRow = Math.floor(row1 / 3) * 3;
+    const boxStartCol = Math.floor(col1 / 3) * 3;
+    for (let row = boxStartRow; row < boxStartRow + 3; row++) {
+      for (let col = boxStartCol; col < boxStartCol + 3; col++) {
+        if (checkCell(row, col)) return false;
+      }
+    }
+  }
+
+  return true;
 };
