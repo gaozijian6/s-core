@@ -122,17 +122,18 @@ export const hiddenSingle = (board: CellData[][]): Result | null => {
 
 // 区块摒除法
 export const blockElimination = (board: CellData[][]): Result | null => {
+  // 检查每个3x3宫格
   for (let boxRow = 0; boxRow < 3; boxRow++) {
     for (let boxCol = 0; boxCol < 3; boxCol++) {
-      const boxCandidates: { [key: number]: { row: number; col: number }[] } =
-        {};
+      const boxCandidates: { [key: number]: { row: number; col: number }[] } = {};
 
+      // 收集宫内每个数字的候选位置
       for (let i = 0; i < 3; i++) {
         for (let j = 0; j < 3; j++) {
           const row = boxRow * 3 + i;
           const col = boxCol * 3 + j;
-          if (board[row][col].value === null) {
-            board[row][col].draft?.forEach((num) => {
+          if (board[row]?.[col]?.value === null) {
+            board[row]?.[col]?.draft?.forEach((num) => {
               boxCandidates[num] = boxCandidates[num] || [];
               boxCandidates[num].push({ row, col });
             });
@@ -140,17 +141,19 @@ export const blockElimination = (board: CellData[][]): Result | null => {
         }
       }
 
+      // 检查每个候选数字
       for (const [num, cells] of Object.entries(boxCandidates)) {
         const rows = new Set(cells.map((cell) => cell.row));
         const cols = new Set(cells.map((cell) => cell.col));
 
+        // 区块摒除法（行）
         if (rows.size === 1) {
           const targetRow = Array.from(rows)[0];
           const positionsToRemove: { row: number; col: number }[] = [];
           for (let i = 0; i < 9; i++) {
             if (Math.floor(i / 3) !== boxCol) {
-              const cell = board[targetRow][i];
-              if (cell.value === null && cell.draft?.includes?.(Number(num))) {
+              const cell = board[targetRow]?.[i];
+              if (cell?.value === null && cell?.draft?.includes?.(Number(num))) {
                 positionsToRemove.push({ row: targetRow, col: i });
               }
             }
@@ -158,7 +161,7 @@ export const blockElimination = (board: CellData[][]): Result | null => {
           if (positionsToRemove.length > 0) {
             return {
               position: positionsToRemove,
-              prompt: cells, // 添加 prompt
+              prompt: cells,
               method: SOLUTION_METHODS.BLOCK_ELIMINATION_ROW,
               target: [Number(num)],
               isFill: false,
@@ -166,13 +169,14 @@ export const blockElimination = (board: CellData[][]): Result | null => {
           }
         }
 
+        // 区块摒除法（列）
         if (cols.size === 1) {
           const targetCol = Array.from(cols)[0];
           const positionsToRemove: { row: number; col: number }[] = [];
           for (let i = 0; i < 9; i++) {
             if (Math.floor(i / 3) !== boxRow) {
-              const cell = board[i][targetCol];
-              if (cell.value === null && cell.draft?.includes?.(Number(num))) {
+              const cell = board[i]?.[targetCol];
+              if (cell?.value === null && cell?.draft?.includes?.(Number(num))) {
                 positionsToRemove.push({ row: i, col: targetCol });
               }
             }
@@ -180,8 +184,94 @@ export const blockElimination = (board: CellData[][]): Result | null => {
           if (positionsToRemove.length > 0) {
             return {
               position: positionsToRemove,
-              prompt: cells, // 添加 prompt
+              prompt: cells,
               method: SOLUTION_METHODS.BLOCK_ELIMINATION_COLUMN,
+              target: [Number(num)],
+              isFill: false,
+            };
+          }
+        }
+      }
+    }
+  }
+
+  // 检查每一行
+  for (let row = 0; row < 9; row++) {
+    const rowCandidates: { [key: number]: { col: number }[] } = {};
+    for (let col = 0; col < 9; col++) {
+      if (board[row]?.[col]?.value === null) {
+        board[row]?.[col]?.draft?.forEach((num) => {
+          rowCandidates[num] = rowCandidates[num] || [];
+          rowCandidates[num].push({ col });
+        });
+      }
+    }
+
+    for (const [num, cells] of Object.entries(rowCandidates)) {
+      if (cells.length >= 2 && cells.length <= 3) {
+        const boxCol = Math.floor(cells[0].col / 3);
+        if (cells.every(cell => Math.floor(cell.col / 3) === boxCol)) {
+          const positionsToRemove: { row: number; col: number }[] = [];
+          for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+              const checkRow = Math.floor(row / 3) * 3 + i;
+              const checkCol = boxCol * 3 + j;
+              if (checkRow !== row) {
+                const cell = board[checkRow]?.[checkCol];
+                if (cell?.value === null && cell?.draft?.includes?.(Number(num))) {
+                  positionsToRemove.push({ row: checkRow, col: checkCol });
+                }
+              }
+            }
+          }
+          if (positionsToRemove.length > 0) {
+            return {
+              position: positionsToRemove,
+              prompt: cells.map(cell => ({ row, col: cell.col })),
+              method: SOLUTION_METHODS.BLOCK_ELIMINATION_BOX_ROW,
+              target: [Number(num)],
+              isFill: false,
+            };
+          }
+        }
+      }
+    }
+  }
+
+  // 检查每一列
+  for (let col = 0; col < 9; col++) {
+    const colCandidates: { [key: number]: { row: number }[] } = {};
+    for (let row = 0; row < 9; row++) {
+      if (board[row]?.[col]?.value === null) {
+        board[row]?.[col]?.draft?.forEach((num) => {
+          colCandidates[num] = colCandidates[num] || [];
+          colCandidates[num].push({ row });
+        });
+      }
+    }
+
+    for (const [num, cells] of Object.entries(colCandidates)) {
+      if (cells.length >= 2 && cells.length <= 3) {
+        const boxRow = Math.floor(cells[0].row / 3);
+        if (cells.every(cell => Math.floor(cell.row / 3) === boxRow)) {
+          const positionsToRemove: { row: number; col: number }[] = [];
+          for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+              const checkRow = boxRow * 3 + i;
+              const checkCol = Math.floor(col / 3) * 3 + j;
+              if (checkCol !== col) {
+                const cell = board[checkRow]?.[checkCol];
+                if (cell?.value === null && cell?.draft?.includes?.(Number(num))) {
+                  positionsToRemove.push({ row: checkRow, col: checkCol });
+                }
+              }
+            }
+          }
+          if (positionsToRemove.length > 0) {
+            return {
+              position: positionsToRemove,
+              prompt: cells.map(cell => ({ row: cell.row, col })),
+              method: SOLUTION_METHODS.BLOCK_ELIMINATION_BOX_COLUMN,
               target: [Number(num)],
               isFill: false,
             };
@@ -293,29 +383,22 @@ export const nakedPair = (board: CellData[][]): Result | null => {
 
 // 隐形数对法
 export const hiddenPair = (board: CellData[][]): Result | null => {
+  // 检查行
+  for (let row = 0; row < 9; row++) {
+    const result = checkHiddenPair(board, row, true);
+    if (result) return result;
+  }
+
+  // 检查列
+  for (let col = 0; col < 9; col++) {
+    const result = checkHiddenPair(board, col, false);
+    if (result) return result;
+  }
+
   // 检查3x3宫格
   for (let boxRow = 0; boxRow < 3; boxRow++) {
     for (let boxCol = 0; boxCol < 3; boxCol++) {
-      const candidatesMap: { [key: number]: Position[] } = {};
-      for (let r = 0; r < 3; r++) {
-        for (let c = 0; c < 3; c++) {
-          const row = boxRow * 3 + r;
-          const col = boxCol * 3 + c;
-          const cell = board[row][col];
-          if (cell?.value === null) {
-            cell.draft?.forEach((num) => {
-              if (!candidatesMap[num]) candidatesMap[num] = [];
-              candidatesMap[num].push({ row, col });
-            });
-          }
-        }
-      }
-
-      const result = checkHiddenPair(
-        candidatesMap,
-        board,
-        SOLUTION_METHODS.HIDDEN_PAIR
-      );
+      const result = checkHiddenPairBox(board, boxRow, boxCol);
       if (result) return result;
     }
   }
@@ -323,13 +406,49 @@ export const hiddenPair = (board: CellData[][]): Result | null => {
   return null;
 };
 
-const checkHiddenPair = (
+const checkHiddenPair = (board: CellData[][], index: number, isRow: boolean): Result | null => {
+  const candidatesMap: { [key: number]: Position[] } = {};
+  
+  for (let i = 0; i < 9; i++) {
+    const [row, col] = isRow ? [index, i] : [i, index];
+    const cell = board[row]?.[col];
+    if (cell?.value === null) {
+      cell.draft?.forEach((num) => {
+        if (!candidatesMap[num]) candidatesMap[num] = [];
+        candidatesMap[num].push({ row, col });
+      });
+    }
+  }
+
+  return findHiddenPair(candidatesMap, board);
+};
+
+const checkHiddenPairBox = (board: CellData[][], boxRow: number, boxCol: number): Result | null => {
+  const candidatesMap: { [key: number]: Position[] } = {};
+  
+  for (let r = 0; r < 3; r++) {
+    for (let c = 0; c < 3; c++) {
+      const row = boxRow * 3 + r;
+      const col = boxCol * 3 + c;
+      const cell = board[row]?.[col];
+      if (cell?.value === null) {
+        cell.draft?.forEach((num) => {
+          if (!candidatesMap[num]) candidatesMap[num] = [];
+          candidatesMap[num].push({ row, col });
+        });
+      }
+    }
+  }
+
+  return findHiddenPair(candidatesMap, board);
+};
+
+const findHiddenPair = (
   candidatesMap: { [key: number]: Position[] },
-  board: CellData[][],
-  method: string
+  board: CellData[][]
 ): Result | null => {
   const pairs = Object.entries(candidatesMap).filter(
-    ([,positions]) => positions.length === 2
+    ([, positions]) => positions.length === 2
   );
 
   for (let i = 0; i < pairs.length; i++) {
@@ -339,15 +458,16 @@ const checkHiddenPair = (
 
       if (JSON.stringify(positions1) === JSON.stringify(positions2)) {
         const [pos1, pos2] = positions1;
-        const cell1 = board[pos1.row][pos1.col];
-        const cell2 = board[pos2.row][pos2.col];
+        const cell1 = board[pos1.row]?.[pos1.col];
+        const cell2 = board[pos2.row]?.[pos2.col];
 
         if (cell1?.draft?.length > 2 || cell2?.draft?.length > 2) {
+          const newDraft = [Number(num1), Number(num2)];
           return {
             position: [pos1, pos2],
-            prompt: [pos1, pos2], // 添加 prompt
-            method,
-            target: [Number(num1), Number(num2)],
+            prompt: [pos1, pos2],
+            method: SOLUTION_METHODS.HIDDEN_PAIR,
+            target: newDraft,
             isFill: false,
           };
         }
