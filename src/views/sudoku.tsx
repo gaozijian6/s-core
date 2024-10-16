@@ -18,6 +18,9 @@ import {
   blockElimination,
   nakedPair,
   hiddenPair,
+  xWing,
+  xyWing,
+  xyzWing,
 } from "../tools/solution";
 import "./sudoku.less";
 import { SOLUTION_METHODS } from "../constans";
@@ -55,7 +58,9 @@ const Sudoku: React.FC = () => {
   const [officialDraftUsed, setOfficialDraftUsed] = useState<boolean>(false);
 
   const generateBoard = () => {
-    const initialBoard = Array(9).fill(null).map(() => Array(9).fill(null));
+    const initialBoard = Array(9)
+      .fill(null)
+      .map(() => Array(9).fill(null));
     // const initialBoard = [
     //   [9,null,null,4,3,7,1,8,null],
     //   [3,null,null,9,5,null,4,2,7],
@@ -240,7 +245,7 @@ const Sudoku: React.FC = () => {
         // 如果单元格有值，擦除该值
         const oldValue = cell.value;
         cell.value = null;
-        
+
         // 只有在使用了一键草稿时才更新相关单元格的草稿数字
         if (officialDraftUsed) {
           const affectedCells = updateRelatedCellsDraft(
@@ -449,7 +454,8 @@ const Sudoku: React.FC = () => {
   };
 
   const handleHint = () => {
-    const solveFunctions = [singleCandidate, hiddenSingle, blockElimination, nakedPair, hiddenPair];
+    // const solveFunctions = [singleCandidate, hiddenSingle, blockElimination, nakedPair, hiddenPair, xWing,xyWing,xyzWing];
+    const solveFunctions = [];
     let result = null;
 
     for (const solveFunction of solveFunctions) {
@@ -479,13 +485,13 @@ const Sudoku: React.FC = () => {
         });
       }
 
-      console.log(result.method,result.target);
+      console.log(result);
 
       updateBoard(
         newBoard,
         `提示：${SOLUTION_METHODS[method as keyof typeof SOLUTION_METHODS]} (${
           position[0].row
-        }, ${position[0].col}) 为 ${target.join(', ')}`
+        }, ${position[0].col}) 为 ${target.join(", ")}`
       );
     }
   };

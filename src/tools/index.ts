@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { CellData } from "../views/sudoku";
+import type { Position } from "./solution";
 
 export const isValid = (
   board: CellData[][],
@@ -340,4 +341,20 @@ export const copyOfficialDraft = (board: CellData[][]): CellData[][] => {
       draft: getCandidates(board, rowIndex, colIndex),
     }))
   );
+};
+
+// 检查两个格子是否在同一宫或行或列
+export const areCellsInSameUnit = (cell1: Position, cell2: Position) => {
+  // 检查是否在同一行
+  const sameRow = cell1.row === cell2.row;
+  
+  // 检查是否在同一列
+  const sameColumn = cell1.col === cell2.col;
+  
+  // 检查是否在同一宫
+  const sameBox = 
+    Math.floor(cell1.row / 3) === Math.floor(cell2.row / 3) &&
+    Math.floor(cell1.col / 3) === Math.floor(cell2.col / 3);
+  
+  return sameRow || sameColumn || sameBox;
 };

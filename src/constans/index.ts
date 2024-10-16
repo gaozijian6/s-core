@@ -7,4 +7,8 @@ export const SOLUTION_METHODS = {
   BLOCK_ELIMINATION_COLUMN: "区块摒除法(列)",
   NAKED_PAIR: "显性数对法",
   HIDDEN_PAIR: "隐形数对法",
+  X_WING: "X-Wing",
+  XY_WING: "XY-Wing",
+  XYZ_WING: "XYZ-Wing",
+  // X_CHAIN: "X-Chain",
 };
