@@ -373,10 +373,6 @@ export const createGraph = (
               }
               visited.get(key2)?.add(key1);
               
-              if (!visited.has(key1)) {
-                visited.set(key1, new Set());
-              }
-              visited.get(key1)?.add(key2);
             }
           }
         }
