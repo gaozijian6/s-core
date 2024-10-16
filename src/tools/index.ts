@@ -1,6 +1,15 @@
 import { useEffect, useState } from "react";
-import type { CellData } from "../views/sudoku";
-import type { Position } from "./solution";
+
+export interface Position {
+  row: number;
+  col: number;
+}
+
+export interface CellData {
+  value: number | null;
+  isGiven: boolean;
+  draft: number[]; // 添加草稿数字数组
+}
 
 export const isValid = (
   board: CellData[][],
@@ -276,13 +285,25 @@ interface BoardHistory {
   affectedCells?: { row: number; col: number }[];
   isOfficialDraft?: boolean;
 }
+interface Candidate {
+  row: number;
+  col: number;
+  candidates: number[];
+}
 
-interface CandidateMap {
-  [key: number]: Set<{
-    row: number;
-    col: number;
-    candidates: number[];
-  }>;
+export interface CandidateStats {
+  count: number;
+  positions: Candidate[];
+}
+
+// 修改 CandidateMap 接口
+export interface CandidateMap {
+  [key: number]: {
+    row: Map<number, CandidateStats>;
+    col: Map<number, CandidateStats>;
+    box: Map<number, CandidateStats>;
+    all: Candidate[];
+  };
 }
 
 // 创建一个新的 hook 来管理棋盘状态和历史
@@ -290,6 +311,58 @@ export const useSudokuBoard = (initialBoard: CellData[][]) => {
   const [board, setBoard] = useState<CellData[][]>(initialBoard);
   const [history, setHistory] = useState<BoardHistory[]>([]);
   const [currentStep, setCurrentStep] = useState<number>(0);
+  const [candidateMap, setCandidateMap] = useState<CandidateMap>(() => {
+    const initialCandidateMap: CandidateMap = {};
+    for (let num = 1; num <= 9; num++) {
+      initialCandidateMap[num] = {
+        row: new Map(),
+        col: new Map(),
+        box: new Map(),
+      };
+    }
+    return initialCandidateMap;
+  });
+
+  const updateCandidateMap = (newBoard: CellData[][]) => {
+    const newCandidateMap: CandidateMap = {};
+    for (let num = 1; num <= 9; num++) {
+      newCandidateMap[num] = {
+        row: new Map(),
+        col: new Map(),
+        box: new Map(),
+        all: [],
+      };
+    }
+
+    newBoard.forEach((row, rowIndex) => {
+      row.forEach((cell, colIndex) => {
+        if (cell.value === null) {
+          const boxIndex = Math.floor(rowIndex / 3) * 3 + Math.floor(colIndex / 3);
+          const candidate: Candidate = {
+            row: rowIndex,
+            col: colIndex,
+            candidates: cell.draft,
+          };
+
+          cell.draft.forEach((num) => {
+            const updateStats = (map: Map<number, CandidateStats>, index: number) => {
+              const stats = map.get(index) ?? { count: 0, positions: [] };
+              stats.count++;
+              stats.positions.push(candidate);
+              map.set(index, stats);
+            };
+
+            updateStats(newCandidateMap[num].row, rowIndex);
+            updateStats(newCandidateMap[num].col, colIndex);
+            updateStats(newCandidateMap[num].box, boxIndex);
+            newCandidateMap[num].all.push(candidate);
+          });
+        }
+      });
+    });
+
+    setCandidateMap(newCandidateMap);
+  };
 
   const updateBoard = (
     newBoard: CellData[][],
@@ -307,51 +380,30 @@ export const useSudokuBoard = (initialBoard: CellData[][]) => {
     setHistory(newHistory);
     setCurrentStep(newHistory.length - 1);
     setBoard(newBoard);
+    updateCandidateMap(newBoard);
   };
 
   const undo = () => {
     if (currentStep > 0) {
-      const prevStep = currentStep - 1;
-      const prevBoard = deepCopyBoard(history[prevStep].board);
-      const currentAction = history[currentStep].action;
-      const isOfficialDraft = history[currentStep].isOfficialDraft;
-
-      if (currentAction.startsWith("设置")) {
-        const match = currentAction.match(/设置 \((\d+), (\d+)\)/);
-        if (match) {
-          const [, rowStr, colStr] = match;
-          const row = parseInt(rowStr);
-          const col = parseInt(colStr);
-
-          // 恢复被修改的单元格
-          prevBoard[row][col] = { ...history[prevStep].board[row][col] };
-
-          // 如果是一键草稿操作，更新其他单元格的草稿数字
-          if (isOfficialDraft) {
-            for (let i = 0; i < 9; i++) {
-              for (let j = 0; j < 9; j++) {
-                if (i !== row || j !== col) {
-                  prevBoard[i][j].draft = getCandidates(prevBoard, i, j);
-                }
-              }
-            }
-          }
-        }
-      }
-
-      setCurrentStep(prevStep);
-      setBoard(prevBoard);
+      const newStep = currentStep - 1;
+      const previousBoard = history[newStep].board;
+      setCurrentStep(newStep);
+      setBoard(previousBoard);
+      updateCandidateMap(previousBoard);
     }
   };
 
   const redo = () => {
     if (currentStep < history.length - 1) {
-      setCurrentStep(currentStep + 1);
-      setBoard(deepCopyBoard(history[currentStep + 1].board));
+      const newStep = currentStep + 1;
+      const nextBoard = history[newStep].board;
+      setCurrentStep(newStep);
+      setBoard(nextBoard);
+      updateCandidateMap(nextBoard);
     }
   };
 
-  return { board, updateBoard, undo, redo, history, currentStep };
+  return { board, updateBoard, undo, redo, history, currentStep, candidateMap };
 };
 
 // 复制官方草稿

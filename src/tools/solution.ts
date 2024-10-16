@@ -1,10 +1,7 @@
-import { CellData } from "../views/sudoku";
 import { SOLUTION_METHODS } from "../constans";
 import { areCellsInSameUnit } from "./index";
-export interface Position {
-  row: number;
-  col: number;
-}
+import type { CandidateMap, CellData, Position } from "./index";
+
 export interface Result {
   // 是否填入数字,true:在position[0]位置填入target数字,false:删除position里所有的值为target的候选数字
   isFill: boolean;
@@ -391,111 +388,78 @@ export const nakedPair = (board: CellData[][]): Result | null => {
     }
   }
 
-  
   return null;
 };
 
 // 隐形数对法
-export const hiddenPair = (board: CellData[][]): Result | null => {
-  const checkHiddenPair = (index: number, isRow: boolean): Result | null => {
-    const candidatesMap: { [key: number]: Position[] } = {};
+export const hiddenPair = (
+  board: CellData[][],
+  candidateMap: CandidateMap
+): Result | null => {
+  // 检查行
+  const rowResult = checkHiddenPair(board, candidateMap, "row");
+  if (rowResult) return rowResult;
 
-    for (let i = 0; i < 9; i++) {
-      const [row, col] = isRow ? [index, i] : [i, index];
-      const cell = board[row]?.[col];
-      if (cell?.value === null) {
-        cell.draft?.forEach((num) => {
-          if (!candidatesMap[num]) candidatesMap[num] = [];
-          candidatesMap[num].push({ row, col });
-        });
-      }
-    }
+  // 检查列
+  const colResult = checkHiddenPair(board, candidateMap, "col");
+  if (colResult) return colResult;
 
-    return findHiddenPair(candidatesMap);
-  };
+  // 检查宫
+  const boxResult = checkHiddenPair(board, candidateMap, "box");
+  if (boxResult) return boxResult;
 
-  const checkHiddenPairBox = (
-    boxRow: number,
-    boxCol: number
-  ): Result | null => {
-    const candidatesMap: { [key: number]: Position[] } = {};
+  return null;
+};
 
-    for (let r = 0; r < 3; r++) {
-      for (let c = 0; c < 3; c++) {
-        const row = boxRow * 3 + r;
-        const col = boxCol * 3 + c;
-        const cell = board[row]?.[col];
-        if (cell?.value === null) {
-          cell.draft?.forEach((num) => {
-            if (!candidatesMap[num]) candidatesMap[num] = [];
-            candidatesMap[num].push({ row, col });
-          });
-        }
-      }
-    }
+const checkHiddenPair = (
+  board: CellData[][],
+  candidateMap: CandidateMap,
+  unitType: "row" | "col" | "box"
+): Result | null => {
+  for (let unit = 0; unit < 9; unit++) {
+    for (let num1 = 1; num1 <= 8; num1++) {
+      for (let num2 = num1 + 1; num2 <= 9; num2++) {
+        const positions1 =
+          candidateMap[num1][unitType].get(unit)?.positions ?? [];
+        const positions2 =
+          candidateMap[num2][unitType].get(unit)?.positions ?? [];
 
-    return findHiddenPair(candidatesMap);
-  };
+        if (positions1.length === 2 && positions2.length === 2) {
+          const pair = positions1.filter((pos1) =>
+            positions2.some(
+              (pos2) => pos1.row === pos2.row && pos1.col === pos2.col
+            )
+          );
 
-  const findHiddenPair = (candidatesMap: {
-    [key: number]: Position[];
-  }): Result | null => {
-    const pairs = Object.entries(candidatesMap).filter(
-      ([, positions]) => positions.length === 2
-    );
+          if (pair.length === 2) {
+            const affectedPositions: Position[] = [];
+            const prompt: Position[] = [];
+            const targetNumbers: number[] = [];
 
-    for (let i = 0; i < pairs.length; i++) {
-      for (let j = i + 1; j < pairs.length; j++) {
-        const [num1, positions1] = pairs[i];
-        const [num2, positions2] = pairs[j];
+            pair.forEach((pos) => {
+              const cell = board[pos.row][pos.col];
+              const otherCandidates = cell.draft?.filter(
+                (n) => n !== num1 && n !== num2
+              ) ?? [];
+              if (otherCandidates.length > 0) {
+                affectedPositions.push(pos);
+                targetNumbers.push(...otherCandidates);
+              }
+              prompt.push(pos);
+            });
 
-        if (JSON.stringify(positions1) === JSON.stringify(positions2)) {
-          const [pos1, pos2] = positions1;
-          const cell1 = board[pos1.row]?.[pos1.col];
-          const cell2 = board[pos2.row]?.[pos2.col];
-
-          if (cell1?.draft?.length > 2 || cell2?.draft?.length > 2) {
-            const newDraft1 =
-              cell1?.draft?.filter(
-                (num) => num !== Number(num1) && num !== Number(num2)
-              ) || [];
-            const newDraft2 =
-              cell2?.draft?.filter(
-                (num) => num !== Number(num1) && num !== Number(num2)
-              ) || [];
-            const newDraft = [...new Set([...newDraft1, ...newDraft2])];
-            return {
-              position: [pos1, pos2],
-              prompt: [pos1, pos2],
-              method: SOLUTION_METHODS.HIDDEN_PAIR,
-              target: newDraft,
-              isFill: false,
-            };
+            if (affectedPositions.length > 0) {
+              return {
+                position: affectedPositions,
+                prompt,
+                method: SOLUTION_METHODS.HIDDEN_PAIR,
+                target: [...new Set(targetNumbers)],
+                isFill: false,
+              };
+            }
           }
         }
       }
-    }
-
-    return null;
-  };
-
-  // 检查行
-  for (let row = 0; row < 9; row++) {
-    const result = checkHiddenPair(row, true);
-    if (result) return result;
-  }
-
-  // 检查列
-  for (let col = 0; col < 9; col++) {
-    const result = checkHiddenPair(col, false);
-    if (result) return result;
-  }
-
-  // 检查3x3宫格
-  for (let boxRow = 0; boxRow < 3; boxRow++) {
-    for (let boxCol = 0; boxCol < 3; boxCol++) {
-      const result = checkHiddenPairBox(boxRow, boxCol);
-      if (result) return result;
     }
   }
 
@@ -825,77 +789,189 @@ export const isStrongLink = (
   position2: Position,
   num: number
 ): boolean => {
-  const cell1 = board[position1.row][position1.col];
-  const cell2 = board[position2.row][position2.col];
+  const cell1 = board[position1.row]?.[position1.col];
+  const cell2 = board[position2.row]?.[position2.col];
+  if (!cell1 || !cell2 || cell1.draft.length >= 4 || cell2.draft.length >= 4) return false;
 
-  if (!cell1.draft?.includes(num) || !cell2.draft?.includes(num)) {
-    return false;
-  }
-
-  const sameRow = position1.row === position2.row;
-  const sameCol = position1.col === position2.col;
-  const sameBox =
+  // 检查是否在同一行、同一列或同一宫
+  const isSameRow = position1.row === position2.row;
+  const isSameCol = position1.col === position2.col;
+  const isSameBox =
     Math.floor(position1.row / 3) === Math.floor(position2.row / 3) &&
     Math.floor(position1.col / 3) === Math.floor(position2.col / 3);
 
-  if (!sameRow && !sameCol && !sameBox) {
+  if (!(isSameRow || isSameCol || isSameBox)) {
     return false;
   }
 
-  if (cell1.draft?.length === 2 && cell2.draft?.length === 2) {
-    const otherNum1 = cell1.draft?.find((n) => n !== num);
-    const otherNum2 = cell2.draft?.find((n) => n !== num);
-    if (otherNum1 === otherNum2) {
-      return true;
-    }
+  // 情况一：检查两个单元格是否都只有两个候选数，且包含相同的候选数
+  if (
+    cell1.draft.length === 2 &&
+    cell2.draft.length === 2 &&
+    cell1.draft.every((n) => cell2.draft.includes(n))
+  ) {
+    return true;
   }
 
-  const a = cell1.draft?.find((n) => n !== num);
-  const b = cell2.draft?.find((n) => n !== num);
+  // 情况二：检查是否存在第三个单元格C，其候选数为AB的候选数的并集
+  if (
+    cell1.draft.length === 2 &&
+    cell2.draft.length === 2 &&
+    cell1.draft.includes(num) &&
+    cell2.draft.includes(num)
+  ) {
+    const otherNum1 = cell1.draft.find((n) => n !== num);
+    const otherNum2 = cell2.draft.find((n) => n !== num);
 
-  if (!a || !b) {
-    return false;
-  }
+    if (otherNum1 && otherNum2) {
+      // 检查共同行、列和宫
+      const checkCellC = (row: number, col: number) => {
+        const cellC = board[row]?.[col];
+        return cellC?.draft.length === 2 &&
+          cellC.draft.includes(otherNum1) &&
+          cellC.draft.includes(otherNum2);
+      };
 
-  const checkCell = (row: number, col: number): boolean => {
-    if (
-      (row === position1.row && col === position1.col) ||
-      (row === position2.row && col === position2.col)
-    ) {
-      return false;
-    }
-    const cellC = board[row][col];
-    return cellC.draft?.includes(num);
-  };
+      if (isSameRow) {
+        for (let col = 0; col < 9; col++) {
+          if (col !== position1.col && col !== position2.col && checkCellC(position1.row, col)) {
+            return true;
+          }
+        }
+      }
 
-  if (sameRow) {
-    for (let col = 0; col < 9; col++) {
-      if (checkCell(position1.row, col)) return false;
-    }
-  } else if (sameCol) {
-    for (let row = 0; row < 9; row++) {
-      if (checkCell(row, position1.col)) return false;
-    }
-  } else {
-    const boxStartRow = Math.floor(position1.row / 3) * 3;
-    const boxStartCol = Math.floor(position1.col / 3) * 3;
-    for (let row = boxStartRow; row < boxStartRow + 3; row++) {
-      for (let col = boxStartCol; col < boxStartCol + 3; col++) {
-        if (checkCell(row, col)) return false;
+      if (isSameCol) {
+        for (let row = 0; row < 9; row++) {
+          if (row !== position1.row && row !== position2.row && checkCellC(row, position1.col)) {
+            return true;
+          }
+        }
+      }
+
+      if (isSameBox) {
+        const startRow = Math.floor(position1.row / 3) * 3;
+        const startCol = Math.floor(position1.col / 3) * 3;
+        for (let i = 0; i < 3; i++) {
+          for (let j = 0; j < 3; j++) {
+            const row = startRow + i;
+            const col = startCol + j;
+            if ((row !== position1.row || col !== position1.col) &&
+                (row !== position2.row || col !== position2.col) &&
+                checkCellC(row, col)) {
+              return true;
+            }
+          }
+        }
       }
     }
   }
 
-  return true;
+  // 情况三：格子A有候选数a、b、num，B有num、a或b，在格子AB所处的共同行或共同列或共同宫内寻找格子C，要求C的候选数为a、b
+  const cellA = cell1.draft.length === 3 ? cell1 : cell2;
+  const cellB = cellA === cell1 ? cell2 : cell1;
+  const positionA = cellA === cell1 ? position1 : position2;
+  const positionB = cellB === cell2 ? position2 : position1;
+
+  if (cellA.draft.length === 3 && cellB.draft.length >= 2) {
+    const [a, b] = cellA.draft.filter((n) => n !== num);
+    if (cellB.draft.includes(num) && (cellB.draft.includes(a) || cellB.draft.includes(b))) {
+      const checkCellC = (row: number, col: number) => {
+        const cellC = board[row]?.[col];
+        return cellC?.draft.length === 2 && cellC.draft.includes(a) && cellC.draft.includes(b);
+      };
+
+      // 检查共同行、列和宫
+      if (isSameRow) {
+        for (let col = 0; col < 9; col++) {
+          if (col !== positionA.col && col !== positionB.col && checkCellC(positionA.row, col)) {
+            return true;
+          }
+        }
+      }
+
+      if (isSameCol) {
+        for (let row = 0; row < 9; row++) {
+          if (row !== positionA.row && row !== positionB.row && checkCellC(row, positionA.col)) {
+            return true;
+          }
+        }
+      }
+
+      if (isSameBox) {
+        const startRow = Math.floor(positionA.row / 3) * 3;
+        const startCol = Math.floor(positionA.col / 3) * 3;
+        for (let i = 0; i < 3; i++) {
+          for (let j = 0; j < 3; j++) {
+            const row = startRow + i;
+            const col = startCol + j;
+            if ((row !== positionA.row || col !== positionA.col) &&
+                (row !== positionB.row || col !== positionB.col) &&
+                checkCellC(row, col)) {
+              return true;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return false;
+};
+
+// 新增远程强连接判断函数
+export const isRemoteStrongLink = (
+  board: CellData[][],
+  position1: Position,
+  position2: Position,
+  num: number,
+  candidateMap: CandidateMap
+): boolean => {
+  const cell1 = board[position1.row]?.[position1.col];
+  const cell2 = board[position2.row]?.[position2.col];
+  if (!cell1?.draft?.includes(num) || !cell2?.draft?.includes(num)) return false;
+
+  // 使用 isStrongLink 检查是否为强连接
+  if (isStrongLink(board, position1, position2, num)) {
+    return true;
+  }
+
+  // 区域间连接
+  const isOnlyTwoInRow = candidateMap[num].row.get(position1.row)?.count === 1 &&
+                         candidateMap[num].row.get(position2.row)?.count === 1;
+  const isOnlyTwoInCol = candidateMap[num].col.get(position1.col)?.count === 1 &&
+                         candidateMap[num].col.get(position2.col)?.count === 1;
+  const box1 = Math.floor(position1.row / 3) * 3 + Math.floor(position1.col / 3);
+  const box2 = Math.floor(position2.row / 3) * 3 + Math.floor(position2.col / 3);
+  const isOnlyTwoInBox = candidateMap[num].box.get(box1)?.count === 1 &&
+                         candidateMap[num].box.get(box2)?.count === 1;
+
+  return isOnlyTwoInRow || isOnlyTwoInCol || isOnlyTwoInBox;
 };
 
 interface StrongLink {
-  position: Position[];
-  target: number;
+  positions: Position[];
+  num: number;
 }
 
 // 寻找强连接
-// const findStrongLink = (board: CellData[][]): StrongLink | null => {
+export const findStrongLink = (
+  board: CellData[][],
+  candidateMap: CandidateMap
+): StrongLink | null => {
+  for (const [num, { all }] of Object.entries(candidateMap)) {
+    const positions = all;
+    for (let i = 0; i < positions.length - 1; i++) {
+      for (let j = i + 1; j < positions.length; j++) {
+        const position1 = { row: positions[i].row, col: positions[i].col };
+        const position2 = { row: positions[j].row, col: positions[j].col };
+        if (isStrongLink(board, position1, position2, Number(num))) {
+          return { positions: [position1, position2], num: Number(num) };
+        }
+      }
+    }
+  }
+  return null;
+};
 
 // X-Chain
 // export const xChain = (board: CellData[][]): Result | null => {

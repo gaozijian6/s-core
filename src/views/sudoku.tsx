@@ -22,21 +22,17 @@ import {
   xyWing,
   xyzWing,
   isStrongLink,
+  findStrongLink
 } from "../tools/solution";
 import "./sudoku.less";
 import { SOLUTION_METHODS } from "../constans";
-
-export interface CellData {
-  value: number | null;
-  isGiven: boolean;
-  draft: number[]; // 添加草稿数字数组
-}
+import type { CellData } from "../tools";
 
 const Sudoku: React.FC = () => {
   const initialBoard = Array(9)
     .fill(null)
     .map(() => Array(9).fill({ value: null, isGiven: false, draft: [] }));
-  const { board, updateBoard, undo, redo, history, currentStep } =
+  const { board, updateBoard, undo, redo, history, currentStep, candidateMap } =
     useSudokuBoard(initialBoard);
   const [selectedNumber, setSelectedNumber] = useState<number | null>(1);
   const [errorCount, setErrorCount] = useState<number>(0);
@@ -460,7 +456,7 @@ const Sudoku: React.FC = () => {
     let result = null;
 
     for (const solveFunction of solveFunctions) {
-      result = solveFunction(board);
+      result = solveFunction(board, candidateMap);
       if (result) {
         break;
       }
@@ -502,8 +498,12 @@ const Sudoku: React.FC = () => {
   };
 
   const handleStrongLink = () => {
-    const result = isStrongLink(board, { row: 0, col: 0 }, { row: 1, col: 1 }, 1);
+    const result = findStrongLink(board, candidateMap);
     console.log(result);
+  };
+
+  const handleCandidateMap = () => {
+    console.log(candidateMap);
   };
 
   return (
@@ -597,6 +597,7 @@ const Sudoku: React.FC = () => {
         <Button onClick={handleHint}>提示</Button>
         <Button onClick={handlePrint}>打印</Button>
         <Button onClick={handleStrongLink}>强连接判断</Button>
+        <Button onClick={handleCandidateMap}>候选数</Button>
       </div>
       <div className="numberButtons">
         {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((number) => (
