@@ -2,6 +2,7 @@ import { SOLUTION_METHODS } from "../constans";
 import { areCellsInSameUnit } from "./index";
 import type {
   CandidateMap,
+  CandidateStats,
   CellData,
   Graph,
   GraphNode,
@@ -318,92 +319,80 @@ export const nakedPair = (
   candidateMap: CandidateMap,
   graph: Graph
 ): Result | null => {
-  // 检查每一宫
-  for (let boxRow = 0; boxRow < 3; boxRow++) {
-    for (let boxCol = 0; boxCol < 3; boxCol++) {
-      const boxCells: { row: number; col: number; draft: number[] }[] = [];
+  // 遍历所有数字的候选位置
+  for (let num = 1; num <= 9; num++) {
+    const candidates = candidateMap[num]?.all ?? [];
+    
+    // 找到只有两个候选数的方格
+    const pairCandidates = candidates.filter(cell => cell.candidates.length === 2);
 
-      for (let i = 0; i < 3; i++) {
-        for (let j = 0; j < 3; j++) {
-          const row = boxRow * 3 + i;
-          const col = boxCol * 3 + j;
-          const cell = board[row][col];
-          if (cell?.value === null && cell?.draft?.length === 2) {
-            boxCells.push({ row, col, draft: cell.draft });
+    for (let i = 0; i < pairCandidates.length; i++) {
+      const cell1 = pairCandidates[i];
+      const [num1, num2] = cell1.candidates;
+
+      // 检查行、列、宫
+      const units = [
+        { type: 'row', value: cell1.row },
+        { type: 'col', value: cell1.col },
+        { type: 'box', value: Math.floor(cell1.row / 3) * 3 + Math.floor(cell1.col / 3) }
+      ];
+
+      for (const unit of units) {
+        const unitCells = (candidateMap[num][unit.type as keyof typeof candidateMap[number]] as Map<number, CandidateStats>)?.get?.(unit.value)?.positions ?? [];
+        // 在同一单元中找到另一个具有相同候选数的方格
+        const cell2 = unitCells.find(c => 
+          (c.row !== cell1.row || c.col !== cell1.col) &&
+          c.candidates.length === 2 &&
+          c.candidates.includes(num1) &&
+          c.candidates.includes(num2)
+        );
+
+        if (cell2) {
+          // 找到受影响的方格
+          const affectedCells = [];
+          for (let i = 0; i < 9; i++) {
+            for (let j = 0; j < 9; j++) {
+              if ((i !== cell1.row || j !== cell1.col) && 
+                  (i !== cell2.row || j !== cell2.col) && 
+                  (unit.type === 'row' && i === cell1.row || 
+                   unit.type === 'col' && j === cell1.col || 
+                   unit.type === 'box' && Math.floor(i / 3) === Math.floor(cell1.row / 3) && Math.floor(j / 3) === Math.floor(cell1.col / 3))) {
+                const cell = board[i][j];
+                if (cell.value === null && (cell.draft.includes(num1) || cell.draft.includes(num2))) {
+                  affectedCells.push({ row: i, col: j, candidates: cell.draft });
+                }
+              }
+            }
           }
-        }
-      }
 
-      for (let i = 0; i < boxCells.length; i++) {
-        for (let j = i + 1; j < boxCells.length; j++) {
-          const cell1 = boxCells[i];
-          const cell2 = boxCells[j];
-
-          if (cell1.draft?.toString() === cell2.draft?.toString()) {
-            const positionsToRemove: Position[] = [];
-            const [num1, num2] = cell1.draft;
-
-            // 检查宫内其他格子
-            for (let r = 0; r < 3; r++) {
-              for (let c = 0; c < 3; c++) {
-                const row = boxRow * 3 + r;
-                const col = boxCol * 3 + c;
-                if (
-                  (row !== cell1.row || col !== cell1.col) &&
-                  (row !== cell2.row || col !== cell2.col)
-                ) {
-                  const cell = board[row][col];
-                  if (
-                    cell?.value === null &&
-                    cell?.draft?.some((n) => n === num1 || n === num2)
-                  ) {
-                    positionsToRemove.push({ row, col });
-                  }
-                }
+          if (affectedCells.length > 0) {
+            const position = affectedCells.map(c => ({ row: c.row, col: c.col }));
+            const prompt = [
+              { row: cell1.row, col: cell1.col },
+              { row: cell2.row, col: cell2.col }
+            ];
+            const getMethodKey = (unitType: string): string => {
+              switch (unitType) {
+                case 'row':
+                  return 'ROW';
+                case 'col':
+                  return 'COLUMN';
+                case 'box':
+                  return 'BOX';
+                default:
+                  return unitType.toUpperCase();
               }
-            }
+            };
+            const method = SOLUTION_METHODS[`NAKED_PAIR_${getMethodKey(unit.type)}` as keyof typeof SOLUTION_METHODS] || SOLUTION_METHODS.NAKED_PAIR_ROW;
+            const target = [num1, num2];
 
-            // 检查是否在同一行或同一列
-            const sameRow = cell1.row === cell2.row;
-            const sameCol = cell1.col === cell2.col;
-
-            if (sameRow) {
-              for (let col = 0; col < 9; col++) {
-                if (Math.floor(col / 3) !== boxCol) {
-                  const cell = board[cell1.row][col];
-                  if (
-                    cell?.value === null &&
-                    cell?.draft?.some((n) => n === num1 || n === num2)
-                  ) {
-                    positionsToRemove.push({ row: cell1.row, col });
-                  }
-                }
-              }
-            }
-
-            if (sameCol) {
-              for (let row = 0; row < 9; row++) {
-                if (Math.floor(row / 3) !== boxRow) {
-                  const cell = board[row][cell1.col];
-                  if (
-                    cell?.value === null &&
-                    cell?.draft?.some((n) => n === num1 || n === num2)
-                  ) {
-                    positionsToRemove.push({ row, col: cell1.col });
-                  }
-                }
-              }
-            }
-
-            if (positionsToRemove.length > 0) {
-              return {
-                position: positionsToRemove,
-                prompt: [cell1, cell2], // 添加 prompt
-                method: SOLUTION_METHODS.NAKED_PAIR,
-                target: [num1, num2],
-                isFill: false,
-              };
-            }
+            return {
+              position,
+              prompt,
+              method,
+              target,
+              isFill: false
+            };
           }
         }
       }
@@ -412,7 +401,6 @@ export const nakedPair = (
 
   return null;
 };
-
 // 隐形数对法
 export const hiddenPair = (
   board: CellData[][],
@@ -471,10 +459,23 @@ const checkHiddenPair = (
             });
 
             if (affectedPositions.length > 0) {
+              const getMethodKey = (unitType: string): string => {
+                switch (unitType) {
+                  case 'row':
+                    return 'ROW';
+                  case 'col':
+                    return 'COLUMN';
+                  case 'box':
+                    return 'BOX';
+                  default:
+                    return unitType.toUpperCase();
+                }
+              };
+              
               return {
                 position: affectedPositions,
                 prompt,
-                method: SOLUTION_METHODS.HIDDEN_PAIR,
+                method: SOLUTION_METHODS[`HIDDEN_PAIR_${getMethodKey(unitType)}` as keyof typeof SOLUTION_METHODS],
                 target: [...new Set(targetNumbers)],
                 isFill: false,
               };
@@ -750,7 +751,7 @@ export const xyzWing = (
               // 找到符合条件的XYZ-Wing
               const affectedPositions: Position[] = [];
 
-              // 检查与ABC在同一��元的格子
+              // 检查与ABC在同一元的格子
               for (let row = 0; row < 9; row++) {
                 for (let col = 0; col < 9; col++) {
                   if (

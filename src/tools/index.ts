@@ -406,13 +406,35 @@ export const createGraph = (
           }
         }
 
-        if (subGraph.length > 0) {
-          subGraphs.push(subGraph);
+        if (subGraph.length) {
+          const visitedNodes = new Set<string>();
+          const queue = [subGraph[0]];
+          let nodeCount = 0;
+
+          while (queue.length > 0 && nodeCount < 3) {
+            const currentNode = queue.shift();
+            const nodeKey = `${currentNode?.row}-${currentNode?.col}`;
+
+            if (!visitedNodes.has(nodeKey)) {
+              visitedNodes.add(nodeKey);
+              nodeCount++;
+
+              currentNode?.next.forEach((nextNode) => {
+                queue.push(nextNode);
+              });
+            }
+          }
+
+          if (nodeCount >= 3) {
+            subGraphs.push(subGraph);
+          }
         }
       }
     }
 
-    graph[num] = subGraphs.map((subGraph) => subGraph[0]);
+    if (subGraphs.length > 0) {
+      graph[num] = subGraphs.map((subGraph) => subGraph[0]);
+    }
   }
 
   return graph;

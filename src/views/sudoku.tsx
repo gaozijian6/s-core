@@ -82,7 +82,7 @@ const Sudoku: React.FC = () => {
     //   [null,5,null,6,null,8,null,3,4],
     // ];
 
-    const newBoard: CellData[][] = initialBoard.map((row) =>
+    let newBoard: CellData[][] = initialBoard.map((row) =>
       row.map((value) => ({
         value,
         isGiven: value !== null,
@@ -90,40 +90,584 @@ const Sudoku: React.FC = () => {
       }))
     );
 
-    // 设置草稿值
-    // newBoard[1][5].draft = [3, 8];
-    // newBoard[1][6].draft = [3, 8];
-    // newBoard[2][4].draft = [3, 8];
-    // newBoard[2][8].draft = [3, 8];
-    // newBoard[3][2].draft = [2, 3];
-    // newBoard[3][6].draft = [2, 3];
-    // newBoard[4][1].draft = [3, 8];
-    // newBoard[4][7].draft = [3, 8];
-    // newBoard[5][1].draft = [2, 8];
-<<<<<<< HEAD
-    // newBoard[5][4].draft = [3, 4];
-    // newBoard[5][5].draft = [3, 4];
-    // newBoard[5][6].draft = [2, 8];
-    // newBoard[7][1].draft = [2, 3];
-    // newBoard[7][7].draft = [2, 3, 8];
-    // newBoard[7][8].draft = [3, 8];
-    // newBoard[8][2].draft = [2, 3];
-    // newBoard[8][7].draft = [2, 3];
-=======
-    // newBoard[5][6].draft = [2, 8];
-    // newBoard[7][7].draft = [2, 3, 8];
-    // newBoard[7][8].draft = [3, 8];
-    // newBoard[8][7].draft = [2, 3];
-    // newBoard[0][0].draft = [1, 2];
-    // newBoard[5][0].draft = [1, 2];
-    // newBoard[0][5].draft = [1, 2];
-    // newBoard[4][5].draft = [1, 8, 9];
-    // newBoard[5][4].draft = [1, 8, 9];
-    // newBoard[4][4].draft = [1, 8, 9];
-    // newBoard[5][5].draft = [1, 8, 9];
-    // newBoard[3][5].draft = [1, 8, 9];
-    // newBoard[5][3].draft = [1, 8, 9];
->>>>>>> 11293d3d7659ac3c3dafc9ffe4fdf0793149069c
+    newBoard=[
+      [
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  2,
+                  4,
+                  5,
+                  7
+              ]
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  2,
+                  3,
+                  5,
+                  7
+              ]
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  3,
+                  4,
+                  5,
+                  7,
+                  9
+              ]
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  5,
+                  8,
+                  9
+              ]
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  7,
+                  9
+              ]
+          },
+          {
+              "value": 6,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": 1,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  8,
+                  9
+              ]
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  7,
+                  8,
+                  9
+              ]
+          }
+      ],
+      [
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  5,
+                  6,
+                  7
+              ]
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  5,
+                  6,
+                  7
+              ]
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  5,
+                  6,
+                  7,
+                  9
+              ]
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  5,
+                  8,
+                  9
+              ]
+          },
+          {
+              "value": 2,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": 1,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": 4,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": 3,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  7,
+                  8,
+                  9
+              ]
+          }
+      ],
+      [
+          {
+              "value": 8,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": 1,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  7,
+                  9
+              ]
+          },
+          {
+              "value": 3,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": 4,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  7,
+                  9
+              ]
+          },
+          {
+              "value": 2,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": 5,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": 6,
+              "isGiven": false,
+              "draft": []
+          }
+      ],
+      [
+          {
+              "value": 9,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": 8,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  1,
+                  5
+              ]
+          },
+          {
+              "value": 2,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": 6,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": 4,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  3,
+                  5
+              ]
+          },
+          {
+              "value": 7,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  1,
+                  3,
+                  5
+              ]
+          }
+      ],
+      [
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  2,
+                  5,
+                  6,
+                  7
+              ]
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  2,
+                  5,
+                  6,
+                  7
+              ]
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  5,
+                  6,
+                  7
+              ]
+          },
+          {
+              "value": 1,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  3,
+                  8,
+                  9
+              ]
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  3,
+                  9
+              ]
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  5,
+                  6,
+                  9
+              ]
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  8,
+                  9
+              ]
+          },
+          {
+              "value": 4,
+              "isGiven": false,
+              "draft": []
+          }
+      ],
+      [
+          {
+              "value": 3,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": 4,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  1,
+                  6
+              ]
+          },
+          {
+              "value": 7,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  8,
+                  9
+              ]
+          },
+          {
+              "value": 5,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  6,
+                  9
+              ]
+          },
+          {
+              "value": 2,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  1,
+                  8,
+                  9
+              ]
+          }
+      ],
+      [
+          {
+              "value": 1,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  3,
+                  6
+              ]
+          },
+          {
+              "value": 8,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  6,
+                  9
+              ]
+          },
+          {
+              "value": 5,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": 2,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": 7,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": 4,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  3,
+                  9
+              ]
+          }
+      ],
+      [
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  4,
+                  5,
+                  6,
+                  7
+              ]
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  3,
+                  5,
+                  6,
+                  7
+              ]
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  3,
+                  4,
+                  5,
+                  6,
+                  7
+              ]
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  6,
+                  9
+              ]
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  3,
+                  7,
+                  9
+              ]
+          },
+          {
+              "value": 8,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  3,
+                  5,
+                  9
+              ]
+          },
+          {
+              "value": 1,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": 2,
+              "isGiven": false,
+              "draft": []
+          }
+      ],
+      [
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  5,
+                  7
+              ]
+          },
+          {
+              "value": 9,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": 2,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": 4,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": 1,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  3,
+                  7
+              ]
+          },
+          {
+              "value": 8,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": 6,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  3,
+                  5
+              ]
+          }
+      ]
+  ]
 
     updateBoard(newBoard, "生成新棋盘");
 
