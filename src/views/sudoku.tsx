@@ -81,23 +81,23 @@ const Sudoku: React.FC = () => {
     );
 
     // 设置草稿值
-    newBoard[1][5].draft = [3, 8];
-    newBoard[1][6].draft = [3, 8];
-    newBoard[2][4].draft = [3, 8];
-    newBoard[2][8].draft = [3, 8];
-    newBoard[3][2].draft = [2, 3];
-    newBoard[3][6].draft = [2, 3];
-    newBoard[4][1].draft = [3, 8];
-    newBoard[4][7].draft = [3, 8];
-    newBoard[5][1].draft = [2, 8];
-    newBoard[5][4].draft = [3, 4];
-    newBoard[5][5].draft = [3, 4];
-    newBoard[5][6].draft = [2, 8];
-    newBoard[7][1].draft = [2, 3];
-    newBoard[7][7].draft = [2, 3, 8];
-    newBoard[7][8].draft = [3, 8];
-    newBoard[8][2].draft = [2, 3];
-    newBoard[8][7].draft = [2, 3];
+    // newBoard[1][5].draft = [3, 8];
+    // newBoard[1][6].draft = [3, 8];
+    // newBoard[2][4].draft = [3, 8];
+    // newBoard[2][8].draft = [3, 8];
+    // newBoard[3][2].draft = [2, 3];
+    // newBoard[3][6].draft = [2, 3];
+    // newBoard[4][1].draft = [3, 8];
+    // newBoard[4][7].draft = [3, 8];
+    // newBoard[5][1].draft = [2, 8];
+    // newBoard[5][4].draft = [3, 4];
+    // newBoard[5][5].draft = [3, 4];
+    // newBoard[5][6].draft = [2, 8];
+    // newBoard[7][1].draft = [2, 3];
+    // newBoard[7][7].draft = [2, 3, 8];
+    // newBoard[7][8].draft = [3, 8];
+    // newBoard[8][2].draft = [2, 3];
+    // newBoard[8][7].draft = [2, 3];
 
     updateBoard(newBoard, "生成新棋盘");
 
@@ -472,8 +472,8 @@ const Sudoku: React.FC = () => {
   };
 
   const handleHint = () => {
-    // const solveFunctions = [singleCandidate, hiddenSingle, blockElimination, nakedPair, hiddenPair, xWing,xyWing,xyzWing];
-    const solveFunctions = [hiddenPair];
+    const solveFunctions = [singleCandidate, hiddenSingle, blockElimination, nakedPair, hiddenPair, xWing,xyWing,xyzWing];
+    // const solveFunctions = [hiddenPair];
     let result = null;
 
     for (const solveFunction of solveFunctions) {
