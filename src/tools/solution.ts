@@ -790,8 +790,7 @@ export const isStrongLink = (
 ): boolean => {
   const cell1 = board[position1.row]?.[position1.col];
   const cell2 = board[position2.row]?.[position2.col];
-  if (!cell1 || !cell2 || cell1.draft.length >= 4 || cell2.draft.length >= 4)
-    return false;
+  if (!cell1 || !cell2 || cell1.draft.length >= 4 || cell2.draft.length >= 4) return false;
 
   // 检查是否在同一行、同一列或同一宫
   const isSameRow = position1.row === position2.row;
@@ -827,11 +826,9 @@ export const isStrongLink = (
       // 检查共同行、列和宫
       const checkCellC = (row: number, col: number) => {
         const cellC = board[row]?.[col];
-        return (
-          cellC?.draft.length === 2 &&
+        return cellC?.draft.length === 2 &&
           cellC.draft.includes(otherNum1) &&
-          cellC.draft.includes(otherNum2)
-        );
+          cellC.draft.includes(otherNum2);
       };
 
       if (isSameRow) {
@@ -892,11 +889,7 @@ export const isStrongLink = (
     ) {
       const checkCellC = (row: number, col: number) => {
         const cellC = board[row]?.[col];
-        return (
-          cellC?.draft.length === 2 &&
-          cellC.draft.includes(a) &&
-          cellC.draft.includes(b)
-        );
+        return cellC?.draft.length === 2 && cellC.draft.includes(a) && cellC.draft.includes(b);
       };
 
       // 检查共同行、列和宫
@@ -957,8 +950,7 @@ export const isRemoteStrongLink = (
 ): boolean => {
   const cell1 = board[position1.row]?.[position1.col];
   const cell2 = board[position2.row]?.[position2.col];
-  if (!cell1?.draft?.includes(num) || !cell2?.draft?.includes(num))
-    return false;
+  if (!cell1?.draft?.includes(num) || !cell2?.draft?.includes(num)) return false;
 
   // 使用 isStrongLink 检查是否为强连接
   if (isStrongLink(board, position1, position2, num)) {
@@ -966,19 +958,14 @@ export const isRemoteStrongLink = (
   }
 
   // 区域间连接
-  const isOnlyTwoInRow =
-    candidateMap[num].row.get(position1.row)?.count === 1 &&
-    candidateMap[num].row.get(position2.row)?.count === 1;
-  const isOnlyTwoInCol =
-    candidateMap[num].col.get(position1.col)?.count === 1 &&
-    candidateMap[num].col.get(position2.col)?.count === 1;
-  const box1 =
-    Math.floor(position1.row / 3) * 3 + Math.floor(position1.col / 3);
-  const box2 =
-    Math.floor(position2.row / 3) * 3 + Math.floor(position2.col / 3);
-  const isOnlyTwoInBox =
-    candidateMap[num].box.get(box1)?.count === 1 &&
-    candidateMap[num].box.get(box2)?.count === 1;
+  const isOnlyTwoInRow = candidateMap[num].row.get(position1.row)?.count === 1 &&
+                         candidateMap[num].row.get(position2.row)?.count === 1;
+  const isOnlyTwoInCol = candidateMap[num].col.get(position1.col)?.count === 1 &&
+                         candidateMap[num].col.get(position2.col)?.count === 1;
+  const box1 = Math.floor(position1.row / 3) * 3 + Math.floor(position1.col / 3);
+  const box2 = Math.floor(position2.row / 3) * 3 + Math.floor(position2.col / 3);
+  const isOnlyTwoInBox = candidateMap[num].box.get(box1)?.count === 1 &&
+                         candidateMap[num].box.get(box2)?.count === 1;
 
   return isOnlyTwoInRow || isOnlyTwoInCol || isOnlyTwoInBox;
 };

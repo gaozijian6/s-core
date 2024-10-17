@@ -1,14 +1,27 @@
 import { useEffect, useState } from "react";
+import { isStrongLink } from "./solution";
 
 export interface Position {
   row: number;
   col: number;
 }
 
+interface Candidate extends Position {
+  candidates: number[];
+}
+
+interface Node extends Candidate {
+  next: Node[];
+}
+
 export interface CellData {
   value: number | null;
   isGiven: boolean;
   draft: number[]; // 添加草稿数字数组
+}
+
+export interface Graph {
+  [key: number]: Node[];
 }
 
 export const isValid = (
@@ -285,11 +298,6 @@ interface BoardHistory {
   affectedCells?: { row: number; col: number }[];
   isOfficialDraft?: boolean;
 }
-interface Candidate {
-  row: number;
-  col: number;
-  candidates: number[];
-}
 
 export interface CandidateStats {
   count: number;
@@ -306,6 +314,85 @@ export interface CandidateMap {
   };
 }
 
+// 创建图结构
+export const createGraph = (
+  board: CellData[][],
+  candidateMap: CandidateMap
+): Graph => {
+  const graph: Graph = {};
+
+  for (let num = 1; num <= 9; num++) {
+    const candidates = candidateMap[num]?.all ?? [];
+    const subGraphs: Node[][] = [];
+    const visited: Map<string, Set<string>> = new Map();
+
+    for (let i = 0; i < candidates.length; i++) {
+      const startKey = `${candidates[i].row},${candidates[i].col}`;
+      if (!visited.has(startKey)) {
+        const subGraph: Node[] = [];
+        const queue: Node[] = [
+          {
+            row: candidates[i].row,
+            col: candidates[i].col,
+            candidates: candidates[i].candidates,
+            next: [],
+          },
+        ];
+        visited.set(startKey, new Set());
+
+        while (queue.length > 0) {
+          const current = queue.shift()!;
+          
+          subGraph.push(current);
+
+          for (let j = 0; j < candidates.length; j++) {
+            const position1 = { row: current.row, col: current.col };
+            const position2 = {
+              row: candidates[j].row,
+              col: candidates[j].col,
+            };
+            const key1 = `${position1.row},${position1.col}`;
+            const key2 = `${position2.row},${position2.col}`;
+            
+            if (
+              (!visited.has(key2) || !visited.get(key2)?.has(key1)) &&
+              isStrongLink(board, position1, position2, num)
+            ) {
+              const newNode: Node = {
+                row: position2.row,
+                col: position2.col,
+                candidates: candidates[j].candidates,
+                next: [],
+              };
+              current.next.push(newNode);
+              newNode.next.push(current);
+              queue.push(newNode);
+              
+              if (!visited.has(key2)) {
+                visited.set(key2, new Set());
+              }
+              visited.get(key2)?.add(key1);
+              
+              if (!visited.has(key1)) {
+                visited.set(key1, new Set());
+              }
+              visited.get(key1)?.add(key2);
+            }
+          }
+        }
+
+        if (subGraph.length > 0) {
+          subGraphs.push(subGraph);
+        }
+      }
+    }
+
+    graph[num] = subGraphs.map((subGraph) => subGraph[0]);
+  }
+
+  return graph;
+};
+
 // 创建一个新的 hook 来管理棋盘状态和历史
 export const useSudokuBoard = (initialBoard: CellData[][]) => {
   const [board, setBoard] = useState<CellData[][]>(initialBoard);
@@ -318,10 +405,14 @@ export const useSudokuBoard = (initialBoard: CellData[][]) => {
         row: new Map(),
         col: new Map(),
         box: new Map(),
+        all: [],
       };
     }
     return initialCandidateMap;
   });
+  const [graph, setGraph] = useState<Graph>(() =>
+    createGraph(initialBoard, candidateMap)
+  );
 
   const updateCandidateMap = (newBoard: CellData[][]) => {
     const newCandidateMap: CandidateMap = {};
@@ -337,7 +428,8 @@ export const useSudokuBoard = (initialBoard: CellData[][]) => {
     newBoard.forEach((row, rowIndex) => {
       row.forEach((cell, colIndex) => {
         if (cell.value === null) {
-          const boxIndex = Math.floor(rowIndex / 3) * 3 + Math.floor(colIndex / 3);
+          const boxIndex =
+            Math.floor(rowIndex / 3) * 3 + Math.floor(colIndex / 3);
           const candidate: Candidate = {
             row: rowIndex,
             col: colIndex,
@@ -345,7 +437,10 @@ export const useSudokuBoard = (initialBoard: CellData[][]) => {
           };
 
           cell.draft.forEach((num) => {
-            const updateStats = (map: Map<number, CandidateStats>, index: number) => {
+            const updateStats = (
+              map: Map<number, CandidateStats>,
+              index: number
+            ) => {
               const stats = map.get(index) ?? { count: 0, positions: [] };
               stats.count++;
               stats.positions.push(candidate);
@@ -381,6 +476,7 @@ export const useSudokuBoard = (initialBoard: CellData[][]) => {
     setCurrentStep(newHistory.length - 1);
     setBoard(newBoard);
     updateCandidateMap(newBoard);
+    setGraph(createGraph(newBoard, candidateMap));
   };
 
   const undo = () => {
@@ -390,6 +486,7 @@ export const useSudokuBoard = (initialBoard: CellData[][]) => {
       setCurrentStep(newStep);
       setBoard(previousBoard);
       updateCandidateMap(previousBoard);
+      setGraph(createGraph(previousBoard, candidateMap));
     }
   };
 
@@ -400,10 +497,20 @@ export const useSudokuBoard = (initialBoard: CellData[][]) => {
       setCurrentStep(newStep);
       setBoard(nextBoard);
       updateCandidateMap(nextBoard);
+      setGraph(createGraph(nextBoard, candidateMap));
     }
   };
 
-  return { board, updateBoard, undo, redo, history, currentStep, candidateMap };
+  return {
+    board,
+    updateBoard,
+    undo,
+    redo,
+    history,
+    currentStep,
+    candidateMap,
+    graph,
+  };
 };
 
 // 复制官方草稿
