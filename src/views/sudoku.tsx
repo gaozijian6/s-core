@@ -22,7 +22,10 @@ import {
   xyWing,
   xyzWing,
   isStrongLink,
-  findStrongLink
+  findStrongLink,
+  checkStrongLinkParity,
+  skyscraper,
+  remotePair,
 } from "../tools/solution";
 import "./sudoku.less";
 import { SOLUTION_METHODS } from "../constans";
@@ -32,8 +35,16 @@ const Sudoku: React.FC = () => {
   const initialBoard = Array(9)
     .fill(null)
     .map(() => Array(9).fill({ value: null, isGiven: false, draft: [] }));
-  const { board, updateBoard, undo, redo, history, currentStep, candidateMap, graph } =
-    useSudokuBoard(initialBoard);
+  const {
+    board,
+    updateBoard,
+    undo,
+    redo,
+    history,
+    currentStep,
+    candidateMap,
+    graph,
+  } = useSudokuBoard(initialBoard);
   const [selectedNumber, setSelectedNumber] = useState<number | null>(1);
   const [errorCount, setErrorCount] = useState<number>(0);
   const [eraseMode, setEraseMode] = useState<boolean>(false);
@@ -59,7 +70,6 @@ const Sudoku: React.FC = () => {
       .fill(null)
       .map(() => Array(9).fill(null));
 
-
     // const initialBoard = [
     //   [9,null,null,4,3,7,1,8,null],
     //   [3,null,null,9,5,null,4,2,7],
@@ -81,23 +91,28 @@ const Sudoku: React.FC = () => {
     );
 
     // 设置草稿值
-    newBoard[1][5].draft = [3, 8];
-    newBoard[1][6].draft = [3, 8];
-    newBoard[2][4].draft = [3, 8];
-    newBoard[2][8].draft = [3, 8];
-    newBoard[3][2].draft = [2, 3];
-    newBoard[3][6].draft = [2, 3];
-    newBoard[4][1].draft = [3, 8];
-    newBoard[4][7].draft = [3, 8];
-    newBoard[5][1].draft = [2, 8];
-    newBoard[5][4].draft = [3, 4];
-    newBoard[5][5].draft = [3, 4];
-    newBoard[5][6].draft = [2, 8];
-    newBoard[7][1].draft = [2, 3];
-    newBoard[7][7].draft = [2, 3, 8];
-    newBoard[7][8].draft = [3, 8];
-    newBoard[8][2].draft = [2, 3];
-    newBoard[8][7].draft = [2, 3];
+    // newBoard[1][5].draft = [3, 8];
+    // newBoard[1][6].draft = [3, 8];
+    // newBoard[2][4].draft = [3, 8];
+    // newBoard[2][8].draft = [3, 8];
+    // newBoard[3][2].draft = [2, 3];
+    // newBoard[3][6].draft = [2, 3];
+    // newBoard[4][1].draft = [3, 8];
+    // newBoard[4][7].draft = [3, 8];
+    // newBoard[5][1].draft = [2, 8];
+    // newBoard[5][6].draft = [2, 8];
+    // newBoard[7][7].draft = [2, 3, 8];
+    // newBoard[7][8].draft = [3, 8];
+    // newBoard[8][7].draft = [2, 3];
+    // newBoard[0][0].draft = [1, 2];
+    // newBoard[5][0].draft = [1, 2];
+    // newBoard[0][5].draft = [1, 2];
+    // newBoard[4][5].draft = [1, 8, 9];
+    // newBoard[5][4].draft = [1, 8, 9];
+    // newBoard[4][4].draft = [1, 8, 9];
+    // newBoard[5][5].draft = [1, 8, 9];
+    // newBoard[3][5].draft = [1, 8, 9];
+    // newBoard[5][3].draft = [1, 8, 9];
 
     updateBoard(newBoard, "生成新棋盘");
 
@@ -472,12 +487,23 @@ const Sudoku: React.FC = () => {
   };
 
   const handleHint = () => {
-    // const solveFunctions = [singleCandidate, hiddenSingle, blockElimination, nakedPair, hiddenPair, xWing,xyWing,xyzWing];
-    const solveFunctions = [hiddenPair];
+    const solveFunctions = [
+      singleCandidate,
+      hiddenSingle,
+      blockElimination,
+      nakedPair,
+      hiddenPair,
+      xWing,
+      xyWing,
+      xyzWing,
+      skyscraper,
+      remotePair
+    ];
+    // const solveFunctions = [remotePair];
     let result = null;
 
     for (const solveFunction of solveFunctions) {
-      result = solveFunction(board, candidateMap);
+      result = solveFunction(board, candidateMap, graph);
       if (result) {
         break;
       }
@@ -523,16 +549,26 @@ const Sudoku: React.FC = () => {
     console.log(result);
   };
 
-  const handleCandidateMap = () => {
-    console.log(candidateMap);
+  const handleCheckStrongLinkParity = () => {
+    const result = checkStrongLinkParity(
+      { row: 3, col: 2 },
+      { row: 1, col: 6 },
+      3,
+      graph
+    );
+    console.log(result);
   };
 
   const handleGraph = () => {
     console.log(graph);
   };
 
+  const handleDraft = () => {
+    console.log(candidateMap);
+  };
+
   return (
-    <Card title="数独游戏">
+    <Card title="">
       <div className="gameInfo">
         <span>错误次数：{errorCount}</span>
         <span>{time}</span>
@@ -622,8 +658,9 @@ const Sudoku: React.FC = () => {
         <Button onClick={handleHint}>提示</Button>
         <Button onClick={handlePrint}>打印</Button>
         <Button onClick={handleStrongLink}>强连接判断</Button>
-        <Button onClick={handleCandidateMap}>候选数</Button>
+        <Button onClick={handleCheckStrongLinkParity}>强连接奇偶性</Button>
         <Button onClick={handleGraph}>图</Button>
+        <Button onClick={handleDraft}>候选数</Button>
       </div>
       <div className="numberButtons">
         {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((number) => (

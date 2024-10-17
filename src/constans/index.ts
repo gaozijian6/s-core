@@ -12,5 +12,16 @@ export const SOLUTION_METHODS = {
   X_WING: "X-Wing",
   XY_WING: "XY-Wing",
   XYZ_WING: "XYZ-Wing",
+  SKYSCRAPER: "摩天楼",
+  REMOTE_PAIR: "远程对",
   // X_CHAIN: "X-Chain",
+};
+
+export const STRONG_LINK_TYPE = {
+  // 偶关联
+  EVEN: 2,
+  // 奇关联
+  ODD: 1,
+  // 无关联
+  NONE: 0,
 };

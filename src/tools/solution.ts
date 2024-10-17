@@ -1,6 +1,12 @@
 import { SOLUTION_METHODS } from "../constans";
 import { areCellsInSameUnit } from "./index";
-import type { CandidateMap, CellData, Position } from "./index";
+import type {
+  CandidateMap,
+  CellData,
+  Graph,
+  GraphNode,
+  Position,
+} from "./index";
 
 export interface Result {
   // 是否填入数字,true:在position[0]位置填入target数字,false:删除position里所有的值为target的候选数字
@@ -14,7 +20,11 @@ export interface Result {
 }
 
 // 唯一余数法
-export const singleCandidate = (board: CellData[][]): Result | null => {
+export const singleCandidate = (
+  board: CellData[][],
+  candidateMap: CandidateMap,
+  graph: Graph
+): Result | null => {
   for (let row = 0; row < 9; row++) {
     for (let col = 0; col < 9; col++) {
       const cell = board[row]?.[col];
@@ -34,7 +44,11 @@ export const singleCandidate = (board: CellData[][]): Result | null => {
 };
 
 // 隐藏单元法
-export const hiddenSingle = (board: CellData[][]): Result | null => {
+export const hiddenSingle = (
+  board: CellData[][],
+  candidateMap: CandidateMap,
+  graph: Graph
+): Result | null => {
   // 检查每一行
   for (let row = 0; row < 9; row++) {
     const rowCandidates: { [key: number]: number[] } = {};
@@ -118,7 +132,11 @@ export const hiddenSingle = (board: CellData[][]): Result | null => {
 };
 
 // 区块摒除法
-export const blockElimination = (board: CellData[][]): Result | null => {
+export const blockElimination = (
+  board: CellData[][],
+  candidateMap: CandidateMap,
+  graph: Graph
+): Result | null => {
   // 检查每个3x3宫格
   for (let boxRow = 0; boxRow < 3; boxRow++) {
     for (let boxCol = 0; boxCol < 3; boxCol++) {
@@ -130,8 +148,8 @@ export const blockElimination = (board: CellData[][]): Result | null => {
         for (let j = 0; j < 3; j++) {
           const row = boxRow * 3 + i;
           const col = boxCol * 3 + j;
-          if (board[row]?.[col]?.value === null) {
-            board[row]?.[col]?.draft?.forEach((num) => {
+          if (board[row][col].value === null) {
+            board[row][col].draft?.forEach((num) => {
               boxCandidates[num] = boxCandidates[num] || [];
               boxCandidates[num].push({ row, col });
             });
@@ -295,7 +313,11 @@ export const blockElimination = (board: CellData[][]): Result | null => {
 };
 
 // 显性数对法
-export const nakedPair = (board: CellData[][]): Result | null => {
+export const nakedPair = (
+  board: CellData[][],
+  candidateMap: CandidateMap,
+  graph: Graph
+): Result | null => {
   // 检查每一宫
   for (let boxRow = 0; boxRow < 3; boxRow++) {
     for (let boxCol = 0; boxCol < 3; boxCol++) {
@@ -394,7 +416,8 @@ export const nakedPair = (board: CellData[][]): Result | null => {
 // 隐形数对法
 export const hiddenPair = (
   board: CellData[][],
-  candidateMap: CandidateMap
+  candidateMap: CandidateMap,
+  graph: Graph
 ): Result | null => {
   // 检查行
   const rowResult = checkHiddenPair(board, candidateMap, "row");
@@ -466,7 +489,11 @@ const checkHiddenPair = (
 };
 
 // X-Wing
-export const xWing = (board: CellData[][]): Result | null => {
+export const xWing = (
+  board: CellData[][],
+  candidateMap: CandidateMap,
+  graph: Graph
+): Result | null => {
   // 检查行
   const rowResult = checkXWing(board, true);
   if (rowResult) return rowResult;
@@ -648,7 +675,11 @@ export const xyWing = (board: CellData[][]): Result | null => {
 };
 
 // XYZ-Wing
-export const xyzWing = (board: CellData[][]): Result | null => {
+export const xyzWing = (
+  board: CellData[][],
+  candidateMap: CandidateMap,
+  graph: Graph
+): Result | null => {
   // 遍历所有单元格
   for (let rowA = 0; rowA < 9; rowA++) {
     for (let colA = 0; colA < 9; colA++) {
@@ -719,7 +750,7 @@ export const xyzWing = (board: CellData[][]): Result | null => {
               // 找到符合条件的XYZ-Wing
               const affectedPositions: Position[] = [];
 
-              // 检查与ABC在同一单元的格子
+              // 检查与ABC在同一��元的格子
               for (let row = 0; row < 9; row++) {
                 for (let col = 0; col < 9; col++) {
                   if (
@@ -781,8 +812,8 @@ export const xyzWing = (board: CellData[][]): Result | null => {
   return null;
 };
 
-// 给定两个坐标和候选数，判断是否为强连接
-export const isStrongLink = (
+// 给定两个坐标和候选数，判断是否为同区域的强连接
+export const isUnitStrongLink = (
   board: CellData[][],
   position1: Position,
   position2: Position,
@@ -790,7 +821,12 @@ export const isStrongLink = (
 ): boolean => {
   const cell1 = board[position1.row]?.[position1.col];
   const cell2 = board[position2.row]?.[position2.col];
-  if (!cell1 || !cell2 || cell1.draft.length >= 4 || cell2.draft.length >= 4) return false;
+  if (!cell1 || !cell2 || cell1.draft.length >= 4 || cell2.draft.length >= 4)
+    return false;
+
+  if (position1.row === position2.row && position1.col === position2.col) {
+    return false;
+  }
 
   // 检查是否在同一行、同一列或同一宫
   const isSameRow = position1.row === position2.row;
@@ -826,9 +862,11 @@ export const isStrongLink = (
       // 检查共同行、列和宫
       const checkCellC = (row: number, col: number) => {
         const cellC = board[row]?.[col];
-        return cellC?.draft.length === 2 &&
+        return (
+          cellC?.draft.length === 2 &&
           cellC.draft.includes(otherNum1) &&
-          cellC.draft.includes(otherNum2);
+          cellC.draft.includes(otherNum2)
+        );
       };
 
       if (isSameRow) {
@@ -889,7 +927,11 @@ export const isStrongLink = (
     ) {
       const checkCellC = (row: number, col: number) => {
         const cellC = board[row]?.[col];
-        return cellC?.draft.length === 2 && cellC.draft.includes(a) && cellC.draft.includes(b);
+        return (
+          cellC?.draft.length === 2 &&
+          cellC.draft.includes(a) &&
+          cellC.draft.includes(b)
+        );
       };
 
       // 检查共同行、列和宫
@@ -956,12 +998,354 @@ export const findStrongLink = (
       for (let j = i + 1; j < positions.length; j++) {
         const position1 = { row: positions[i].row, col: positions[i].col };
         const position2 = { row: positions[j].row, col: positions[j].col };
-        if (isStrongLink(board, position1, position2, Number(num))) {
+        if (isUnitStrongLink(board, position1, position2, Number(num))) {
           return { positions: [position1, position2], num: Number(num) };
         }
       }
     }
   }
+  return null;
+};
+
+// 给定两个坐标和候选数，判断是否为强连接
+export const isStrongLink = (
+  position1: Position,
+  position2: Position,
+  num: number,
+  graph: Graph
+): boolean => {
+  const startNodes = graph[num] || [];
+
+  for (const startNode of startNodes) {
+    const queue: GraphNode[] = [startNode];
+    const visited: Set<string> = new Set();
+    let foundPosition1 = false;
+    let foundPosition2 = false;
+
+    while (queue.length > 0) {
+      const currentNode = queue.shift()!;
+      const key = `${currentNode.row},${currentNode.col}`;
+
+      if (visited.has(key)) {
+        continue;
+      }
+
+      visited.add(key);
+
+      if (
+        currentNode.row === position1.row &&
+        currentNode.col === position1.col
+      ) {
+        foundPosition1 = true;
+      }
+
+      if (
+        currentNode.row === position2.row &&
+        currentNode.col === position2.col
+      ) {
+        foundPosition2 = true;
+      }
+
+      if (foundPosition1 && foundPosition2) {
+        return true;
+      }
+
+      for (const nextNode of currentNode.next) {
+        queue.push(nextNode);
+      }
+    }
+  }
+
+  return false;
+};
+
+// 检查强连接的奇偶性
+export const checkStrongLinkParity = (
+  position1: Position,
+  position2: Position,
+  num: number,
+  graph: Graph
+): 0 | 1 | 2 => {
+  const startNodes = graph[num] ?? [];
+
+  for (const startNode of startNodes) {
+    const queue: { node: GraphNode; depth: number }[] = [
+      { node: startNode, depth: 0 },
+    ];
+    const visited: Set<string> = new Set();
+
+    while (queue.length > 0) {
+      const { node: currentNode, depth } = queue.shift()!;
+      const key = `${currentNode.row},${currentNode.col}`;
+
+      if (visited.has(key)) {
+        continue;
+      }
+
+      visited.add(key);
+
+      if (
+        currentNode.row === position1.row &&
+        currentNode.col === position1.col
+      ) {
+        // 找到第一个位置，继续搜索第二个位置
+        const subQueue: { node: GraphNode; depth: number }[] = [
+          { node: currentNode, depth: 0 },
+        ];
+        const subVisited: Set<string> = new Set();
+
+        while (subQueue.length > 0) {
+          const { node: subNode, depth: subDepth } = subQueue.shift()!;
+          const subKey = `${subNode.row},${subNode.col}`;
+
+          if (subVisited.has(subKey)) {
+            continue;
+          }
+
+          subVisited.add(subKey);
+
+          if (subNode.row === position2.row && subNode.col === position2.col) {
+            // 找到第二个位置，判断奇偶性
+            return subDepth % 2 === 0 ? 2 : 1;
+          }
+
+          for (const nextNode of subNode.next) {
+            subQueue.push({ node: nextNode, depth: subDepth + 1 });
+          }
+        }
+      }
+
+      for (const nextNode of currentNode.next) {
+        queue.push({ node: nextNode, depth: depth + 1 });
+      }
+    }
+  }
+
+  return 0;
+};
+
+// 摩天楼
+export const skyscraper = (
+  board: CellData[][],
+  candidateMap: CandidateMap,
+  graph: Graph
+): Result | null => {
+  for (let num = 1; num <= 9; num++) {
+    const candidates = candidateMap[num]?.all ?? [];
+
+    for (let i = 0; i < candidates.length - 1; i++) {
+      for (let j = i + 1; j < candidates.length; j++) {
+        const pos1 = candidates[i];
+        const pos2 = candidates[j];
+
+        // 检查两个位置是否在同一区域
+        if (areCellsInSameUnit(pos1, pos2)) {
+          continue;
+        }
+
+        // 检查是否为奇关联
+        const parity = checkStrongLinkParity(pos1, pos2, num, graph);
+        if (parity !== 1) {
+          continue;
+        }
+
+        // 找到共同影响的区域
+        const affectedPositions = findCommonAffectedPositions(
+          pos1,
+          pos2,
+          board,
+          num
+        );
+
+        if (affectedPositions.length > 0) {
+          const path = findPath(pos1, pos2, num, graph);
+          return path.length === 4
+            ? {
+                position: affectedPositions,
+                prompt: path,
+                method: SOLUTION_METHODS.SKYSCRAPER,
+                target: [num],
+                isFill: false,
+              }
+            : null;
+        }
+      }
+    }
+  }
+
+  return null;
+};
+
+// 找到两个位置共同影响的区域
+const findCommonAffectedPositions = (
+  pos1: Position,
+  pos2: Position,
+  board: CellData[][],
+  num: number
+): Position[] => {
+  const affectedPositions: Position[] = [];
+
+  for (let row = 0; row < 9; row++) {
+    for (let col = 0; col < 9; col++) {
+      if (
+        (row === pos1.row && col === pos1.col) ||
+        (row === pos2.row && col === pos2.col)
+      ) {
+        continue;
+      }
+
+      const cell = board[row]?.[col];
+      if (cell?.value === null && cell.draft?.includes(num)) {
+        if (
+          areCellsInSameUnit({ row, col }, pos1) &&
+          areCellsInSameUnit({ row, col }, pos2)
+        ) {
+          affectedPositions.push({ row, col });
+        }
+      }
+    }
+  }
+
+  return affectedPositions;
+};
+
+// 已知两个强关联的格子，寻找A到B的路径
+const findPath = (
+  pos1: Position,
+  pos2: Position,
+  num: number,
+  graph: Graph
+): Position[] => {
+  const startNode = findGraphNode(pos1, num, graph);
+  if (!startNode) {
+    return []; // 如果找不到起始节点，返回空数组
+  }
+
+  const queue: { node: GraphNode; path: Position[] }[] = [
+    { node: startNode, path: [pos1] },
+  ];
+  const visited: Set<string> = new Set();
+
+  while (queue.length > 0) {
+    const { node, path } = queue.shift()!;
+    const key = `${node.row},${node.col}`;
+
+    if (node.row === pos2.row && node.col === pos2.col) {
+      return path;
+    }
+
+    if (visited.has(key)) {
+      continue;
+    }
+
+    visited.add(key);
+
+    for (const nextNode of node.next) {
+      const nextKey = `${nextNode.row},${nextNode.col}`;
+      if (!visited.has(nextKey)) {
+        queue.push({
+          node: nextNode,
+          path: [...path, { row: nextNode.row, col: nextNode.col }],
+        });
+      }
+    }
+  }
+
+  return []; // 如果没有找到路径，返回空数组
+};
+
+// 已知位置和候选数找到graph对应的节点
+const findGraphNode = (
+  position: Position,
+  num: number,
+  graph: Graph
+): GraphNode | null => {
+  const { row, col } = position;
+  const startNodes = graph[num] ?? [];
+
+  for (const startNode of startNodes) {
+    const queue: GraphNode[] = [startNode];
+    const visited = new Set<string>();
+
+    while (queue.length > 0) {
+      const node = queue.shift()!;
+      const key = `${node.row},${node.col}`;
+
+      if (visited.has(key)) continue;
+      visited.add(key);
+
+      if (node.row === row && node.col === col) {
+        return node;
+      }
+
+      queue.push(...node.next);
+    }
+  }
+
+  return null;
+};
+
+// 远程对
+export const remotePair = (
+  board: CellData[][],
+  candidateMap: CandidateMap,
+  graph: Graph
+): Result | null => {
+  for (let num = 1; num <= 9; num++) {
+    const candidates = candidateMap[num]?.all ?? [];
+
+    for (let i = 0; i < candidates.length - 1; i++) {
+      for (let j = i + 1; j < candidates.length; j++) {
+        const pos1 = candidates[i];
+        const pos2 = candidates[j];
+
+        const parity = checkStrongLinkParity(pos1, pos2, num, graph);
+        if (parity !== 2) {
+          continue;
+        }
+
+        const path = findPath(pos1, pos2, num, graph);
+        if (path.length % 2 === 0) {
+          continue;
+        }
+
+        const affectedPositions: Position[] = [];
+
+        candidateMap[num]?.box.forEach((boxStats) => {
+          if (
+            boxStats.positions.some((pos) =>
+              path.some(
+                (pathPos) => pathPos.row === pos.row && pathPos.col === pos.col
+              )
+            )
+          ) {
+            return;
+          }
+
+          if (
+            boxStats.positions.every((pos) =>
+              path.some(
+                (pathPos) => pathPos.row === pos.row || pathPos.col === pos.col
+              )
+            )
+          ) {
+            affectedPositions.push(...boxStats.positions);
+          }
+        });
+
+        if (affectedPositions.length > 0) {
+          return {
+            position: path,
+            prompt: path,
+            method: SOLUTION_METHODS.REMOTE_PAIR,
+            target: [num],
+            isFill: false,
+          };
+        }
+      }
+    }
+  }
+
   return null;
 };
 

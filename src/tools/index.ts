@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { isStrongLink } from "./solution";
+import { isUnitStrongLink } from "./solution";
 
 export interface Position {
   row: number;
@@ -10,8 +10,8 @@ interface Candidate extends Position {
   candidates: number[];
 }
 
-interface Node extends Candidate {
-  next: Node[];
+export interface GraphNode extends Candidate {
+  next: GraphNode[];
 }
 
 export interface CellData {
@@ -21,7 +21,7 @@ export interface CellData {
 }
 
 export interface Graph {
-  [key: number]: Node[];
+  [key: number]: GraphNode[];
 }
 
 export const isValid = (
@@ -323,14 +323,14 @@ export const createGraph = (
 
   for (let num = 1; num <= 9; num++) {
     const candidates = candidateMap[num]?.all ?? [];
-    const subGraphs: Node[][] = [];
+    const subGraphs: GraphNode[][] = [];
     const visited: Map<string, Set<string>> = new Map();
 
     for (let i = 0; i < candidates.length; i++) {
       const startKey = `${candidates[i].row},${candidates[i].col}`;
       if (!visited.has(startKey)) {
-        const subGraph: Node[] = [];
-        const queue: Node[] = [
+        const subGraph: GraphNode[] = [];
+        const queue: GraphNode[] = [
           {
             row: candidates[i].row,
             col: candidates[i].col,
@@ -342,7 +342,7 @@ export const createGraph = (
 
         while (queue.length > 0) {
           const current = queue.shift()!;
-          
+
           subGraph.push(current);
 
           for (let j = 0; j < candidates.length; j++) {
@@ -353,30 +353,55 @@ export const createGraph = (
             };
             const key1 = `${position1.row},${position1.col}`;
             const key2 = `${position2.row},${position2.col}`;
-            
-            if (
-              (!visited.has(key2) || !visited.get(key2)?.has(key1)) &&
-              isStrongLink(board, position1, position2, num)
-            ) {
-              const newNode: Node = {
-                row: position2.row,
-                col: position2.col,
-                candidates: candidates[j].candidates,
-                next: [],
-              };
-              current.next.push(newNode);
-              newNode.next.push(current);
-              queue.push(newNode);
-              
-              if (!visited.has(key2)) {
-                visited.set(key2, new Set());
+
+            if (isUnitStrongLink(board, position1, position2, num)) {
+              let newNode = subGraph.find(
+                (node) =>
+                  node.row === position2.row && node.col === position2.col
+              );
+
+              if (!newNode) {
+                newNode = {
+                  row: position2.row,
+                  col: position2.col,
+                  candidates: candidates[j].candidates,
+                  next: [],
+                };
+                subGraph.push(newNode);
               }
-              visited.get(key2)?.add(key1);
-              
-              if (!visited.has(key1)) {
-                visited.set(key1, new Set());
+
+              if (
+                !current.next.some(
+                  (node) =>
+                    node.row === newNode?.row && node.col === newNode?.col
+                )
+              ) {
+                current.next.push(newNode);
               }
-              visited.get(key1)?.add(key2);
+
+              if (
+                !newNode.next.some(
+                  (node) => node.row === current.row && node.col === current.col
+                )
+              ) {
+                newNode.next.push(current);
+              }
+
+              if (!visited.has(key2) || !visited.get(key2)?.has(key1)) {
+                queue.push(newNode);
+
+                if (!visited.has(key2)) {
+                  visited.set(key2, new Set());
+                }
+                visited.get(key2)?.add(key1);
+              }
+
+              if (!visited.has(key1) || !visited.get(key1)?.has(key2)) {
+                if (!visited.has(key1)) {
+                  visited.set(key1, new Set());
+                }
+                visited.get(key1)?.add(key2);
+              }
             }
           }
         }
