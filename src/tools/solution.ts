@@ -940,36 +940,6 @@ export const isStrongLink = (
   return false;
 };
 
-// 新增远程强连接判断函数
-export const isRemoteStrongLink = (
-  board: CellData[][],
-  position1: Position,
-  position2: Position,
-  num: number,
-  candidateMap: CandidateMap
-): boolean => {
-  const cell1 = board[position1.row]?.[position1.col];
-  const cell2 = board[position2.row]?.[position2.col];
-  if (!cell1?.draft?.includes(num) || !cell2?.draft?.includes(num)) return false;
-
-  // 使用 isStrongLink 检查是否为强连接
-  if (isStrongLink(board, position1, position2, num)) {
-    return true;
-  }
-
-  // 区域间连接
-  const isOnlyTwoInRow = candidateMap[num].row.get(position1.row)?.count === 1 &&
-                         candidateMap[num].row.get(position2.row)?.count === 1;
-  const isOnlyTwoInCol = candidateMap[num].col.get(position1.col)?.count === 1 &&
-                         candidateMap[num].col.get(position2.col)?.count === 1;
-  const box1 = Math.floor(position1.row / 3) * 3 + Math.floor(position1.col / 3);
-  const box2 = Math.floor(position2.row / 3) * 3 + Math.floor(position2.col / 3);
-  const isOnlyTwoInBox = candidateMap[num].box.get(box1)?.count === 1 &&
-                         candidateMap[num].box.get(box2)?.count === 1;
-
-  return isOnlyTwoInRow || isOnlyTwoInCol || isOnlyTwoInBox;
-};
-
 interface StrongLink {
   positions: Position[];
   num: number;
