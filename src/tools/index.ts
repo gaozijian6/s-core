@@ -6,7 +6,7 @@ export interface Position {
   col: number;
 }
 
-interface Candidate extends Position {
+export interface Candidate extends Position {
   candidates: number[];
 }
 

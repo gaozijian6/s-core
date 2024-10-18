@@ -7,6 +7,7 @@ import type {
   Graph,
   GraphNode,
   Position,
+  Candidate
 } from "./index";
 
 export interface Result {
@@ -322,9 +323,11 @@ export const nakedPair = (
   // 遍历所有数字的候选位置
   for (let num = 1; num <= 9; num++) {
     const candidates = candidateMap[num]?.all ?? [];
-    
+
     // 找到只有两个候选数的方格
-    const pairCandidates = candidates.filter(cell => cell.candidates.length === 2);
+    const pairCandidates = candidates.filter(
+      (cell) => cell.candidates.length === 2
+    );
 
     for (let i = 0; i < pairCandidates.length; i++) {
       const cell1 = pairCandidates[i];
@@ -332,19 +335,28 @@ export const nakedPair = (
 
       // 检查行、列、宫
       const units = [
-        { type: 'row', value: cell1.row },
-        { type: 'col', value: cell1.col },
-        { type: 'box', value: Math.floor(cell1.row / 3) * 3 + Math.floor(cell1.col / 3) }
+        { type: "row", value: cell1.row },
+        { type: "col", value: cell1.col },
+        {
+          type: "box",
+          value: Math.floor(cell1.row / 3) * 3 + Math.floor(cell1.col / 3),
+        },
       ];
 
       for (const unit of units) {
-        const unitCells = (candidateMap[num][unit.type as keyof typeof candidateMap[number]] as Map<number, CandidateStats>)?.get?.(unit.value)?.positions ?? [];
+        const unitCells =
+          (
+            candidateMap[num][
+              unit.type as keyof (typeof candidateMap)[number]
+            ] as Map<number, CandidateStats>
+          )?.get?.(unit.value)?.positions ?? [];
         // 在同一单元中找到另一个具有相同候选数的方格
-        const cell2 = unitCells.find(c => 
-          (c.row !== cell1.row || c.col !== cell1.col) &&
-          c.candidates.length === 2 &&
-          c.candidates.includes(num1) &&
-          c.candidates.includes(num2)
+        const cell2 = unitCells.find(
+          (c) =>
+            (c.row !== cell1.row || c.col !== cell1.col) &&
+            c.candidates.length === 2 &&
+            c.candidates.includes(num1) &&
+            c.candidates.includes(num2)
         );
 
         if (cell2) {
@@ -352,38 +364,57 @@ export const nakedPair = (
           const affectedCells = [];
           for (let i = 0; i < 9; i++) {
             for (let j = 0; j < 9; j++) {
-              if ((i !== cell1.row || j !== cell1.col) && 
-                  (i !== cell2.row || j !== cell2.col) && 
-                  (unit.type === 'row' && i === cell1.row || 
-                   unit.type === 'col' && j === cell1.col || 
-                   unit.type === 'box' && Math.floor(i / 3) === Math.floor(cell1.row / 3) && Math.floor(j / 3) === Math.floor(cell1.col / 3))) {
+              if (
+                (i !== cell1.row || j !== cell1.col) &&
+                (i !== cell2.row || j !== cell2.col) &&
+                ((unit.type === "row" && i === cell1.row) ||
+                  (unit.type === "col" && j === cell1.col) ||
+                  (unit.type === "box" &&
+                    Math.floor(i / 3) === Math.floor(cell1.row / 3) &&
+                    Math.floor(j / 3) === Math.floor(cell1.col / 3)))
+              ) {
                 const cell = board[i][j];
-                if (cell.value === null && (cell.draft.includes(num1) || cell.draft.includes(num2))) {
-                  affectedCells.push({ row: i, col: j, candidates: cell.draft });
+                if (
+                  cell.value === null &&
+                  (cell.draft.includes(num1) || cell.draft.includes(num2))
+                ) {
+                  affectedCells.push({
+                    row: i,
+                    col: j,
+                    candidates: cell.draft,
+                  });
                 }
               }
             }
           }
 
           if (affectedCells.length > 0) {
-            const position = affectedCells.map(c => ({ row: c.row, col: c.col }));
+            const position = affectedCells.map((c) => ({
+              row: c.row,
+              col: c.col,
+            }));
             const prompt = [
               { row: cell1.row, col: cell1.col },
-              { row: cell2.row, col: cell2.col }
+              { row: cell2.row, col: cell2.col },
             ];
             const getMethodKey = (unitType: string): string => {
               switch (unitType) {
-                case 'row':
-                  return 'ROW';
-                case 'col':
-                  return 'COLUMN';
-                case 'box':
-                  return 'BOX';
+                case "row":
+                  return "ROW";
+                case "col":
+                  return "COLUMN";
+                case "box":
+                  return "BOX";
                 default:
                   return unitType.toUpperCase();
               }
             };
-            const method = SOLUTION_METHODS[`NAKED_PAIR_${getMethodKey(unit.type)}` as keyof typeof SOLUTION_METHODS] || SOLUTION_METHODS.NAKED_PAIR_ROW;
+            const method =
+              SOLUTION_METHODS[
+                `NAKED_PAIR_${getMethodKey(
+                  unit.type
+                )}` as keyof typeof SOLUTION_METHODS
+              ] || SOLUTION_METHODS.NAKED_PAIR_ROW;
             const target = [num1, num2];
 
             return {
@@ -391,7 +422,7 @@ export const nakedPair = (
               prompt,
               method,
               target,
-              isFill: false
+              isFill: false,
             };
           }
         }
@@ -461,21 +492,26 @@ const checkHiddenPair = (
             if (affectedPositions.length > 0) {
               const getMethodKey = (unitType: string): string => {
                 switch (unitType) {
-                  case 'row':
-                    return 'ROW';
-                  case 'col':
-                    return 'COLUMN';
-                  case 'box':
-                    return 'BOX';
+                  case "row":
+                    return "ROW";
+                  case "col":
+                    return "COLUMN";
+                  case "box":
+                    return "BOX";
                   default:
                     return unitType.toUpperCase();
                 }
               };
-              
+
               return {
                 position: affectedPositions,
                 prompt,
-                method: SOLUTION_METHODS[`HIDDEN_PAIR_${getMethodKey(unitType)}` as keyof typeof SOLUTION_METHODS],
+                method:
+                  SOLUTION_METHODS[
+                    `HIDDEN_PAIR_${getMethodKey(
+                      unitType
+                    )}` as keyof typeof SOLUTION_METHODS
+                  ],
                 target: [...new Set(targetNumbers)],
                 isFill: false,
               };
@@ -489,13 +525,233 @@ const checkHiddenPair = (
   return null;
 };
 
-// 隐形三数对
-export const hiddenTriple = (
+// 隐形三数对1
+export const hiddenTriple1 = (
   board: CellData[][],
   candidateMap: CandidateMap,
   graph: Graph
 ): Result | null => {
-}
+  // 检查行
+  const rowResult = checkHiddenTriple(board, candidateMap, "row");
+  if (rowResult) return rowResult;
+
+  // 检查列
+  const colResult = checkHiddenTriple(board, candidateMap, "col");
+  if (colResult) return colResult;
+
+  // 检查宫
+  const boxResult = checkHiddenTriple(board, candidateMap, "box");
+  if (boxResult) return boxResult;
+
+  return null;
+};
+
+const checkHiddenTriple = (
+  board: CellData[][],
+  candidateMap: CandidateMap,
+  unitType: "row" | "col" | "box"
+): Result | null => {
+  for (let unit = 0; unit < 9; unit++) {
+    const candidates: number[][] = [];
+    const positions: Position[] = [];
+
+    // 收集单元内的候选数和位置
+    for (let num = 1; num <= 9; num++) {
+      const unitCandidates = candidateMap[num][unitType].get(unit);
+      if (
+        unitCandidates &&
+        unitCandidates.count >= 2 &&
+        unitCandidates.count <= 3
+      ) {
+        candidates.push([num]);
+        positions.push(...unitCandidates.positions);
+      }
+    }
+
+    // 如果候选数少于3个，跳过此单元
+    if (candidates.length < 3) continue;
+
+    // 检查所有可能的三数组合
+    for (let i = 0; i < candidates.length - 2; i++) {
+      for (let j = i + 1; j < candidates.length - 1; j++) {
+        for (let k = j + 1; k < candidates.length; k++) {
+          const tripleNums = [
+            ...candidates[i],
+            ...candidates[j],
+            ...candidates[k],
+          ];
+          const triplePositions = new Set(
+            positions.filter((pos) =>
+              pos.candidates.some((num) => tripleNums.includes(num))
+            )
+          );
+
+          if (triplePositions.size === 3) {
+            const affectedPositions: Position[] = [];
+            const prompt: Position[] = [];
+            const targetNumbers: number[] = [];
+
+            triplePositions.forEach((pos) => {
+              const cell = board[pos.row][pos.col];
+              const otherCandidates = cell.draft.filter(
+                (num) => !tripleNums.includes(num)
+              );
+              if (otherCandidates.length > 0) {
+                affectedPositions.push(pos);
+                targetNumbers.push(...otherCandidates);
+              }
+              prompt.push(pos);
+            });
+
+            if (affectedPositions.length > 0) {
+              const getMethodKey = (unitType: string): string => {
+                switch (unitType) {
+                  case "row":
+                    return "ROW";
+                  case "col":
+                    return "COLUMN";
+                  case "box":
+                    return "BOX";
+                  default:
+                    return unitType.toUpperCase();
+                }
+              };
+
+              return {
+                position: affectedPositions,
+                prompt,
+                method:
+                  SOLUTION_METHODS[
+                    `HIDDEN_TRIPLE_${getMethodKey(
+                      unitType
+                    )}` as keyof typeof SOLUTION_METHODS
+                  ],
+                target: [...new Set(targetNumbers)],
+                isFill: false,
+              };
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return null;
+};
+
+// 隐形三数对2
+export const hiddenTriple2 = (
+  board: CellData[][],
+  candidateMap: CandidateMap,
+  graph: Graph
+): Result | null => {
+  // 检查行
+  const rowResult = checkHiddenTriple2(board, candidateMap, "row");
+  if (rowResult) return rowResult;
+
+  // 检查列
+  const colResult = checkHiddenTriple2(board, candidateMap, "col");
+  if (colResult) return colResult;
+
+  // 检查宫
+  const boxResult = checkHiddenTriple2(board, candidateMap, "box");
+  if (boxResult) return boxResult;
+
+  return null;
+};
+
+const checkHiddenTriple2 = (
+  board: CellData[][],
+  candidateMap: CandidateMap,
+  unitType: "row" | "col" | "box"
+): Result | null => {
+  for (let unit = 0; unit < 9; unit++) {
+    const candidates: number[][] = [];
+    const positions: Candidate[] = [];
+
+    // 收集单元内的候选数和位置
+    for (let num = 1; num <= 9; num++) {
+      const unitCandidates = candidateMap[num][unitType].get(unit);
+      if (
+        unitCandidates &&
+        unitCandidates.count >= 2 &&
+        unitCandidates.count <= 3
+      ) {
+        candidates.push([num]);
+        positions.push(...unitCandidates.positions);
+      }
+    }
+
+    // 如果候选数少于3个，跳过此单元
+    if (candidates.length < 3) continue;
+
+    // 检查所有可能的三数组合
+    for (let i = 0; i < candidates.length - 2; i++) {
+      for (let j = i + 1; j < candidates.length - 1; j++) {
+        for (let k = j + 1; k < candidates.length; k++) {
+          const tripleNums = [
+            ...candidates[i],
+            ...candidates[j],
+            ...candidates[k],
+          ];
+          const triplePositions = new Set(
+            positions.filter((pos: Candidate) =>
+              pos.candidates.some((num: number) => tripleNums.includes(num))
+            )
+          );
+
+          if (triplePositions.size === 3) {
+            const affectedPositions: Position[] = [];
+            const prompt: Position[] = [];
+            const targetNumbers: number[] = [];
+
+            triplePositions.forEach((pos) => {
+              const cell = board[pos.row][pos.col];
+              const otherCandidates = cell.draft.filter(
+                (num) => !tripleNums.includes(num)
+              );
+              if (otherCandidates.length > 0) {
+                affectedPositions.push(pos);
+                targetNumbers.push(...otherCandidates);
+              }
+              prompt.push(pos);
+            });
+
+            if (affectedPositions.length > 0) {
+              const getMethodKey = (unitType: string): string => {
+                switch (unitType) {
+                  case "row":
+                    return "ROW";
+                  case "col":
+                    return "COLUMN";
+                  case "box":
+                    return "BOX";
+                  default:
+                    return unitType.toUpperCase();
+                }
+              };
+
+              return {
+                position: affectedPositions,
+                prompt,
+                method:
+                  SOLUTION_METHODS[
+                    `HIDDEN_TRIPLE_${getMethodKey(
+                      unitType
+                    )}2` as keyof typeof SOLUTION_METHODS
+                  ],
+                target: [...new Set(targetNumbers)],
+                isFill: false,
+              };
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return null;
+};
 
 // X-Wing
 export const xWing = (
@@ -588,7 +844,11 @@ const checkXWing = (board: CellData[][], isRow: boolean): Result | null => {
 };
 
 // X-Wing变种
-export const xWingVarient = (board: CellData[][], candidateMap: CandidateMap, graph: Graph): Result | null => {
+export const xWingVarient = (
+  board: CellData[][],
+  candidateMap: CandidateMap,
+  graph: Graph
+): Result | null => {
   for (let num = 1; num <= 9; num++) {
     const columnCandidates = candidateMap[num].col;
 
@@ -604,28 +864,34 @@ export const xWingVarient = (board: CellData[][], candidateMap: CandidateMap, gr
       // 确保两个候选方格在不同的宫
       if (box1 === box2) continue;
 
-
       // 寻找第二列
       for (let col2 = 0; col2 < 9; col2++) {
         const candidates2 = columnCandidates.get(col2);
-        if (!candidates2 || candidates2.count < 3 || candidates2.count > 4) continue;
-
+        if (!candidates2 || candidates2.count < 3 || candidates2.count > 4)
+          continue;
 
         // 检查第二列的候选方格是否满足条件
-        const boxC = candidates2.positions.find(pos => Math.floor(pos.row / 3) !== box1 && Math.floor(pos.row / 3) !== box2);
+        const boxC = candidates2.positions.find(
+          (pos) =>
+            Math.floor(pos.row / 3) !== box1 && Math.floor(pos.row / 3) !== box2
+        );
         if (!boxC) continue;
 
-        if(num===8&&col2===0){
+        if (num === 8 && col2 === 0) {
           console.log(123);
         }
 
-        const otherCandidates = candidates2.positions.filter(pos => pos !== boxC);
+        const otherCandidates = candidates2.positions.filter(
+          (pos) => pos !== boxC
+        );
         if (otherCandidates.length < 2) continue;
 
         // 检查是否形成矩形
         const boxesSet = new Set([box1, box2, Math.floor(boxC.row / 3)]);
-        if (otherCandidates.some(pos => !boxesSet.has(Math.floor(pos.row / 3)))) continue;
-
+        if (
+          otherCandidates.some((pos) => !boxesSet.has(Math.floor(pos.row / 3)))
+        )
+          continue;
 
         // 检查boxC所在列的其他行是否为空
         const boxCCol = boxC.col;
@@ -642,7 +908,10 @@ export const xWingVarient = (board: CellData[][], candidateMap: CandidateMap, gr
         // 找到可以删除候选数的位置
         const affectedPositions: Position[] = [];
         for (const pos of [pos1, pos2]) {
-          if (board[pos.row][col2].value === null && board[pos.row][col2].draft.includes(num)) {
+          if (
+            board[pos.row][col2].value === null &&
+            board[pos.row][col2].draft.includes(num)
+          ) {
             affectedPositions.push({ row: pos.row, col: col2 });
           }
         }
@@ -1369,7 +1638,6 @@ const findGraphNode = (
 
   return null;
 };
-
 
 // X-Chain
 // export const xChain = (board: CellData[][]): Result | null => {
