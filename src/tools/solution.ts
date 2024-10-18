@@ -579,6 +579,81 @@ const checkXWing = (board: CellData[][], isRow: boolean): Result | null => {
   return null;
 };
 
+// X-Wing变种
+export const xWingVarient = (board: CellData[][], candidateMap: CandidateMap, graph: Graph): Result | null => {
+  for (let num = 1; num <= 9; num++) {
+    const columnCandidates = candidateMap[num].col;
+
+    // 遍历所有列
+    for (let col1 = 0; col1 < 9; col1++) {
+      const candidates1 = columnCandidates.get(col1);
+      if (candidates1?.count !== 2) continue;
+
+      const [pos1, pos2] = candidates1.positions;
+      const box1 = Math.floor(pos1.row / 3);
+      const box2 = Math.floor(pos2.row / 3);
+
+      // 确保两个候选方格在不同的宫
+      if (box1 === box2) continue;
+
+
+      // 寻找第二列
+      for (let col2 = 0; col2 < 9; col2++) {
+        const candidates2 = columnCandidates.get(col2);
+        if (!candidates2 || candidates2.count < 3 || candidates2.count > 4) continue;
+
+
+        // 检查第二列的候选方格是否满足条件
+        const boxC = candidates2.positions.find(pos => Math.floor(pos.row / 3) !== box1 && Math.floor(pos.row / 3) !== box2);
+        if (!boxC) continue;
+
+        if(num===8&&col2===0){
+          console.log(123);
+        }
+
+        const otherCandidates = candidates2.positions.filter(pos => pos !== boxC);
+        if (otherCandidates.length < 2) continue;
+
+        // 检查是否形成矩形
+        const boxesSet = new Set([box1, box2, Math.floor(boxC.row / 3)]);
+        if (otherCandidates.some(pos => !boxesSet.has(Math.floor(pos.row / 3)))) continue;
+
+
+        // 检查boxC所在列的其他行是否为空
+        const boxCCol = boxC.col;
+        const boxCRow = Math.floor(boxC.row / 3) * 3;
+        let isValid = true;
+        for (let r = boxCRow; r < boxCRow + 3; r++) {
+          if (r !== boxC.row && board[r][boxCCol].value !== null) {
+            isValid = false;
+            break;
+          }
+        }
+        if (!isValid) continue;
+
+        // 找到可以删除候选数的位置
+        const affectedPositions: Position[] = [];
+        for (const pos of [pos1, pos2]) {
+          if (board[pos.row][col2].value === null && board[pos.row][col2].draft.includes(num)) {
+            affectedPositions.push({ row: pos.row, col: col2 });
+          }
+        }
+
+        if (affectedPositions.length > 0) {
+          return {
+            position: affectedPositions,
+            prompt: [pos1, pos2, boxC, ...otherCandidates],
+            method: SOLUTION_METHODS.X_WING_VARIENT,
+            target: [num],
+            isFill: false,
+          };
+        }
+      }
+    }
+  }
+
+  return null;
+};
 // XY-Wing
 export const xyWing = (board: CellData[][]): Result | null => {
   // 找出所有只有两个候选数的格子
@@ -1144,9 +1219,9 @@ export const skyscraper = (
           continue;
         }
 
-        // 检查是否为奇关联
-        const parity = checkStrongLinkParity(pos1, pos2, num, graph);
-        if (parity !== 1) {
+        // 寻找一条包含四个节点的路径
+        const path = findFourPath(pos1, pos2, num, graph);
+        if (path.length !== 4) {
           continue;
         }
 
@@ -1159,7 +1234,6 @@ export const skyscraper = (
         );
 
         if (affectedPositions.length > 0) {
-          const path = findPath(pos1, pos2, num, graph);
           return path.length === 4
             ? {
                 position: affectedPositions,
@@ -1210,8 +1284,8 @@ const findCommonAffectedPositions = (
   return affectedPositions;
 };
 
-// 已知两个强关联的格子，寻找A到B的路径
-const findPath = (
+// 已知两个强关联的格子，寻找A到B为4个格子的路径
+export const findFourPath = (
   pos1: Position,
   pos2: Position,
   num: number,
@@ -1219,40 +1293,42 @@ const findPath = (
 ): Position[] => {
   const startNode = findGraphNode(pos1, num, graph);
   if (!startNode) {
-    return []; // 如果找不到起始节点，返回空数组
+    return [];
   }
 
-  const queue: { node: GraphNode; path: Position[] }[] = [
-    { node: startNode, path: [pos1] },
-  ];
   const visited: Set<string> = new Set();
+  const path: Position[] = [];
 
-  while (queue.length > 0) {
-    const { node, path } = queue.shift()!;
+  const dfs = (node: GraphNode): Position[] | null => {
     const key = `${node.row},${node.col}`;
 
-    if (node.row === pos2.row && node.col === pos2.col) {
-      return path;
-    }
-
     if (visited.has(key)) {
-      continue;
+      return null;
     }
 
     visited.add(key);
+    path.push({ row: node.row, col: node.col });
 
-    for (const nextNode of node.next) {
-      const nextKey = `${nextNode.row},${nextNode.col}`;
-      if (!visited.has(nextKey)) {
-        queue.push({
-          node: nextNode,
-          path: [...path, { row: nextNode.row, col: nextNode.col }],
-        });
+    if (path.length === 4 && node.row === pos2.row && node.col === pos2.col) {
+      return [...path];
+    }
+
+    if (path.length < 4) {
+      for (const nextNode of node.next) {
+        const result = dfs(nextNode);
+        if (result) {
+          return result;
+        }
       }
     }
-  }
 
-  return []; // 如果没有找到路径，返回空数组
+    visited.delete(key);
+    path.pop();
+    return null;
+  };
+
+  const result = dfs(startNode);
+  return result ?? [];
 };
 
 // 已知位置和候选数找到graph对应的节点
@@ -1286,69 +1362,6 @@ const findGraphNode = (
   return null;
 };
 
-// 远程对
-export const remotePair = (
-  board: CellData[][],
-  candidateMap: CandidateMap,
-  graph: Graph
-): Result | null => {
-  for (let num = 1; num <= 9; num++) {
-    const candidates = candidateMap[num]?.all ?? [];
-
-    for (let i = 0; i < candidates.length - 1; i++) {
-      for (let j = i + 1; j < candidates.length; j++) {
-        const pos1 = candidates[i];
-        const pos2 = candidates[j];
-
-        const parity = checkStrongLinkParity(pos1, pos2, num, graph);
-        if (parity !== 2) {
-          continue;
-        }
-
-        const path = findPath(pos1, pos2, num, graph);
-        if (path.length % 2 === 0) {
-          continue;
-        }
-
-        const affectedPositions: Position[] = [];
-
-        candidateMap[num]?.box.forEach((boxStats) => {
-          if (
-            boxStats.positions.some((pos) =>
-              path.some(
-                (pathPos) => pathPos.row === pos.row && pathPos.col === pos.col
-              )
-            )
-          ) {
-            return;
-          }
-
-          if (
-            boxStats.positions.every((pos) =>
-              path.some(
-                (pathPos) => pathPos.row === pos.row || pathPos.col === pos.col
-              )
-            )
-          ) {
-            affectedPositions.push(...boxStats.positions);
-          }
-        });
-
-        if (affectedPositions.length > 0) {
-          return {
-            position: path,
-            prompt: path,
-            method: SOLUTION_METHODS.REMOTE_PAIR,
-            target: [num],
-            isFill: false,
-          };
-        }
-      }
-    }
-  }
-
-  return null;
-};
 
 // X-Chain
 // export const xChain = (board: CellData[][]): Result | null => {

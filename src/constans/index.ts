@@ -14,6 +14,7 @@ export const SOLUTION_METHODS = {
   HIDDEN_PAIR_COLUMN: "隐形数对法(列)",
   HIDDEN_PAIR_BOX: "隐形数对法(宫)",
   X_WING: "X-Wing",
+  X_WING_VARIENT: "X-Wing变种",
   XY_WING: "XY-Wing",
   XYZ_WING: "XYZ-Wing",
   SKYSCRAPER: "摩天楼",
