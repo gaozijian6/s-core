@@ -354,7 +354,7 @@ export const createGraph = (
             const key1 = `${position1.row},${position1.col}`;
             const key2 = `${position2.row},${position2.col}`;
 
-            if (isUnitStrongLink(board, position1, position2, num)) {
+            if (isUnitStrongLink(board, position1, position2, num, candidateMap)) {
               let newNode = subGraph.find(
                 (node) =>
                   node.row === position2.row && node.col === position2.col

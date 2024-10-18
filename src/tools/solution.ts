@@ -7,7 +7,7 @@ import type {
   Graph,
   GraphNode,
   Position,
-  Candidate
+  Candidate,
 } from "./index";
 
 export interface Result {
@@ -414,7 +414,7 @@ export const nakedPair = (
                 `NAKED_PAIR_${getMethodKey(
                   unit.type
                 )}` as keyof typeof SOLUTION_METHODS
-              ] || SOLUTION_METHODS.NAKED_PAIR_ROW;
+              ];
             const target = [num1, num2];
 
             return {
@@ -432,6 +432,279 @@ export const nakedPair = (
 
   return null;
 };
+
+// 显性三数对法1
+export const nakedTriple1 = (
+  board: CellData[][],
+  candidateMap: CandidateMap,
+  graph: Graph
+): Result | null => {
+  // 检查行
+  const rowResult = checkNakedTriple1(board, "row");
+  if (rowResult) return rowResult;
+
+  // 检查列
+  const colResult = checkNakedTriple1(board, "col");
+  if (colResult) return colResult;
+
+  // 检查宫
+  const boxResult = checkNakedTriple1(board, "box");
+  if (boxResult) return boxResult;
+
+  return null;
+};
+
+const checkNakedTriple1 = (
+  board: CellData[][],
+  unitType: "row" | "col" | "box"
+): Result | null => {
+  for (let unit = 0; unit < 9; unit++) {
+    const cellsWithCandidates: { pos: Position; candidates: number[] }[] = [];
+
+    // 收集单元内的候选数和位置
+    for (let i = 0; i < 9; i++) {
+      const [row, col] =
+        unitType === "row"
+          ? [unit, i]
+          : unitType === "col"
+          ? [i, unit]
+          : [
+              Math.floor(unit / 3) * 3 + Math.floor(i / 3),
+              (unit % 3) * 3 + (i % 3),
+            ];
+      const cell = board[row]?.[col];
+      if (
+        cell?.value === null &&
+        cell.draft?.length >= 2 &&
+        cell.draft?.length <= 3
+      ) {
+        cellsWithCandidates.push({ pos: { row, col }, candidates: cell.draft });
+      }
+    }
+
+    // 检查所有可能的三个格子组合
+    for (let i = 0; i < cellsWithCandidates.length - 2; i++) {
+      for (let j = i + 1; j < cellsWithCandidates.length - 1; j++) {
+        for (let k = j + 1; k < cellsWithCandidates.length; k++) {
+          const cellA = cellsWithCandidates[i];
+          const cellB = cellsWithCandidates[j];
+          const cellC = cellsWithCandidates[k];
+
+          const uniqueCandidates = [
+            ...new Set([
+              ...cellA.candidates,
+              ...cellB.candidates,
+              ...cellC.candidates,
+            ]),
+          ];
+
+          if (uniqueCandidates.length === 3) {
+            const [a, b, c] = uniqueCandidates;
+
+            // 检查是否满足显性三数对法1的条件
+            const hasThreeCandidates =
+              cellA.candidates.length === 3 ||
+              cellB.candidates.length === 3 ||
+              cellC.candidates.length === 3;
+            const hasTwoDifferentPairs =
+              (cellA.candidates.length === 2 &&
+                cellB.candidates.length === 2 &&
+                !cellA.candidates.every((num) =>
+                  cellB.candidates.includes(num)
+                )) ||
+              (cellA.candidates.length === 2 &&
+                cellC.candidates.length === 2 &&
+                !cellA.candidates.every((num) =>
+                  cellC.candidates.includes(num)
+                )) ||
+              (cellB.candidates.length === 2 &&
+                cellC.candidates.length === 2 &&
+                !cellB.candidates.every((num) =>
+                  cellC.candidates.includes(num)
+                ));
+
+            if (hasThreeCandidates && hasTwoDifferentPairs) {
+              const affectedPositions: Position[] = [];
+              const prompt: Position[] = [cellA.pos, cellB.pos, cellC.pos];
+
+              // 检查其他格子是否受影响
+              for (let m = 0; m < 9; m++) {
+                const [row, col] =
+                  unitType === "row"
+                    ? [unit, m]
+                    : unitType === "col"
+                    ? [m, unit]
+                    : [
+                        Math.floor(unit / 3) * 3 + Math.floor(m / 3),
+                        (unit % 3) * 3 + (m % 3),
+                      ];
+                const cell = board[row]?.[col];
+                if (
+                  cell?.value === null &&
+                  !prompt.some((p) => p.row === row && p.col === col) &&
+                  cell.draft?.some((num) => [a, b, c].includes(num))
+                ) {
+                  affectedPositions.push({ row, col });
+                }
+              }
+
+              if (affectedPositions.length > 0) {
+                const getMethodKey = (unitType: string): string => {
+                  switch (unitType) {
+                    case "row":
+                      return "ROW1";
+                    case "col":
+                      return "COLUMN1";
+                    case "box":
+                      return "BOX1";
+                    default:
+                      return unitType.toUpperCase();
+                  }
+                };
+
+                const method =
+                  SOLUTION_METHODS[
+                    `NAKED_TRIPLE_${getMethodKey(
+                      unitType
+                    )}` as keyof typeof SOLUTION_METHODS
+                  ];
+
+                return {
+                  position: affectedPositions,
+                  prompt,
+                  method,
+                  target: uniqueCandidates,
+                  isFill: false,
+                };
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return null;
+};
+
+// 显性三数对法2
+export const nakedTriple2 = (
+  board: CellData[][],
+  candidateMap: CandidateMap,
+  graph: Graph
+): Result | null => {
+  const rowResult = checkNakedTriple2(board, "row");
+  if (rowResult) return rowResult;
+
+  const colResult = checkNakedTriple2(board, "col");
+  if (colResult) return colResult;
+
+  const boxResult = checkNakedTriple2(board, "box");
+  if (boxResult) return boxResult;
+
+  return null;
+};
+
+const checkNakedTriple2 = (
+  board: CellData[][],
+  unitType: "row" | "col" | "box"
+): Result | null => {
+  for (let unit = 0; unit < 9; unit++) {
+    const cellsWithCandidates: { pos: Position; candidates: number[] }[] = [];
+
+    for (let i = 0; i < 9; i++) {
+      const [row, col] =
+        unitType === "row"
+          ? [unit, i]
+          : unitType === "col"
+          ? [i, unit]
+          : [
+              Math.floor(unit / 3) * 3 + Math.floor(i / 3),
+              (unit % 3) * 3 + (i % 3),
+            ];
+      const cell = board[row]?.[col];
+      if (cell?.value === null && cell.draft?.length === 2) {
+        cellsWithCandidates.push({ pos: { row, col }, candidates: cell.draft });
+      }
+    }
+
+    for (let i = 0; i < cellsWithCandidates.length - 2; i++) {
+      for (let j = i + 1; j < cellsWithCandidates.length - 1; j++) {
+        for (let k = j + 1; k < cellsWithCandidates.length; k++) {
+          const cellA = cellsWithCandidates[i];
+          const cellB = cellsWithCandidates[j];
+          const cellC = cellsWithCandidates[k];
+
+          const uniqueCandidates = [
+            ...new Set([
+              ...cellA.candidates,
+              ...cellB.candidates,
+              ...cellC.candidates,
+            ]),
+          ];
+
+          if (uniqueCandidates.length === 3) {
+            const [a, b, c] = uniqueCandidates;
+            const affectedPositions: Position[] = [];
+            const prompt: Position[] = [cellA.pos, cellB.pos, cellC.pos];
+
+            for (let m = 0; m < 9; m++) {
+              const [row, col] =
+                unitType === "row"
+                  ? [unit, m]
+                  : unitType === "col"
+                  ? [m, unit]
+                  : [
+                      Math.floor(unit / 3) * 3 + Math.floor(m / 3),
+                      (unit % 3) * 3 + (m % 3),
+                    ];
+              const cell = board[row]?.[col];
+              if (
+                cell?.value === null &&
+                !prompt.some((p) => p.row === row && p.col === col) &&
+                cell.draft?.some((num) => [a, b, c].includes(num))
+              ) {
+                affectedPositions.push({ row, col });
+              }
+            }
+
+            if (affectedPositions.length > 0) {
+              const getMethodKey = (unitType: string): string => {
+                switch (unitType) {
+                  case "row":
+                    return "ROW2";
+                  case "col":
+                    return "COLUMN2";
+                  case "box":
+                    return "BOX2";
+                  default:
+                    return unitType.toUpperCase();
+                }
+              };
+              const method =
+                SOLUTION_METHODS[
+                  `NAKED_TRIPLE_${getMethodKey(
+                    unitType
+                  )}` as keyof typeof SOLUTION_METHODS
+                ];
+
+              return {
+                position: affectedPositions,
+                prompt,
+                method,
+                target: uniqueCandidates,
+                isFill: false,
+              };
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return null;
+};
+
 // 隐形数对法
 export const hiddenPair = (
   board: CellData[][],
@@ -532,104 +805,166 @@ export const hiddenTriple1 = (
   graph: Graph
 ): Result | null => {
   // 检查行
-  const rowResult = checkHiddenTriple(board, candidateMap, "row");
+  const rowResult = checkHiddenTriple1(board, candidateMap, "row");
   if (rowResult) return rowResult;
 
   // 检查列
-  const colResult = checkHiddenTriple(board, candidateMap, "col");
+  const colResult = checkHiddenTriple1(board, candidateMap, "col");
   if (colResult) return colResult;
 
   // 检查宫
-  const boxResult = checkHiddenTriple(board, candidateMap, "box");
+  const boxResult = checkHiddenTriple1(board, candidateMap, "box");
   if (boxResult) return boxResult;
 
   return null;
 };
 
-const checkHiddenTriple = (
+const checkHiddenTriple1 = (
   board: CellData[][],
   candidateMap: CandidateMap,
   unitType: "row" | "col" | "box"
 ): Result | null => {
-  for (let unit = 0; unit < 9; unit++) {
-    const candidates: number[][] = [];
-    const positions: Position[] = [];
-
-    // 收集单元内的候选数和位置
+  if (unitType === "row") {
     for (let num = 1; num <= 9; num++) {
-      const unitCandidates = candidateMap[num][unitType].get(unit);
-      if (
-        unitCandidates &&
-        unitCandidates.count >= 2 &&
-        unitCandidates.count <= 3
-      ) {
-        candidates.push([num]);
-        positions.push(...unitCandidates.positions);
+      for (let row = 0; row < 9; row++) {
+        const CandidateStats = candidateMap[num][unitType].get(row);
+        if (CandidateStats?.count === 3) {
+          const candidateCells = CandidateStats.positions;
+          const candidates: number[] = [];
+          candidateCells.forEach((cell) => {
+            candidates.push(...board[cell.row][cell.col].draft);
+          });
+          const uniqueCandidates = [...new Set(candidates)];
+          let n = 0;
+          let target: number[] = [num];
+          if (uniqueCandidates.length <= 3) continue;
+          uniqueCandidates.forEach((candidate) => {
+            if (candidate === num) return;
+            if (
+              candidateMap[candidate][unitType].get(row)?.count === 2 &&
+              candidateMap[candidate][unitType]
+                .get(row)
+                ?.positions.every((pos) => {
+                  if (
+                    CandidateStats.positions.some(
+                      (p) => p.row === pos.row && p.col === pos.col
+                    )
+                  ) {
+                    return true;
+                  }
+                  return false;
+                })
+            ) {
+              n++;
+              target.push(candidate);
+            }
+          });
+          if (n === 2) {
+            return {
+              position: CandidateStats.positions,
+              prompt: CandidateStats.positions,
+              target: candidates.filter((c) => !target.includes(c)),
+              method: SOLUTION_METHODS.HIDDEN_TRIPLE_ROW1,
+              isFill: false,
+            };
+          }
+        }
       }
     }
+  }
 
-    // 如果候选数少于3个，跳过此单元
-    if (candidates.length < 3) continue;
-
-    // 检查所有可能的三数组合
-    for (let i = 0; i < candidates.length - 2; i++) {
-      for (let j = i + 1; j < candidates.length - 1; j++) {
-        for (let k = j + 1; k < candidates.length; k++) {
-          const tripleNums = [
-            ...candidates[i],
-            ...candidates[j],
-            ...candidates[k],
-          ];
-          const triplePositions = new Set(
-            positions.filter((pos) =>
-              pos.candidates.some((num) => tripleNums.includes(num))
-            )
-          );
-
-          if (triplePositions.size === 3) {
-            const affectedPositions: Position[] = [];
-            const prompt: Position[] = [];
-            const targetNumbers: number[] = [];
-
-            triplePositions.forEach((pos) => {
-              const cell = board[pos.row][pos.col];
-              const otherCandidates = cell.draft.filter(
-                (num) => !tripleNums.includes(num)
-              );
-              if (otherCandidates.length > 0) {
-                affectedPositions.push(pos);
-                targetNumbers.push(...otherCandidates);
-              }
-              prompt.push(pos);
-            });
-
-            if (affectedPositions.length > 0) {
-              const getMethodKey = (unitType: string): string => {
-                switch (unitType) {
-                  case "row":
-                    return "ROW";
-                  case "col":
-                    return "COLUMN";
-                  case "box":
-                    return "BOX";
-                  default:
-                    return unitType.toUpperCase();
-                }
-              };
-
-              return {
-                position: affectedPositions,
-                prompt,
-                method:
-                  SOLUTION_METHODS[
-                    `HIDDEN_TRIPLE_${getMethodKey(
-                      unitType
-                    )}` as keyof typeof SOLUTION_METHODS
-                  ],
-                target: [...new Set(targetNumbers)],
-                isFill: false,
-              };
+  if (unitType === "col") {
+    for (let num = 1; num <= 9; num++) {
+      for (let col = 0; col < 9; col++) {
+        const CandidateStats = candidateMap[num][unitType].get(col);
+        if (CandidateStats?.count === 3) {
+          const candidateCells = CandidateStats.positions;
+          const candidates: number[] = [];
+          candidateCells.forEach((cell) => {
+            candidates.push(...board[cell.row][cell.col].draft);
+          });
+          const uniqueCandidates = [...new Set(candidates)];
+          let n = 0;
+          let target: number[] = [num];
+          if (uniqueCandidates.length <= 3) continue;
+          uniqueCandidates.forEach((candidate) => {
+            if (candidate === num) return;
+            if (
+              candidateMap[candidate][unitType].get(col)?.count === 2 &&
+              candidateMap[candidate][unitType]
+                .get(col)
+                ?.positions.every((pos) => {
+                  if (
+                    CandidateStats.positions.some(
+                      (p) => p.row === pos.row && p.col === pos.col
+                    )
+                  ) {
+                    return true;
+                  }
+                  return false;
+                })
+            ) {
+              n++;
+              target.push(candidate);
             }
+          });
+          if (n === 2) {
+            return {
+              position: CandidateStats.positions,
+              prompt: CandidateStats.positions,
+              target: candidates.filter((c) => !target.includes(c)),
+              method: SOLUTION_METHODS.HIDDEN_TRIPLE_COLUMN1,
+              isFill: false,
+            };
+          }
+        }
+      }
+    }
+  }
+
+  if (unitType === "box") {
+    for (let num = 1; num <= 9; num++) {
+      for (let box = 0; box < 9; box++) {
+        const CandidateStats = candidateMap[num][unitType].get(box);
+        if (CandidateStats?.count === 3) {
+          const candidateCells = CandidateStats.positions;
+          const candidates: number[] = [];
+          candidateCells.forEach((cell) => {
+            candidates.push(...board[cell.row][cell.col].draft);
+          });
+          const uniqueCandidates = [...new Set(candidates)];
+          let n = 0;
+          let target: number[] = [num];
+          if (uniqueCandidates.length <= 3) continue;
+          uniqueCandidates.forEach((candidate) => {
+            if (candidate === num) return;
+            if (
+              candidateMap[candidate][unitType].get(box)?.count === 2 &&
+              candidateMap[candidate][unitType]
+                .get(box)
+                ?.positions.every((pos) => {
+                  if (
+                    CandidateStats.positions.some(
+                      (p) => p.row === pos.row && p.col === pos.col
+                    )
+                  ) {
+                    return true;
+                  }
+                  return false;
+                })
+            ) {
+              n++;
+              target.push(candidate);
+            }
+          });
+          if (n === 2) {
+            return {
+              position: CandidateStats.positions,
+              prompt: CandidateStats.positions,
+              target: candidates.filter((c) => !target.includes(c)),
+              method: SOLUTION_METHODS.HIDDEN_TRIPLE_BOX1,
+              isFill: false,
+            };
           }
         }
       }
@@ -666,83 +1001,74 @@ const checkHiddenTriple2 = (
   unitType: "row" | "col" | "box"
 ): Result | null => {
   for (let unit = 0; unit < 9; unit++) {
-    const candidates: number[][] = [];
-    const positions: Candidate[] = [];
+    const candidates = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+    const candidatePairs: [number, number, CandidateStats][] = [];
 
-    // 收集单元内的候选数和位置
-    for (let num = 1; num <= 9; num++) {
-      const unitCandidates = candidateMap[num][unitType].get(unit);
-      if (
-        unitCandidates &&
-        unitCandidates.count >= 2 &&
-        unitCandidates.count <= 3
-      ) {
-        candidates.push([num]);
-        positions.push(...unitCandidates.positions);
+    candidates.forEach((candidate) => {
+      const stats = candidateMap[candidate][unitType].get(unit);
+      if (stats?.count === 2) {
+        candidatePairs.push([candidate, stats.count, stats]);
       }
-    }
+    });
 
-    // 如果候选数少于3个，跳过此单元
-    if (candidates.length < 3) continue;
+    if (candidatePairs.length >= 3) {
+      for (let i = 0; i < candidatePairs.length - 2; i++) {
+        for (let j = i + 1; j < candidatePairs.length - 1; j++) {
+          for (let k = j + 1; k < candidatePairs.length; k++) {
+            const [a, , statsA] = candidatePairs[i];
+            const [b, , statsB] = candidatePairs[j];
+            const [c, , statsC] = candidatePairs[k];
 
-    // 检查所有可能的三数组合
-    for (let i = 0; i < candidates.length - 2; i++) {
-      for (let j = i + 1; j < candidates.length - 1; j++) {
-        for (let k = j + 1; k < candidates.length; k++) {
-          const tripleNums = [
-            ...candidates[i],
-            ...candidates[j],
-            ...candidates[k],
-          ];
-          const triplePositions = new Set(
-            positions.filter((pos: Candidate) =>
-              pos.candidates.some((num: number) => tripleNums.includes(num))
-            )
-          );
+            const allPositions = new Set([
+              ...statsA.positions,
+              ...statsB.positions,
+              ...statsC.positions,
+            ]);
 
-          if (triplePositions.size === 3) {
-            const affectedPositions: Position[] = [];
-            const prompt: Position[] = [];
-            const targetNumbers: number[] = [];
+            if (allPositions.size === 3) {
+              const positionsArray = Array.from(allPositions);
+              if (
+                positionsArray.every((pos) => {
+                  const cell = board[pos.row][pos.col];
+                  const candidatesInCell = [a, b, c].filter((num) =>
+                    cell.draft.includes(num)
+                  );
+                  return candidatesInCell.length === 2;
+                })
+              ) {
+                const otherCandidates = positionsArray.flatMap((pos) => {
+                  const cell = board[pos.row][pos.col];
+                  return cell.draft.filter((num) => ![a, b, c].includes(num));
+                });
 
-            triplePositions.forEach((pos) => {
-              const cell = board[pos.row][pos.col];
-              const otherCandidates = cell.draft.filter(
-                (num) => !tripleNums.includes(num)
-              );
-              if (otherCandidates.length > 0) {
-                affectedPositions.push(pos);
-                targetNumbers.push(...otherCandidates);
-              }
-              prompt.push(pos);
-            });
-
-            if (affectedPositions.length > 0) {
-              const getMethodKey = (unitType: string): string => {
-                switch (unitType) {
-                  case "row":
-                    return "ROW";
-                  case "col":
-                    return "COLUMN";
-                  case "box":
-                    return "BOX";
-                  default:
-                    return unitType.toUpperCase();
+                if (otherCandidates.length > 0) {
+                  const getMethodKey = (unitType: string): string => {
+                    switch (unitType) {
+                      case "row":
+                        return "ROW";
+                      case "col":
+                        return "COLUMN";
+                      case "box":
+                        return "BOX";
+                      default:
+                        return unitType.toUpperCase();
+                    }
+                  };
+                  const method =
+                    SOLUTION_METHODS[
+                      `HIDDEN_TRIPLE_${getMethodKey(
+                        unitType
+                      )}2` as keyof typeof SOLUTION_METHODS
+                    ];
+                  return {
+                    position: positionsArray,
+                    prompt: positionsArray,
+                    target: otherCandidates,
+                    method,
+                    isFill: false,
+                  };
                 }
-              };
-
-              return {
-                position: affectedPositions,
-                prompt,
-                method:
-                  SOLUTION_METHODS[
-                    `HIDDEN_TRIPLE_${getMethodKey(
-                      unitType
-                    )}2` as keyof typeof SOLUTION_METHODS
-                  ],
-                target: [...new Set(targetNumbers)],
-                isFill: false,
-              };
+              }
             }
           }
         }
@@ -752,7 +1078,6 @@ const checkHiddenTriple2 = (
 
   return null;
 };
-
 // X-Wing
 export const xWing = (
   board: CellData[][],
@@ -1170,13 +1495,11 @@ export const isUnitStrongLink = (
   board: CellData[][],
   position1: Position,
   position2: Position,
-  num: number
+  num: number,
+  candidateMap: CandidateMap
 ): boolean => {
   const cell1 = board[position1.row]?.[position1.col];
   const cell2 = board[position2.row]?.[position2.col];
-  if (!cell1 || !cell2 || cell1.draft.length >= 4 || cell2.draft.length >= 4)
-    return false;
-
   if (position1.row === position2.row && position1.col === position2.col) {
     return false;
   }
@@ -1215,11 +1538,13 @@ export const isUnitStrongLink = (
       // 检查共同行、列和宫
       const checkCellC = (row: number, col: number) => {
         const cellC = board[row]?.[col];
-        return (
+        if (
           cellC?.draft.length === 2 &&
           cellC.draft.includes(otherNum1) &&
           cellC.draft.includes(otherNum2)
-        );
+        ) {
+          return true;
+        }
       };
 
       if (isSameRow) {
@@ -1280,11 +1605,13 @@ export const isUnitStrongLink = (
     ) {
       const checkCellC = (row: number, col: number) => {
         const cellC = board[row]?.[col];
-        return (
+        if (
           cellC?.draft.length === 2 &&
           cellC.draft.includes(a) &&
           cellC.draft.includes(b)
-        );
+        ) {
+          return true;
+        }
       };
 
       // 检查共同行、列和宫
@@ -1332,6 +1659,37 @@ export const isUnitStrongLink = (
     }
   }
 
+  // 情况四：如果两个方格所在的行或列或宫只有它们俩，返回true
+  // 检查行
+  if (position1.row === position2.row) {
+    const rowCandidates = candidateMap[num]?.row?.get(position1.row);
+    if (rowCandidates?.count === 2) {
+      return true;
+    }
+  }
+
+  // 检查列
+
+  if (position1.col === position2.col) {
+    const colCandidates = candidateMap[num]?.col?.get(position1.col);
+
+    if (colCandidates?.count === 2) {
+      return true;
+    }
+  }
+
+  // 检查宫
+  const box1 =
+    Math.floor(position1.row / 3) * 3 + Math.floor(position1.col / 3);
+  const box2 =
+    Math.floor(position2.row / 3) * 3 + Math.floor(position2.col / 3);
+  if (box1 === box2) {
+    const boxCandidates = candidateMap[num]?.box?.get(box1);
+    if (boxCandidates?.count === 2) {
+      return true;
+    }
+  }
+
   return false;
 };
 
@@ -1351,7 +1709,15 @@ export const findStrongLink = (
       for (let j = i + 1; j < positions.length; j++) {
         const position1 = { row: positions[i].row, col: positions[i].col };
         const position2 = { row: positions[j].row, col: positions[j].col };
-        if (isUnitStrongLink(board, position1, position2, Number(num))) {
+        if (
+          isUnitStrongLink(
+            board,
+            position1,
+            position2,
+            Number(num),
+            candidateMap
+          )
+        ) {
           return { positions: [position1, position2], num: Number(num) };
         }
       }
@@ -1510,7 +1876,11 @@ export const skyscraper = (
           num
         );
 
-        if (affectedPositions.length > 0) {
+        if (
+          affectedPositions.length > 0 &&
+          !areCellsInSameUnit(path[1], affectedPositions[0]) &&
+          !areCellsInSameUnit(path[2], affectedPositions[0])
+        ) {
           return path.length === 4
             ? {
                 position: affectedPositions,
@@ -1722,8 +2092,6 @@ const findGraphNode = (
 //               isFill: false,
 //             });
 //           }
-//         } else if (!visited[neighbor]) {
-//           dfs(neighbor, startNode, length + 1);
 //         }
 //       }
 
