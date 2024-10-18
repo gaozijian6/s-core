@@ -489,6 +489,14 @@ const checkHiddenPair = (
   return null;
 };
 
+// 隐形三数对
+export const hiddenTriple = (
+  board: CellData[][],
+  candidateMap: CandidateMap,
+  graph: Graph
+): Result | null => {
+}
+
 // X-Wing
 export const xWing = (
   board: CellData[][],

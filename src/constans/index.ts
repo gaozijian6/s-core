@@ -13,6 +13,7 @@ export const SOLUTION_METHODS = {
   HIDDEN_PAIR_ROW: "隐形数对法(行)",
   HIDDEN_PAIR_COLUMN: "隐形数对法(列)",
   HIDDEN_PAIR_BOX: "隐形数对法(宫)",
+  HIDDEN_TRIPLE: "隐形三数对",
   X_WING: "X-Wing",
   X_WING_VARIENT: "X-Wing变种",
   XY_WING: "XY-Wing",
