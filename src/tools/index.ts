@@ -18,6 +18,8 @@ export interface CellData {
   value: number | null;
   isGiven: boolean;
   draft: number[]; // 添加草稿数字数组
+  highlight?: string | null;
+  highlightCandidates?: number[];
 }
 
 export interface Graph {

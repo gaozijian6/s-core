@@ -190,3 +190,26 @@
     background-color: #ff6b6b;
   }
 }
+.promptHighlight {
+  background-color: #ffff00 !important;
+  /* 黄色高亮 */
+  transition: background-color 0.5s ease;
+}
+.rowHighlight,
+.columnHighlight,
+.boxHighlight {
+  background-color: #ffd700 !important;
+  /* 金色高亮 */
+  transition: background-color 0.5s ease;
+}
+.positionHighlight {
+  background-color: #ff6347 !important;
+  /* 红色高亮 */
+  transition: background-color 0.5s ease;
+}
+.candidateHighlight {
+  color: #ff0000 !important;
+  /* 红色文字 */
+  font-weight: bold;
+  transition: color 0.5s ease;
+}

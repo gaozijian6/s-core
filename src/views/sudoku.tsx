@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Card, Button, message } from "antd";
+import { Card, Button, message, Modal, Drawer } from "antd";
 import {
   useTimer,
   solve,
@@ -22,7 +22,6 @@ import {
   xWingVarient,
   xyWing,
   xyzWing,
-  isStrongLink,
   findStrongLink,
   checkStrongLinkParity,
   skyscraper,
@@ -32,11 +31,12 @@ import {
   nakedTriple2,
   hiddenTriple2,
   nakedQuadruple,
-  swordfish
+  swordfish,
 } from "../tools/solution";
 import "./sudoku.less";
 import { SOLUTION_METHODS } from "../constans";
-import type { CellData } from "../tools";
+import type { CellData, Position } from "../tools";
+import type { Result } from "../tools/solution";
 
 const Sudoku: React.FC = () => {
   const initialBoard = Array(9)
@@ -71,6 +71,8 @@ const Sudoku: React.FC = () => {
     []
   );
   const [officialDraftUsed, setOfficialDraftUsed] = useState<boolean>(false);
+  const [hintDrawerVisible, setHintDrawerVisible] = useState<boolean>(false);
+  const [hintContent, setHintContent] = useState<string>('');
 
   const generateBoard = () => {
     const initialBoard = Array(9)
@@ -97,557 +99,431 @@ const Sudoku: React.FC = () => {
       }))
     );
 
-  //   newBoard=[
-  //     [
-  //         {
-  //             "value": 8,
-  //             "isGiven": false,
-  //             "draft": []
-  //         },
-  //         {
-  //             "value": 1,
-  //             "isGiven": false,
-  //             "draft": []
-  //         },
-  //         {
-  //             "value": 7,
-  //             "isGiven": false,
-  //             "draft": []
-  //         },
-  //         {
-  //             "value": 6,
-  //             "isGiven": false,
-  //             "draft": []
-  //         },
-  //         {
-  //             "value": 9,
-  //             "isGiven": false,
-  //             "draft": []
-  //         },
-  //         {
-  //             "value": 5,
-  //             "isGiven": false,
-  //             "draft": []
-  //         },
-  //         {
-  //             "value": 3,
-  //             "isGiven": false,
-  //             "draft": []
-  //         },
-  //         {
-  //             "value": 2,
-  //             "isGiven": false,
-  //             "draft": []
-  //         },
-  //         {
-  //             "value": 4,
-  //             "isGiven": false,
-  //             "draft": []
-  //         }
-  //     ],
-  //     [
-  //         {
-  //             "value": null,
-  //             "isGiven": false,
-  //             "draft": [
-  //                 3,
-  //                 9
-  //             ]
-  //         },
-  //         {
-  //             "value": null,
-  //             "isGiven": false,
-  //             "draft": [
-  //                 3,
-  //                 9
-  //             ]
-  //         },
-  //         {
-  //             "value": 5,
-  //             "isGiven": false,
-  //             "draft": []
-  //         },
-  //         {
-  //             "value": 2,
-  //             "isGiven": false,
-  //             "draft": []
-  //         },
-  //         {
-  //             "value": 7,
-  //             "isGiven": false,
-  //             "draft": []
-  //         },
-  //         {
-  //             "value": 4,
-  //             "isGiven": false,
-  //             "draft": []
-  //         },
-  //         {
-  //             "value": 1,
-  //             "isGiven": false,
-  //             "draft": []
-  //         },
-  //         {
-  //             "value": null,
-  //             "isGiven": false,
-  //             "draft": [
-  //                 6,
-  //                 8
-  //             ]
-  //         },
-  //         {
-  //             "value": null,
-  //             "isGiven": false,
-  //             "draft": [
-  //                 6,
-  //                 8
-  //             ]
-  //         }
-  //     ],
-  //     [
-  //         {
-  //             "value": 6,
-  //             "isGiven": false,
-  //             "draft": []
-  //         },
-  //         {
-  //             "value": 2,
-  //             "isGiven": false,
-  //             "draft": []
-  //         },
-  //         {
-  //             "value": 4,
-  //             "isGiven": false,
-  //             "draft": []
-  //         },
-  //         {
-  //             "value": 8,
-  //             "isGiven": false,
-  //             "draft": []
-  //         },
-  //         {
-  //             "value": 1,
-  //             "isGiven": false,
-  //             "draft": []
-  //         },
-  //         {
-  //             "value": 3,
-  //             "isGiven": false,
-  //             "draft": []
-  //         },
-  //         {
-  //             "value": null,
-  //             "isGiven": false,
-  //             "draft": [
-  //                 5,
-  //                 7
-  //             ]
-  //         },
-  //         {
-  //             "value": null,
-  //             "isGiven": false,
-  //             "draft": [
-  //                 5,
-  //                 7
-  //             ]
-  //         },
-  //         {
-  //             "value": 9,
-  //             "isGiven": false,
-  //             "draft": []
-  //         }
-  //     ],
-  //     [
-  //         {
-  //             "value": 2,
-  //             "isGiven": false,
-  //             "draft": []
-  //         },
-  //         {
-  //             "value": null,
-  //             "isGiven": false,
-  //             "draft": [
-  //                 4,
-  //                 7
-  //             ]
-  //         },
-  //         {
-  //             "value": null,
-  //             "isGiven": false,
-  //             "draft": [
-  //                 8,
-  //                 9
-  //             ]
-  //         },
-  //         {
-  //             "value": null,
-  //             "isGiven": false,
-  //             "draft": [
-  //                 4,
-  //                 7,
-  //                 9
-  //             ]
-  //         },
-  //         {
-  //             "value": 5,
-  //             "isGiven": false,
-  //             "draft": []
-  //         },
-  //         {
-  //             "value": null,
-  //             "isGiven": false,
-  //             "draft": [
-  //                 7,
-  //                 8,
-  //                 9
-  //             ]
-  //         },
-  //         {
-  //             "value": 6,
-  //             "isGiven": false,
-  //             "draft": []
-  //         },
-  //         {
-  //             "value": 1,
-  //             "isGiven": false,
-  //             "draft": []
-  //         },
-  //         {
-  //             "value": 3,
-  //             "isGiven": false,
-  //             "draft": []
-  //         }
-  //     ],
-  //     [
-  //         {
-  //             "value": 5,
-  //             "isGiven": false,
-  //             "draft": []
-  //         },
-  //         {
-  //             "value": null,
-  //             "isGiven": false,
-  //             "draft": [
-  //                 3,
-  //                 7
-  //             ]
-  //         },
-  //         {
-  //             "value": null,
-  //             "isGiven": false,
-  //             "draft": [
-  //                 8,
-  //                 9
-  //             ]
-  //         },
-  //         {
-  //             "value": 1,
-  //             "isGiven": false,
-  //             "draft": []
-  //         },
-  //         {
-  //             "value": null,
-  //             "isGiven": false,
-  //             "draft": [
-  //                 3,
-  //                 6
-  //             ]
-  //         },
-  //         {
-  //             "value": null,
-  //             "isGiven": false,
-  //             "draft": [
-  //                 6,
-  //                 7
-  //             ]
-  //         },
-  //         {
-  //             "value": 4,
-  //             "isGiven": false,
-  //             "draft": []
-  //         },
-  //         {
-  //             "value": null,
-  //             "isGiven": false,
-  //             "draft": [
-  //                 8,
-  //                 9
-  //             ]
-  //         },
-  //         {
-  //             "value": 2,
-  //             "isGiven": false,
-  //             "draft": []
-  //         }
-  //     ],
-  //     [
-  //         {
-  //             "value": null,
-  //             "isGiven": false,
-  //             "draft": [
-  //                 3,
-  //                 4
-  //             ]
-  //         },
-  //         {
-  //             "value": 6,
-  //             "isGiven": false,
-  //             "draft": []
-  //         },
-  //         {
-  //             "value": 1,
-  //             "isGiven": false,
-  //             "draft": []
-  //         },
-  //         {
-  //             "value": null,
-  //             "isGiven": false,
-  //             "draft": [
-  //                 4,
-  //                 9
-  //             ]
-  //         },
-  //         {
-  //             "value": null,
-  //             "isGiven": false,
-  //             "draft": [
-  //                 2,
-  //                 3,
-  //                 8
-  //             ]
-  //         },
-  //         {
-  //             "value": null,
-  //             "isGiven": false,
-  //             "draft": [
-  //                 2,
-  //                 8,
-  //                 9
-  //             ]
-  //         },
-  //         {
-  //             "value": null,
-  //             "isGiven": false,
-  //             "draft": [
-  //                 5,
-  //                 8,
-  //                 9
-  //             ]
-  //         },
-  //         {
-  //             "value": null,
-  //             "isGiven": false,
-  //             "draft": [
-  //                 5,
-  //                 8,
-  //                 9
-  //             ]
-  //         },
-  //         {
-  //             "value": 7,
-  //             "isGiven": false,
-  //             "draft": []
-  //         }
-  //     ],
-  //     [
-  //         {
-  //             "value": null,
-  //             "isGiven": false,
-  //             "draft": [
-  //                 7,
-  //                 9
-  //             ]
-  //         },
-  //         {
-  //             "value": 5,
-  //             "isGiven": false,
-  //             "draft": []
-  //         },
-  //         {
-  //             "value": 2,
-  //             "isGiven": false,
-  //             "draft": []
-  //         },
-  //         {
-  //             "value": 3,
-  //             "isGiven": false,
-  //             "draft": []
-  //         },
-  //         {
-  //             "value": 4,
-  //             "isGiven": false,
-  //             "draft": []
-  //         },
-  //         {
-  //             "value": null,
-  //             "isGiven": false,
-  //             "draft": [
-  //                 6,
-  //                 7,
-  //                 8,
-  //                 9
-  //             ]
-  //         },
-  //         {
-  //             "value": null,
-  //             "isGiven": false,
-  //             "draft": [
-  //                 7,
-  //                 8,
-  //                 9
-  //             ]
-  //         },
-  //         {
-  //             "value": null,
-  //             "isGiven": false,
-  //             "draft": [
-  //                 6,
-  //                 7,
-  //                 8,
-  //                 9
-  //             ]
-  //         },
-  //         {
-  //             "value": 1,
-  //             "isGiven": false,
-  //             "draft": []
-  //         }
-  //     ],
-  //     [
-  //         {
-  //             "value": null,
-  //             "isGiven": false,
-  //             "draft": [
-  //                 4,
-  //                 7,
-  //                 9
-  //             ]
-  //         },
-  //         {
-  //             "value": null,
-  //             "isGiven": false,
-  //             "draft": [
-  //                 4,
-  //                 8,
-  //                 9
-  //             ]
-  //         },
-  //         {
-  //             "value": 6,
-  //             "isGiven": false,
-  //             "draft": []
-  //         },
-  //         {
-  //             "value": null,
-  //             "isGiven": false,
-  //             "draft": [
-  //                 7,
-  //                 9
-  //             ]
-  //         },
-  //         {
-  //             "value": null,
-  //             "isGiven": false,
-  //             "draft": [
-  //                 2,
-  //                 8
-  //             ]
-  //         },
-  //         {
-  //             "value": 1,
-  //             "isGiven": false,
-  //             "draft": []
-  //         },
-  //         {
-  //             "value": null,
-  //             "isGiven": false,
-  //             "draft": [
-  //                 2,
-  //                 7,
-  //                 8,
-  //                 9
-  //             ]
-  //         },
-  //         {
-  //             "value": 3,
-  //             "isGiven": false,
-  //             "draft": []
-  //         },
-  //         {
-  //             "value": 5,
-  //             "isGiven": false,
-  //             "draft": []
-  //         }
-  //     ],
-  //     [
-  //         {
-  //             "value": 1,
-  //             "isGiven": false,
-  //             "draft": []
-  //         },
-  //         {
-  //             "value": null,
-  //             "isGiven": false,
-  //             "draft": [
-  //                 8,
-  //                 9
-  //             ]
-  //         },
-  //         {
-  //             "value": 3,
-  //             "isGiven": false,
-  //             "draft": []
-  //         },
-  //         {
-  //             "value": 5,
-  //             "isGiven": false,
-  //             "draft": []
-  //         },
-  //         {
-  //             "value": null,
-  //             "isGiven": false,
-  //             "draft": [
-  //                 2,
-  //                 6,
-  //                 8
-  //             ]
-  //         },
-  //         {
-  //             "value": null,
-  //             "isGiven": false,
-  //             "draft": [
-  //                 2,
-  //                 6,
-  //                 7,
-  //                 8,
-  //                 9
-  //             ]
-  //         },
-  //         {
-  //             "value": null,
-  //             "isGiven": false,
-  //             "draft": [
-  //                 2,
-  //                 7,
-  //                 8,
-  //                 9
-  //             ]
-  //         },
-  //         {
-  //             "value": 4,
-  //             "isGiven": false,
-  //             "draft": []
-  //         },
-  //         {
-  //             "value": null,
-  //             "isGiven": false,
-  //             "draft": [
-  //                 6,
-  //                 8
-  //             ]
-  //         }
-  //     ]
-  // ]
+    // newBoard = [
+    //   [
+    //     {
+    //       value: null,
+    //       isGiven: false,
+    //       draft: [2, 4, 5, 7],
+    //     },
+    //     {
+    //       value: null,
+    //       isGiven: false,
+    //       draft: [2, 3, 5, 7],
+    //     },
+    //     {
+    //       value: null,
+    //       isGiven: false,
+    //       draft: [3, 4, 5, 7, 9],
+    //     },
+    //     {
+    //       value: null,
+    //       isGiven: false,
+    //       draft: [5, 8, 9],
+    //     },
+    //     {
+    //       value: null,
+    //       isGiven: false,
+    //       draft: [7, 9],
+    //     },
+    //     {
+    //       value: 6,
+    //       isGiven: false,
+    //       draft: [],
+    //     },
+    //     {
+    //       value: 1,
+    //       isGiven: false,
+    //       draft: [],
+    //     },
+    //     {
+    //       value: null,
+    //       isGiven: false,
+    //       draft: [8, 9],
+    //     },
+    //     {
+    //       value: null,
+    //       isGiven: false,
+    //       draft: [7, 8, 9],
+    //     },
+    //   ],
+    //   [
+    //     {
+    //       value: null,
+    //       isGiven: false,
+    //       draft: [5, 6, 7],
+    //     },
+    //     {
+    //       value: null,
+    //       isGiven: false,
+    //       draft: [5, 6, 7],
+    //     },
+    //     {
+    //       value: null,
+    //       isGiven: false,
+    //       draft: [5, 6, 7, 9],
+    //     },
+    //     {
+    //       value: null,
+    //       isGiven: false,
+    //       draft: [5, 8, 9],
+    //     },
+    //     {
+    //       value: 2,
+    //       isGiven: false,
+    //       draft: [],
+    //     },
+    //     {
+    //       value: 1,
+    //       isGiven: false,
+    //       draft: [],
+    //     },
+    //     {
+    //       value: 4,
+    //       isGiven: false,
+    //       draft: [],
+    //     },
+    //     {
+    //       value: 3,
+    //       isGiven: false,
+    //       draft: [],
+    //     },
+    //     {
+    //       value: null,
+    //       isGiven: false,
+    //       draft: [7, 8, 9],
+    //     },
+    //   ],
+    //   [
+    //     {
+    //       value: 8,
+    //       isGiven: false,
+    //       draft: [],
+    //     },
+    //     {
+    //       value: 1,
+    //       isGiven: false,
+    //       draft: [],
+    //     },
+    //     {
+    //       value: null,
+    //       isGiven: false,
+    //       draft: [7, 9],
+    //     },
+    //     {
+    //       value: 3,
+    //       isGiven: false,
+    //       draft: [],
+    //     },
+    //     {
+    //       value: 4,
+    //       isGiven: false,
+    //       draft: [],
+    //     },
+    //     {
+    //       value: null,
+    //       isGiven: false,
+    //       draft: [7, 9],
+    //     },
+    //     {
+    //       value: 2,
+    //       isGiven: false,
+    //       draft: [],
+    //     },
+    //     {
+    //       value: 5,
+    //       isGiven: false,
+    //       draft: [],
+    //     },
+    //     {
+    //       value: 6,
+    //       isGiven: false,
+    //       draft: [],
+    //     },
+    //   ],
+    //   [
+    //     {
+    //       value: 9,
+    //       isGiven: false,
+    //       draft: [],
+    //     },
+    //     {
+    //       value: 8,
+    //       isGiven: false,
+    //       draft: [],
+    //     },
+    //     {
+    //       value: null,
+    //       isGiven: false,
+    //       draft: [1, 5],
+    //     },
+    //     {
+    //       value: 2,
+    //       isGiven: false,
+    //       draft: [],
+    //     },
+    //     {
+    //       value: 6,
+    //       isGiven: false,
+    //       draft: [],
+    //     },
+    //     {
+    //       value: 4,
+    //       isGiven: false,
+    //       draft: [],
+    //     },
+    //     {
+    //       value: null,
+    //       isGiven: false,
+    //       draft: [3, 5],
+    //     },
+    //     {
+    //       value: 7,
+    //       isGiven: false,
+    //       draft: [],
+    //     },
+    //     {
+    //       value: null,
+    //       isGiven: false,
+    //       draft: [1, 3, 5],
+    //     },
+    //   ],
+    //   [
+    //     {
+    //       value: null,
+    //       isGiven: false,
+    //       draft: [2, 5, 6, 7],
+    //     },
+    //     {
+    //       value: null,
+    //       isGiven: false,
+    //       draft: [2, 5, 6, 7],
+    //     },
+    //     {
+    //       value: null,
+    //       isGiven: false,
+    //       draft: [5, 6, 7],
+    //     },
+    //     {
+    //       value: 1,
+    //       isGiven: false,
+    //       draft: [],
+    //     },
+    //     {
+    //       value: null,
+    //       isGiven: false,
+    //       draft: [3, 8, 9],
+    //     },
+    //     {
+    //       value: null,
+    //       isGiven: false,
+    //       draft: [3, 9],
+    //     },
+    //     {
+    //       value: null,
+    //       isGiven: false,
+    //       draft: [5, 6, 9],
+    //     },
+    //     {
+    //       value: null,
+    //       isGiven: false,
+    //       draft: [8, 9],
+    //     },
+    //     {
+    //       value: 4,
+    //       isGiven: false,
+    //       draft: [],
+    //     },
+    //   ],
+    //   [
+    //     {
+    //       value: 3,
+    //       isGiven: false,
+    //       draft: [],
+    //     },
+    //     {
+    //       value: 4,
+    //       isGiven: false,
+    //       draft: [],
+    //     },
+    //     {
+    //       value: null,
+    //       isGiven: false,
+    //       draft: [1, 6],
+    //     },
+    //     {
+    //       value: 7,
+    //       isGiven: false,
+    //       draft: [],
+    //     },
+    //     {
+    //       value: null,
+    //       isGiven: false,
+    //       draft: [8, 9],
+    //     },
+    //     {
+    //       value: 5,
+    //       isGiven: false,
+    //       draft: [],
+    //     },
+    //     {
+    //       value: null,
+    //       isGiven: false,
+    //       draft: [6, 9],
+    //     },
+    //     {
+    //       value: 2,
+    //       isGiven: false,
+    //       draft: [],
+    //     },
+    //     {
+    //       value: null,
+    //       isGiven: false,
+    //       draft: [1, 8, 9],
+    //     },
+    //   ],
+    //   [
+    //     {
+    //       value: 1,
+    //       isGiven: false,
+    //       draft: [],
+    //     },
+    //     {
+    //       value: null,
+    //       isGiven: false,
+    //       draft: [3, 6],
+    //     },
+    //     {
+    //       value: 8,
+    //       isGiven: false,
+    //       draft: [],
+    //     },
+    //     {
+    //       value: null,
+    //       isGiven: false,
+    //       draft: [6, 9],
+    //     },
+    //     {
+    //       value: 5,
+    //       isGiven: false,
+    //       draft: [],
+    //     },
+    //     {
+    //       value: 2,
+    //       isGiven: false,
+    //       draft: [],
+    //     },
+    //     {
+    //       value: 7,
+    //       isGiven: false,
+    //       draft: [],
+    //     },
+    //     {
+    //       value: 4,
+    //       isGiven: false,
+    //       draft: [],
+    //     },
+    //     {
+    //       value: null,
+    //       isGiven: false,
+    //       draft: [3, 9],
+    //     },
+    //   ],
+    //   [
+    //     {
+    //       value: null,
+    //       isGiven: false,
+    //       draft: [4, 5, 6, 7],
+    //     },
+    //     {
+    //       value: null,
+    //       isGiven: false,
+    //       draft: [3, 5, 6, 7],
+    //     },
+    //     {
+    //       value: null,
+    //       isGiven: false,
+    //       draft: [3, 4, 5, 6, 7],
+    //     },
+    //     {
+    //       value: null,
+    //       isGiven: false,
+    //       draft: [6, 9],
+    //     },
+    //     {
+    //       value: null,
+    //       isGiven: false,
+    //       draft: [3, 7, 9],
+    //     },
+    //     {
+    //       value: 8,
+    //       isGiven: false,
+    //       draft: [],
+    //     },
+    //     {
+    //       value: null,
+    //       isGiven: false,
+    //       draft: [3, 5, 9],
+    //     },
+    //     {
+    //       value: 1,
+    //       isGiven: false,
+    //       draft: [],
+    //     },
+    //     {
+    //       value: 2,
+    //       isGiven: false,
+    //       draft: [],
+    //     },
+    //   ],
+    //   [
+    //     {
+    //       value: null,
+    //       isGiven: false,
+    //       draft: [5, 7],
+    //     },
+    //     {
+    //       value: 9,
+    //       isGiven: false,
+    //       draft: [],
+    //     },
+    //     {
+    //       value: 2,
+    //       isGiven: false,
+    //       draft: [],
+    //     },
+    //     {
+    //       value: 4,
+    //       isGiven: false,
+    //       draft: [],
+    //     },
+    //     {
+    //       value: 1,
+    //       isGiven: false,
+    //       draft: [],
+    //     },
+    //     {
+    //       value: null,
+    //       isGiven: false,
+    //       draft: [3, 7],
+    //     },
+    //     {
+    //       value: 8,
+    //       isGiven: false,
+    //       draft: [],
+    //     },
+    //     {
+    //       value: 6,
+    //       isGiven: false,
+    //       draft: [],
+    //     },
+    //     {
+    //       value: null,
+    //       isGiven: false,
+    //       draft: [3, 5],
+    //     },
+    //   ],
+    // ];
     updateBoard(newBoard, "生成新棋盘");
 
     // 生成解决方案
@@ -1020,64 +896,126 @@ const Sudoku: React.FC = () => {
     setSelectedNumber(null);
   };
 
+  const applyHintHighlight = (board: CellData[][], result: Result) => {
+    const { position, target, method, prompt } = result;
+    const newBoard = deepCopyBoard(board);
+
+    // 高亮提示单元格
+    prompt.forEach(({ row, col }: Position) => {
+      newBoard[row][col].highlight = "promptHighlight";
+    });
+
+    // 高亮目标单元格
+    position.forEach(({ row, col }: Position) => {
+      newBoard[row][col].highlight = "positionHighlight";
+    });
+
+    // 根据方法高亮行、列或宫
+    if (method.includes("ROW")) {
+      const row = position[0].row;
+      for (let col = 0; col < 9; col++) {
+        if (!newBoard[row][col].highlight) {
+          newBoard[row][col].highlight = "rowHighlight";
+        }
+      }
+    } else if (method.includes("COLUMN")) {
+      const col = position[0].col;
+      for (let row = 0; row < 9; row++) {
+        if (!newBoard[row][col].highlight) {
+          newBoard[row][col].highlight = "columnHighlight";
+        }
+      }
+    } else if (method.includes("BOX")) {
+      const boxRow = Math.floor(position[0].row / 3) * 3;
+      const boxCol = Math.floor(position[0].col / 3) * 3;
+      for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < 3; j++) {
+          if (!newBoard[boxRow + i][boxCol + j].highlight) {
+            newBoard[boxRow + i][boxCol + j].highlight = "boxHighlight";
+          }
+        }
+      }
+    }
+
+    // 高亮目标候选数
+    if (!result.isFill) {
+      position.forEach(({ row, col }: Position) => {
+        newBoard[row][col].highlightCandidates = target;
+      });
+    }
+
+    return newBoard;
+  };
+
+  const removeHintHighlight = (board: CellData[][]) => {
+    const updatedBoard = deepCopyBoard(board);
+    for (let row = 0; row < 9; row++) {
+      for (let col = 0; col < 9; col++) {
+        delete updatedBoard[row][col].highlight;
+        delete updatedBoard[row][col].highlightCandidates;
+      }
+    }
+    return updatedBoard;
+  };
+
   const handleHint = () => {
-    // const solveFunctions = [
-    //   singleCandidate,
-    //   hiddenSingle,
-    //   blockElimination,
-    //   nakedPair,
-    //   nakedTriple1,
-    //   nakedTriple2,
-    //   hiddenPair,
-    //   hiddenTriple1,
-    //   hiddenTriple2,
-    //   nakedQuadruple,
-    //   xWing,
-    //   xWingVarient,
-    //   xyWing,
-    //   xyzWing,
-    //   skyscraper,
-    //   swordfish,
-    // ];
-    const solveFunctions = [swordfish];
+    const solveFunctions = [
+      // singleCandidate,
+      // hiddenSingle,
+      // blockElimination,
+      // nakedPair,
+      // nakedTriple1,
+      // nakedTriple2,
+      // hiddenPair,
+      // hiddenTriple1,
+      // hiddenTriple2,
+      // xWing,
+      // xWingVarient,
+      // xyWing,
+      // xyzWing,
+      // nakedQuadruple,
+      skyscraper,
+      // swordfish,
+    ];
     let result = null;
 
     for (const solveFunction of solveFunctions) {
       result = solveFunction(board, candidateMap, graph);
       if (result) {
-        break;
+        console.log(result);
+        
       }
     }
 
     if (result) {
-      const { position, target, method, isFill } = result;
-      const newBoard = deepCopyBoard(board);
-      if (isFill) {
-        position.forEach(({ row, col }) => {
-          newBoard[row][col].value = target[0];
-          newBoard[row][col].draft = [];
-        });
-
-        // 更新相关单元格的草稿数字
-        updateRelatedCellsDraft(newBoard, position, target[0], getCandidates);
-        setSelectedCell({ row: position[0].row, col: position[0].col });
-      } else {
-        position.forEach(({ row, col }) => {
-          newBoard[row][col].draft = newBoard[row][col].draft.filter(
-            (num) => !target.includes(num)
-          );
-        });
-      }
-
-      console.log(result);
-
+      const boardWithHighlight = applyHintHighlight(board, result);
       updateBoard(
-        newBoard,
-        `提示：${SOLUTION_METHODS[method as keyof typeof SOLUTION_METHODS]} (${
-          position[0].row
-        }, ${position[0].col}) 为 ${target.join(", ")}`
+        boardWithHighlight,
+        `提示：${
+          SOLUTION_METHODS[result.method as keyof typeof SOLUTION_METHODS]
+        } (${result.position[0].row}, ${
+          result.position[0].col
+        }) 为 ${result.target.join(", ")}`
       );
+
+      setHintContent(`${
+        SOLUTION_METHODS[result.method as keyof typeof SOLUTION_METHODS]
+      } (${result.position[0].row}, ${
+        result.position[0].col
+      }) 为 ${result.target.join(", ")}`);
+      setHintDrawerVisible(true);
     }
+  };
+
+  const handleApplyHint = () => {
+    // ... 应用提示的逻辑
+    setHintDrawerVisible(false);
+  };
+
+  const handleCancelHint = () => {
+    const updatedBoard = removeHintHighlight(board);
+    updateBoard(updatedBoard, '提示应用取消');
+    setHintDrawerVisible(false);
   };
 
   const handlePrint = () => {
@@ -1149,6 +1087,7 @@ const Sudoku: React.FC = () => {
                     ? "selectedCell"
                     : ""
                 }
+                ${cell.highlight || ""}
               `}
             >
               {cell.value !== null ? (
@@ -1156,7 +1095,14 @@ const Sudoku: React.FC = () => {
               ) : cell.draft.length > 0 ? (
                 <div className="draftGrid">
                   {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
-                    <div key={num} className="draftCell">
+                    <div
+                      key={num}
+                      className={`draftCell ${
+                        cell.highlightCandidates?.includes(num)
+                          ? "candidateHighlight"
+                          : ""
+                      }`}
+                    >
                       {cell.draft.includes(num) ? num : ""}
                     </div>
                   ))}
@@ -1233,6 +1179,18 @@ const Sudoku: React.FC = () => {
       <Button className="solveButton" onClick={solveSudoku}>
         求解数独
       </Button>
+      <Drawer
+        title="提示"
+        placement="bottom"
+        onClose={handleCancelHint}
+        open={hintDrawerVisible}
+        height={200}
+        mask={false}
+      >
+        <p>{hintContent}</p>
+        <Button onClick={handleApplyHint}>应用提示</Button>
+        <Button onClick={handleCancelHint}>取消</Button>
+      </Drawer>
     </Card>
   );
 };

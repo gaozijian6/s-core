@@ -2359,8 +2359,51 @@ const checkSwordfish = (
 };
 
 // 三阶带鳍鱼
-export const swordfishWithFin = (
-  board: CellData[][],
-  candidateMap: CandidateMap,
-  graph: Graph
-): Result | null => {};
+// export const swordfishWithFin = (
+//   board: CellData[][],
+//   candidateMap: CandidateMap,
+//   graph: Graph
+// ): Result | null => {
+//   // 检查行
+//   const rowResult = checkSwordfishWithFin(board, candidateMap, true);
+//   if (rowResult) return rowResult;
+
+//   // 检查列
+//   const colResult = checkSwordfishWithFin(board, candidateMap, false);
+//   if (colResult) return colResult;
+
+//   return null;
+// };
+
+// const checkSwordfishWithFin = (
+//   board: CellData[][],
+//   candidateMap: CandidateMap,
+//   isRow: boolean
+// ): Result | null => {
+//   for (let num = 1; num <= 9; num++) {
+//     const candidatePositions: Position[][] = [];
+
+//     // 收集候选数字位置
+//     for (let i = 0; i < 9; i++) {
+//       const positions = isRow
+//         ? candidateMap[num]?.row?.get(i)?.positions ?? []
+//         : candidateMap[num]?.col?.get(i)?.positions ?? [];
+//       if (positions.length >= 2 && positions.length <= 3) {
+//         candidatePositions.push(positions);
+//       }
+//     }
+
+//     // 检查是否有符合 223 模式的行或列
+//     if (candidatePositions.length >= 3) {
+//       const twoPositions = candidatePositions.filter(pos => pos.length === 2);
+//       const threePositions = candidatePositions.filter(pos => pos.length === 3);
+
+//       if (twoPositions.length >= 2 && threePositions.length >= 1) {
+//         // 找到了符合 223 模式的行或列
+//         // 这里可以继续实现后续的逻辑
+//       }
+//     }
+//   }
+
+//   return null;
+// };
