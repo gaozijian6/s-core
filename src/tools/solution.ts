@@ -523,7 +523,41 @@ const checkNakedTriple1 = (
                   cellC.candidates.includes(num)
                 ));
 
-            if (hasThreeCandidates && hasTwoDifferentPairs) {
+            // 三个候选方格里都只有abc候选数
+            const allHaveThreeCandidates =
+              cellA.candidates.length === 3 &&
+              cellB.candidates.length === 3 &&
+              cellC.candidates.length === 3 &&
+              cellA.candidates.every((num) => uniqueCandidates.includes(num)) &&
+              cellB.candidates.every((num) => uniqueCandidates.includes(num)) &&
+              cellC.candidates.every((num) => uniqueCandidates.includes(num));
+
+            // 新增条件：两个候选方格有abc候选数，另一个有其中两个
+            const twoFullOnePartial =
+              (cellA.candidates.length === 3 &&
+                cellB.candidates.length === 3 &&
+                cellC.candidates.length === 2 &&
+                cellC.candidates.every((num) =>
+                  uniqueCandidates.includes(num)
+                )) ||
+              (cellA.candidates.length === 3 &&
+                cellC.candidates.length === 3 &&
+                cellB.candidates.length === 2 &&
+                cellB.candidates.every((num) =>
+                  uniqueCandidates.includes(num)
+                )) ||
+              (cellB.candidates.length === 3 &&
+                cellC.candidates.length === 3 &&
+                cellA.candidates.length === 2 &&
+                cellA.candidates.every((num) =>
+                  uniqueCandidates.includes(num)
+                ));
+
+            if (
+              (hasThreeCandidates && hasTwoDifferentPairs) ||
+              allHaveThreeCandidates ||
+              twoFullOnePartial
+            ) {
               const affectedPositions: Position[] = [];
               const prompt: Position[] = [cellA.pos, cellB.pos, cellC.pos];
 
@@ -695,6 +729,160 @@ const checkNakedTriple2 = (
                 target: uniqueCandidates,
                 isFill: false,
               };
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return null;
+};
+
+// 显性四数对��
+export const nakedQuadruple = (
+  board: CellData[][],
+  candidateMap: CandidateMap,
+  graph: Graph
+): Result | null => {
+  // 检查行
+  const rowResult = checkNakedQuadruple(board, "row");
+  if (rowResult) return rowResult;
+
+  // 检查列
+  const colResult = checkNakedQuadruple(board, "col");
+  if (colResult) return colResult;
+
+  // 检查宫
+  const boxResult = checkNakedQuadruple(board, "box");
+  if (boxResult) return boxResult;
+
+  return null;
+};
+
+const checkNakedQuadruple = (
+  board: CellData[][],
+  unitType: "row" | "col" | "box"
+): Result | null => {
+  for (let unit = 0; unit < 9; unit++) {
+    const cellsWithCandidates: { pos: Position; candidates: number[] }[] = [];
+
+    // 收集单元内的候选数和位置
+    for (let i = 0; i < 9; i++) {
+      const [row, col] =
+        unitType === "row"
+          ? [unit, i]
+          : unitType === "col"
+          ? [i, unit]
+          : [
+              Math.floor(unit / 3) * 3 + Math.floor(i / 3),
+              (unit % 3) * 3 + (i % 3),
+            ];
+      const cell = board[row]?.[col];
+      if (
+        cell?.value === null &&
+        cell.draft?.length >= 2 &&
+        cell.draft?.length <= 4
+      ) {
+        cellsWithCandidates.push({ pos: { row, col }, candidates: cell.draft });
+      }
+    }
+
+    // 检查所有可能的四个格子组合
+    for (let i = 0; i < cellsWithCandidates.length - 3; i++) {
+      for (let j = i + 1; j < cellsWithCandidates.length - 2; j++) {
+        for (let k = j + 1; k < cellsWithCandidates.length - 1; k++) {
+          for (let l = k + 1; l < cellsWithCandidates.length; l++) {
+            const cellA = cellsWithCandidates[i];
+            const cellB = cellsWithCandidates[j];
+            const cellC = cellsWithCandidates[k];
+            const cellD = cellsWithCandidates[l];
+
+            const uniqueCandidates = [
+              ...new Set([
+                ...cellA.candidates,
+                ...cellB.candidates,
+                ...cellC.candidates,
+                ...cellD.candidates,
+              ]),
+            ];
+
+            if (uniqueCandidates.length === 4) {
+              const [a, b, c, d] = uniqueCandidates;
+
+              // 检查是否满足显性四数对法的条件
+              const hasFourCandidates =
+                cellA.candidates.length === 4 ||
+                cellB.candidates.length === 4 ||
+                cellC.candidates.length === 4 ||
+                cellD.candidates.length === 4;
+
+              const allHaveThreeOrFourCandidates =
+                cellA.candidates.length >= 3 &&
+                cellB.candidates.length >= 3 &&
+                cellC.candidates.length >= 3 &&
+                cellD.candidates.length >= 3;
+
+              if (hasFourCandidates && allHaveThreeOrFourCandidates) {
+                const affectedPositions: Position[] = [];
+                const prompt: Position[] = [
+                  cellA.pos,
+                  cellB.pos,
+                  cellC.pos,
+                  cellD.pos,
+                ];
+
+                // 检查其他格子是否受影响
+                for (let m = 0; m < 9; m++) {
+                  const [row, col] =
+                    unitType === "row"
+                      ? [unit, m]
+                      : unitType === "col"
+                      ? [m, unit]
+                      : [
+                          Math.floor(unit / 3) * 3 + Math.floor(m / 3),
+                          (unit % 3) * 3 + (m % 3),
+                        ];
+                  const cell = board[row]?.[col];
+                  if (
+                    cell?.value === null &&
+                    !prompt.some((p) => p.row === row && p.col === col) &&
+                    cell.draft?.some((num) => [a, b, c, d].includes(num))
+                  ) {
+                    affectedPositions.push({ row, col });
+                  }
+                }
+
+                if (affectedPositions.length > 0) {
+                  const getMethodKey = (unitType: string): string => {
+                    switch (unitType) {
+                      case "row":
+                        return "ROW";
+                      case "col":
+                        return "COLUMN";
+                      case "box":
+                        return "BOX";
+                      default:
+                        return unitType.toUpperCase();
+                    }
+                  };
+
+                  const method =
+                    SOLUTION_METHODS[
+                      `NAKED_QUADRUPLE_${getMethodKey(
+                        unitType
+                      )}` as keyof typeof SOLUTION_METHODS
+                    ];
+
+                  return {
+                    position: affectedPositions,
+                    prompt,
+                    method,
+                    target: uniqueCandidates,
+                    isFill: false,
+                  };
+                }
+              }
             }
           }
         }
@@ -1174,81 +1362,132 @@ export const xWingVarient = (
   candidateMap: CandidateMap,
   graph: Graph
 ): Result | null => {
+  // 检查行
+  const rowResult = checkXWingVarient(board, candidateMap, true);
+  if (rowResult) return rowResult;
+
+  // 检查列
+  const colResult = checkXWingVarient(board, candidateMap, false);
+  if (colResult) return colResult;
+
+  return null;
+};
+
+const checkXWingVarient = (
+  board: CellData[][],
+  candidateMap: CandidateMap,
+  isRow: boolean
+): Result | null => {
   for (let num = 1; num <= 9; num++) {
-    const columnCandidates = candidateMap[num].col;
+    for (let i = 0; i < 9; i++) {
+      const positions = isRow
+        ? candidateMap[num]?.row?.get(i)?.positions
+        : candidateMap[num]?.col?.get(i)?.positions;
 
-    // 遍历所有列
-    for (let col1 = 0; col1 < 9; col1++) {
-      const candidates1 = columnCandidates.get(col1);
-      if (candidates1?.count !== 2) continue;
+      if (positions?.length === 2) {
+        const [posA, posB] = positions;
 
-      const [pos1, pos2] = candidates1.positions;
-      const box1 = Math.floor(pos1.row / 3);
-      const box2 = Math.floor(pos2.row / 3);
+        for (let j = 0; j < 9; j++) {
+          if (j === i) continue;
+          const otherPositions = isRow
+            ? candidateMap[num]?.row?.get(j)?.positions
+            : candidateMap[num]?.col?.get(j)?.positions;
 
-      // 确保两个候选方格在不同的宫
-      if (box1 === box2) continue;
+          if (otherPositions?.length === 3 || otherPositions?.length === 4) {
+            const posC = otherPositions.find((pos) =>
+              isRow
+                ? pos.col === posA.col || pos.col === posB.col
+                : pos.row === posA.row || pos.row === posB.row
+            );
 
-      // 寻找第二列
-      for (let col2 = 0; col2 < 9; col2++) {
-        const candidates2 = columnCandidates.get(col2);
-        if (!candidates2 || candidates2.count < 3 || candidates2.count > 4)
-          continue;
+            if (posC) {
+              const groupD = otherPositions.filter((pos) => pos !== posC);
 
-        // 检查第二列的候选方格是否满足条件
-        const boxC = candidates2.positions.find(
-          (pos) =>
-            Math.floor(pos.row / 3) !== box1 && Math.floor(pos.row / 3) !== box2
-        );
-        if (!boxC) continue;
+              const isGroupDInSameBox = groupD.every(
+                (pos) =>
+                  Math.floor(pos.row / 3) === Math.floor(groupD[0].row / 3) &&
+                  Math.floor(pos.col / 3) === Math.floor(groupD[0].col / 3)
+              );
 
-        if (num === 8 && col2 === 0) {
-          console.log(123);
-        }
+              const dBoxCol = Math.floor(groupD[0].col / 3);
+              const dBoxRow = Math.floor(groupD[0].row / 3);
+              const aBoxCol = Math.floor(posA.col / 3);
+              const aBoxRow = Math.floor(posA.row / 3);
+              const bBoxCol = Math.floor(posB.col / 3);
+              const bBoxRow = Math.floor(posB.row / 3);
 
-        const otherCandidates = candidates2.positions.filter(
-          (pos) => pos !== boxC
-        );
-        if (otherCandidates.length < 2) continue;
+              const isDInSameBoxWithAB = isRow
+                ? dBoxCol === aBoxCol || dBoxCol === bBoxCol
+                : dBoxRow === aBoxRow || dBoxRow === bBoxRow;
 
-        // 检查是否形成矩形
-        const boxesSet = new Set([box1, box2, Math.floor(boxC.row / 3)]);
-        if (
-          otherCandidates.some((pos) => !boxesSet.has(Math.floor(pos.row / 3)))
-        )
-          continue;
+              if (!isDInSameBoxWithAB) continue;
 
-        // 检查boxC所在列的其他行是否为空
-        const boxCCol = boxC.col;
-        const boxCRow = Math.floor(boxC.row / 3) * 3;
-        let isValid = true;
-        for (let r = boxCRow; r < boxCRow + 3; r++) {
-          if (r !== boxC.row && board[r][boxCCol].value !== null) {
-            isValid = false;
-            break;
+              if (isGroupDInSameBox) {
+                const abInSameBox =
+                  Math.floor(posA.row / 3) === Math.floor(posB.row / 3) &&
+                  Math.floor(posA.col / 3) === Math.floor(posB.col / 3);
+
+                const cdBoxRow = Math.floor(groupD[0].row / 3);
+                const cdBoxCol = Math.floor(groupD[0].col / 3);
+
+                const positionsToExclude: Position[] = [];
+
+                const isNotABCD = (r: number, c: number) =>
+                  !(r === posA.row && c === posA.col) &&
+                  !(r === posB.row && c === posB.col) &&
+                  !(r === posC.row && c === posC.col) &&
+                  !groupD.some((pos) => pos.row === r && pos.col === c);
+
+                if (abInSameBox) {
+                  // AB 在同一宫，排除 CD 所属宫内其他方格
+                  for (let r = cdBoxRow * 3; r < cdBoxRow * 3 + 3; r++) {
+                    for (let c = cdBoxCol * 3; c < cdBoxCol * 3 + 3; c++) {
+                      if (isNotABCD(r, c) && board[r][c].draft?.includes(num)) {
+                        positionsToExclude.push({ row: r, col: c });
+                      }
+                    }
+                  }
+                } else {
+                  // AB 不在同一宫
+                  if (isRow) {
+                    const targetCol =
+                      posC.col === posA.col ? posB.col : posA.col;
+                    for (let r = cdBoxRow * 3; r < cdBoxRow * 3 + 3; r++) {
+                      if (
+                        isNotABCD(r, targetCol) &&
+                        board[r][targetCol].draft?.includes(num)
+                      ) {
+                        positionsToExclude.push({ row: r, col: targetCol });
+                      }
+                    }
+                  } else {
+                    const targetRow =
+                      posC.row === posA.row ? posB.row : posA.row;
+                    for (let c = cdBoxCol * 3; c < cdBoxCol * 3 + 3; c++) {
+                      if (
+                        isNotABCD(targetRow, c) &&
+                        board[targetRow][c].draft?.includes(num)
+                      ) {
+                        positionsToExclude.push({ row: targetRow, col: c });
+                      }
+                    }
+                  }
+                }
+
+                if (positionsToExclude.length > 0) {
+                  return {
+                    position: positionsToExclude,
+                    prompt: [posA, posB, posC, ...groupD],
+                    method: isRow
+                      ? SOLUTION_METHODS.X_WING_VARIENT_ROW
+                      : SOLUTION_METHODS.X_WING_VARIENT_COLUMN,
+                    target: [num],
+                    isFill: false,
+                  };
+                }
+              }
+            }
           }
-        }
-        if (!isValid) continue;
-
-        // 找到可以删除候选数的位置
-        const affectedPositions: Position[] = [];
-        for (const pos of [pos1, pos2]) {
-          if (
-            board[pos.row][col2].value === null &&
-            board[pos.row][col2].draft.includes(num)
-          ) {
-            affectedPositions.push({ row: pos.row, col: col2 });
-          }
-        }
-
-        if (affectedPositions.length > 0) {
-          return {
-            position: affectedPositions,
-            prompt: [pos1, pos2, boxC, ...otherCandidates],
-            method: SOLUTION_METHODS.X_WING_VARIENT,
-            target: [num],
-            isFill: false,
-          };
         }
       }
     }
@@ -2009,102 +2248,119 @@ const findGraphNode = (
   return null;
 };
 
-// X-Chain
-// export const xChain = (board: CellData[][]): Result | null => {
-//   // 初始化一个空的结果数组
-//   const results: Result[] = [];
+// 三阶鱼
+export const swordfish = (
+  board: CellData[][],
+  candidateMap: CandidateMap,
+  graph: Graph
+): Result | null => {
+  // 检查行
+  const rowResult = checkSwordfish(board, candidateMap, true);
+  if (rowResult) return rowResult;
 
-//   // 遍历所有可能的数字
-//   for (let num = 1; num <= 9; num++) {
-//     // 为当前数字创建一个图
-//     const graph: { [key: string]: string[] } = {};
+  // 检查列
+  const colResult = checkSwordfish(board, candidateMap, false);
+  if (colResult) return colResult;
 
-//     // 构建图
-//     for (let row = 0; row < 9; row++) {
-//       for (let col = 0; col < 9; col++) {
-//         if (board[row]?.[col]?.value === null && board[row]?.[col]?.draft?.includes(num)) {
-//           const key = `${row},${col}`;
-//           graph[key] = [];
+  return null;
+};
 
-//           // 检查同行、同列和同宫的其他单元格
-//           for (let i = 0; i < 9; i++) {
-//             if (i !== col && board[row]?.[i]?.value === null && board[row]?.[i]?.draft?.includes(num)) {
-//               graph[key].push(`${row},${i}`);
-//             }
-//             if (i !== row && board[i]?.[col]?.value === null && board[i]?.[col]?.draft?.includes(num)) {
-//               graph[key].push(`${i},${col}`);
-//             }
-//           }
+const checkSwordfish = (
+  board: CellData[][],
+  candidateMap: CandidateMap,
+  isRow: boolean
+): Result | null => {
+  for (let num = 1; num <= 9; num++) {
+    const candidatePositions: Position[][] = [];
 
-//           const boxRow = Math.floor(row / 3) * 3;
-//           const boxCol = Math.floor(col / 3) * 3;
-//           for (let i = boxRow; i < boxRow + 3; i++) {
-//             for (let j = boxCol; j < boxCol + 3; j++) {
-//               if ((i !== row || j !== col) && board[i]?.[j]?.value === null && board[i]?.[j]?.draft?.includes(num)) {
-//                 graph[key].push(`${i},${j}`);
-//               }
-//             }
-//           }
-//         }
-//       }
-//     }
+    // 收集候选数字位置
+    for (let i = 0; i < 9; i++) {
+      const positions = isRow
+        ? candidateMap[num]?.row?.get(i)?.positions ?? []
+        : candidateMap[num]?.col?.get(i)?.positions ?? [];
+      if (positions.length >= 2 && positions.length <= 3) {
+        candidatePositions.push(positions);
+      }
+    }
 
-//     // 寻找格链
-//     const visited: { [key: string]: boolean } = {};
-//     const path: string[] = [];
+    // 检查三阶鱼模式
+    if (candidatePositions.length >= 3) {
+      for (let i = 0; i < candidatePositions.length - 2; i++) {
+        for (let j = i + 1; j < candidatePositions.length - 1; j++) {
+          for (let k = j + 1; k < candidatePositions.length; k++) {
+            const combinedPositions = [
+              ...candidatePositions[i],
+              ...candidatePositions[j],
+              ...candidatePositions[k],
+            ];
+            const uniqueIndices = new Set(
+              combinedPositions.map((pos) => (isRow ? pos.col : pos.row))
+            );
 
-//     const dfs = (node: string, startNode: string, length: number) => {
-//       visited[node] = true;
-//       path.push(node);
+            if (uniqueIndices.size === 3) {
+              let a = isRow
+                ? candidatePositions[0][0].row
+                : candidatePositions[0][0].col;
+              let b = isRow
+                ? candidatePositions[1][0].row
+                : candidatePositions[1][0].col;
+              let c = isRow
+                ? candidatePositions[2][0].row
+                : candidatePositions[2][0].col;
+              if (
+                Math.floor(a / 3) == Math.floor(b / 3) ||
+                Math.floor(a / 3) == Math.floor(c / 3) ||
+                Math.floor(b / 3) == Math.floor(c / 3)
+              ) {
+                continue;
+              }
 
-//       for (const neighbor of graph[node] ?? []) {
-//         if (neighbor === startNode && length > 3) {
-//           // 找到一个有效的格链
-//           const chain = path.map(pos => {
-//             const [row, col] = pos.split(',').map(Number);
-//             return { row, col };
-//           });
+              const affectedPositions: Position[] = [];
 
-//           // 检查是否可以消除候选数
-//           const evenPositions = chain.filter((_, index) => index % 2 === 0);
-//           const oddPositions = chain.filter((_, index) => index % 2 === 1);
-//           const affectedPositions: Position[] = [];
+              // 寻找可以消除候选数字的位置
+              for (const index of uniqueIndices) {
+                for (let m = 0; m < 9; m++) {
+                  const checkPos = isRow
+                    ? { row: m, col: index }
+                    : { row: index, col: m };
+                  if (
+                    !combinedPositions.some(
+                      (pos) =>
+                        pos.row === checkPos.row && pos.col === checkPos.col
+                    )
+                  ) {
+                    const cell = board[checkPos.row]?.[checkPos.col];
+                    if (cell?.draft?.includes(num)) {
+                      affectedPositions.push(checkPos);
+                    }
+                  }
+                }
+              }
 
-//           for (let row = 0; row < 9; row++) {
-//             for (let col = 0; col < 9; col++) {
-//               if (board[row]?.[col]?.value === null && board[row]?.[col]?.draft?.includes(num)) {
-//                 const pos = { row, col };
-//                 if (!chain.some(p => p.row === row && p.col === col) &&
-//                     (evenPositions.some(p => areCellsInSameUnit(p, pos)) &&
-//                      oddPositions.some(p => areCellsInSameUnit(p, pos)))) {
-//                   affectedPositions.push(pos);
-//                 }
-//               }
-//             }
-//           }
+              if (affectedPositions.length > 0) {
+                return {
+                  position: affectedPositions,
+                  prompt: combinedPositions,
+                  method: isRow
+                    ? SOLUTION_METHODS.SWORDFISH_ROW
+                    : SOLUTION_METHODS.SWORDFISH_COLUMN,
+                  target: [num],
+                  isFill: false,
+                };
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 
-//           if (affectedPositions.length > 0) {
-//             results.push({
-//               position: affectedPositions,
-//               prompt: chain,
-//               method: SOLUTION_METHODS.X_CHAIN,
-//               target: [num],
-//               isFill: false,
-//             });
-//           }
-//         }
-//       }
+  return null;
+};
 
-//       visited[node] = false;
-//       path.pop();
-//     };
-
-//     // 从每个节点开始搜索
-//     for (const node in graph) {
-//       dfs(node, node, 0);
-//     }
-//   }
-
-//   // 返回找到的第一个结果，如果没有找到则返回null
-//   return results.length > 0 ? results[0] : null;
-// };
+// 三阶带鳍鱼
+export const swordfishWithFin = (
+  board: CellData[][],
+  candidateMap: CandidateMap,
+  graph: Graph
+): Result | null => {};

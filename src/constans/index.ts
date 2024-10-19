@@ -25,13 +25,17 @@ export const SOLUTION_METHODS = {
   HIDDEN_TRIPLE_ROW2: "隐形三数对2(行)",
   HIDDEN_TRIPLE_COLUMN2: "隐形三数对2(列)",
   HIDDEN_TRIPLE_BOX2: "隐形三数对2(宫)",
+  NAKED_QUADRUPLE_ROW: "显性四数对法(行)",
+  NAKED_QUADRUPLE_COLUMN: "显性四数对法(列)",
+  NAKED_QUADRUPLE_BOX: "显性四数对法(宫)",
   X_WING: "X-Wing",
-  X_WING_VARIENT: "X-Wing变种",
+  X_WING_VARIENT_ROW: "X-Wing变种(行)",
+  X_WING_VARIENT_COLUMN: "X-Wing变种(列)",
   XY_WING: "XY-Wing",
   XYZ_WING: "XYZ-Wing",
   SKYSCRAPER: "摩天楼",
-  REMOTE_PAIR: "远程对",
-  // X_CHAIN: "X-Chain",
+  SWORDFISH_ROW: "三阶鱼(行)",
+  SWORDFISH_COLUMN: "三阶鱼(列)",
 };
 
 export const STRONG_LINK_TYPE = {
