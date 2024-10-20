@@ -18,6 +18,7 @@ export interface CellData {
   value: number | null;
   isGiven: boolean;
   draft: number[]; // 添加草稿数字数组
+  highlightError?: string | null;
   highlight?: string | null;
   highlightCandidates?: number[];
 }
@@ -526,6 +527,7 @@ export const useSudokuBoard = (initialBoard: CellData[][]) => {
     setBoard(newBoard);
     updateCandidateMap(newBoard);
     setGraph(createGraph(newBoard, candidateMap));
+    console.log(newBoard);
   };
 
   const undo = () => {

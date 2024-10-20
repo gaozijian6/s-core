@@ -141,6 +141,17 @@
         animation: errorFlashCandidate 0.5s ease-in-out 2;
       }
     }
+
+    &.positionHighlight {
+      background-color: #ff9f8e !important; /* 红色高亮 */
+      transition: background-color 0.5s ease;
+    }
+
+    &.promptHighlight {
+      background-color: #8dd3ff !important; /* 蓝色高亮 */
+      transition: background-color 0.5s ease;
+    }
+
   }
 }
 .selectMode,
@@ -192,42 +203,66 @@
 }
 
 @keyframes errorFlash {
-  0%, 100% { background-color: white; }
-  50% { background-color: #ff6b6b; }
+  0%,
+  100% {
+    background-color: white;
+  }
+  50% {
+    background-color: #ff6b6b;
+  }
 }
 
 @keyframes errorFlashSelected {
-  0%, 100% { background-color: #e6f7ff; }
-  50% { background-color: #ff6b6b; }
+  0%,
+  100% {
+    background-color: #e6f7ff;
+  }
+  50% {
+    background-color: #ff6b6b;
+  }
 }
 
 @keyframes errorFlashSelectedNumber {
-  0%, 100% { background-color: #1890ff; }
-  50% { background-color: #ff6b6b; }
+  0%,
+  100% {
+    background-color: #1890ff;
+  }
+  50% {
+    background-color: #ff6b6b;
+  }
 }
 
 @keyframes errorFlashCandidate {
-  0%, 100% { background-color: #9bf9ab; }
-  50% { background-color: #ff6b6b; }
+  0%,
+  100% {
+    background-color: #9bf9ab;
+  }
+  50% {
+    background-color: #ff6b6b;
+  }
 }
 
-.promptHighlight {
-  background-color: #ffff00 !important; /* 黄色高亮 */
-  transition: background-color 0.5s ease;
-}
-
-.rowHighlight, .columnHighlight, .boxHighlight {
+.rowHighlight,
+.columnHighlight,
+.boxHighlight {
   background-color: #ffd700 !important; /* 金色高亮 */
   transition: background-color 0.5s ease;
 }
 
-.positionHighlight {
-  background-color: #ff6347 !important; /* 红色高亮 */
-  transition: background-color 0.5s ease;
+.candidateHighlightDelete {
+  color: #ff0000 !important; /* 红色文字 */
+  font-weight: bold;
+  transition: color 0.5s ease;
 }
 
-.candidateHighlight {
-  color: #ff0000 !important; /* 红色文字 */
+.candidateHighlightFill {
+  color: #59ff59 !important; /* 红色文字 */
+  font-weight: bold;
+  transition: color 0.5s ease;
+}
+
+.candidateHighlightHint {
+  color: rgb(14, 170, 254) !important; /* 红色文字 */
   font-weight: bold;
   transition: color 0.5s ease;
 }

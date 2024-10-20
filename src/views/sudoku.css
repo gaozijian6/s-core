@@ -113,6 +113,16 @@
 .sudokuGrid .sudokuCell.candidateNumber.errorCell {
   animation: errorFlashCandidate 0.5s ease-in-out 2;
 }
+.sudokuGrid .sudokuCell.positionHighlight {
+  background-color: #ff9f8e !important;
+  /* 红色高亮 */
+  transition: background-color 0.5s ease;
+}
+.sudokuGrid .sudokuCell.promptHighlight {
+  background-color: #8dd3ff !important;
+  /* 蓝色高亮 */
+  transition: background-color 0.5s ease;
+}
 .selectMode,
 .controlButtons,
 .numberButtons {
@@ -190,11 +200,6 @@
     background-color: #ff6b6b;
   }
 }
-.promptHighlight {
-  background-color: #ffff00 !important;
-  /* 黄色高亮 */
-  transition: background-color 0.5s ease;
-}
 .rowHighlight,
 .columnHighlight,
 .boxHighlight {
@@ -202,13 +207,20 @@
   /* 金色高亮 */
   transition: background-color 0.5s ease;
 }
-.positionHighlight {
-  background-color: #ff6347 !important;
-  /* 红色高亮 */
-  transition: background-color 0.5s ease;
-}
-.candidateHighlight {
+.candidateHighlightDelete {
   color: #ff0000 !important;
+  /* 红色文字 */
+  font-weight: bold;
+  transition: color 0.5s ease;
+}
+.candidateHighlightFill {
+  color: #59ff59 !important;
+  /* 红色文字 */
+  font-weight: bold;
+  transition: color 0.5s ease;
+}
+.candidateHighlightHint {
+  color: #0eaafe !important;
   /* 红色文字 */
   font-weight: bold;
   transition: color 0.5s ease;

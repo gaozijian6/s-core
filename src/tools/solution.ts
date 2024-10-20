@@ -1272,11 +1272,9 @@ export const xWing = (
   candidateMap: CandidateMap,
   graph: Graph
 ): Result | null => {
-  // 检查行
   const rowResult = checkXWing(board, true);
   if (rowResult) return rowResult;
 
-  // 检查列
   const colResult = checkXWing(board, false);
   if (colResult) return colResult;
 
@@ -1287,7 +1285,6 @@ const checkXWing = (board: CellData[][], isRow: boolean): Result | null => {
   for (let num = 1; num <= 9; num++) {
     const candidatePositions: Position[][] = [];
 
-    // 收集候选数字位置
     for (let i = 0; i < 9; i++) {
       const positions: Position[] = [];
       for (let j = 0; j < 9; j++) {
@@ -1302,7 +1299,6 @@ const checkXWing = (board: CellData[][], isRow: boolean): Result | null => {
       }
     }
 
-    // 检查X-Wing模式
     if (candidatePositions.length >= 2) {
       for (let i = 0; i < candidatePositions.length - 1; i++) {
         for (let j = i + 1; j < candidatePositions.length; j++) {
@@ -1313,7 +1309,6 @@ const checkXWing = (board: CellData[][], isRow: boolean): Result | null => {
           if (pos1[index] === pos3[index] && pos2[index] === pos4[index]) {
             const affectedPositions: Position[] = [];
 
-            // 寻找可以消除候选数字的位置
             for (let k = 0; k < 9; k++) {
               if (
                 k !== pos1[isRow ? "row" : "col"] &&
@@ -1342,7 +1337,7 @@ const checkXWing = (board: CellData[][], isRow: boolean): Result | null => {
               return {
                 position: affectedPositions,
                 prompt: [pos1, pos2, pos3, pos4],
-                method: SOLUTION_METHODS.X_WING,
+                method: isRow ? SOLUTION_METHODS.X_WING_ROW : SOLUTION_METHODS.X_WING_COLUMN,
                 target: [num],
                 isFill: false,
               };
