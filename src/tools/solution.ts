@@ -1,5 +1,5 @@
 import { SOLUTION_METHODS } from "../constans";
-import { areCellsInSameUnit } from "./index";
+import { areCellsInSameUnit,solve } from "./index";
 import type {
   CandidateMap,
   CandidateStats,
@@ -1381,9 +1381,8 @@ const checkXWing = (board: CellData[][], isRow: boolean): Result | null => {
                   : SOLUTION_METHODS.X_WING_COLUMN,
                 target: [num],
                 isFill: false,
-                row: pos1.row,
-                col: pos1.col,
-                box: Math.floor(pos1.row / 3) * 3 + Math.floor(pos1.col / 3),
+                rows: [pos1.row, pos3.row],
+                cols: [pos1.col, pos3.col],
               };
             }
           }
@@ -1522,10 +1521,8 @@ const checkXWingVarient = (
                       : SOLUTION_METHODS.X_WING_VARIENT_COLUMN,
                     target: [num],
                     isFill: false,
-                    row: posA.row,
-                    col: posA.col,
-                    box:
-                      Math.floor(posA.row / 3) * 3 + Math.floor(posA.col / 3),
+                    rows: [posA.row, posC.row],
+                    cols: [posA.col, posC.col],
                   };
                 }
               }
@@ -2546,52 +2543,25 @@ const checkSwordfish = (
   return null;
 };
 
-// 三阶带鳍鱼
-// export const swordfishWithFin = (
-//   board: CellData[][],
-//   candidateMap: CandidateMap,
-//   graph: Graph
-// ): Result | null => {
-//   // 检查行
-//   const rowResult = checkSwordfishWithFin(board, candidateMap, true);
-//   if (rowResult) return rowResult;
-
-//   // 检查列
-//   const colResult = checkSwordfishWithFin(board, candidateMap, false);
-//   if (colResult) return colResult;
-
-//   return null;
-// };
-
-// const checkSwordfishWithFin = (
-//   board: CellData[][],
-//   candidateMap: CandidateMap,
-//   isRow: boolean
-// ): Result | null => {
-//   for (let num = 1; num <= 9; num++) {
-//     const candidatePositions: Position[][] = [];
-
-//     // 收集候选数字位置
-//     for (let i = 0; i < 9; i++) {
-//       const positions = isRow
-//         ? candidateMap[num]?.row?.get(i)?.positions ?? []
-//         : candidateMap[num]?.col?.get(i)?.positions ?? [];
-//       if (positions.length >= 2 && positions.length <= 3) {
-//         candidatePositions.push(positions);
-//       }
-//     }
-
-//     // 检查是否有符合 223 模式的行或列
-//     if (candidatePositions.length >= 3) {
-//       const twoPositions = candidatePositions.filter(pos => pos.length === 2);
-//       const threePositions = candidatePositions.filter(pos => pos.length === 3);
-
-//       if (twoPositions.length >= 2 && threePositions.length >= 1) {
-//         // 找到了符合 223 模式的行或列
-//         // 这里可以继续实现后续的逻辑
-//       }
-//     }
-//   }
-
-//   return null;
-// };
+// 试数法
+export const trialAndError = (board: CellData[][], candidateMap: CandidateMap, graph: Graph): Result | null => {
+  const newBoard = board.map(row => row.map(cell => ({ ...cell })));
+  if (solve(newBoard)) {
+    for (let row = 0; row < 9; row++) {
+      for (let col = 0; col < 9; col++) {
+        const cell = board[row][col];
+        if (cell.value === null && cell.draft?.length === 2) {
+          const correctValue = newBoard[row][col].value;
+          return {
+            position: [{ row, col }],
+            prompt: [{ row, col }],
+            method: SOLUTION_METHODS.TRIAL_AND_ERROR,
+            target: [correctValue as number],
+            isFill: true
+          };
+        }
+      }
+    }
+  }
+  return null;
+}

@@ -106,7 +106,7 @@
     }
 
     .draftCell {
-      font-size: 0.45em; // 稍微减小字体大小
+      font-size: 0.45em;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -249,20 +249,24 @@
   transition: background-color 0.5s ease;
 }
 
-.candidateHighlightDelete {
-  color: #ff0000 !important; /* 红色文字 */
-  font-weight: bold;
-  transition: color 0.5s ease;
-}
-
-.candidateHighlightFill {
-  color: #59ff59 !important; /* 红色文字 */
-  font-weight: bold;
-  transition: color 0.5s ease;
-}
 
 .candidateHighlightHint {
-  color: rgb(14, 170, 254) !important; /* 红色文字 */
-  font-weight: bold;
+  color: #ffffff !important; /* 深蓝色文字 */
   transition: color 0.5s ease;
+  background-color: #0000ff;
+  border-radius: 40%;
+}
+
+.candidateHighlightDelete {
+  color: #ffffff !important; /* 红色文字 */
+  transition: color 0.5s ease;
+  background-color: #ff0000;
+  border-radius: 40%;
+}
+
+.draftCell {
+  font-size: 0.45em;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }

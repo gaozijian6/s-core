@@ -513,21 +513,23 @@ export const useSudokuBoard = (initialBoard: CellData[][]) => {
     newBoard: CellData[][],
     action: string,
     affectedCells?: { row: number; col: number }[],
-    isOfficialDraft: boolean = false
+    isOfficialDraft: boolean = false,
+    isRecord: boolean = true
   ) => {
-    const newHistory = history.slice(0, currentStep + 1);
-    newHistory.push({
-      board: newBoard,
-      action,
-      affectedCells,
-      isOfficialDraft,
-    });
-    setHistory(newHistory);
-    setCurrentStep(newHistory.length - 1);
+    if (isRecord){
+      const newHistory = history.slice(0, currentStep + 1);
+      newHistory.push({
+        board: newBoard,
+        action,
+        affectedCells,
+        isOfficialDraft,
+      });
+      setHistory(newHistory);
+      setCurrentStep(newHistory.length - 1);
+    }
     setBoard(newBoard);
     updateCandidateMap(newBoard);
     setGraph(createGraph(newBoard, candidateMap));
-    console.log(newBoard);
   };
 
   const undo = () => {

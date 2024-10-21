@@ -26,7 +26,6 @@ import {
   findStrongLink,
   checkStrongLinkParity,
   skyscraper,
-  findFourPath,
   hiddenTriple1,
   nakedTriple1,
   nakedTriple2,
@@ -34,6 +33,7 @@ import {
   nakedQuadruple,
   swordfish,
   eureka,
+  trialAndError,
 } from "../tools/solution";
 import "./sudoku.less";
 import type { CellData, Position } from "../tools";
@@ -103,992 +103,432 @@ const Sudoku: React.FC = () => {
       }))
     );
 
-<<<<<<< HEAD
-    // newBoard = [
-    //   [
-    //     {
-    //       value: null,
-    //       isGiven: false,
-    //       draft: [2, 4, 5, 7],
-    //     },
-    //     {
-    //       value: null,
-    //       isGiven: false,
-    //       draft: [2, 3, 5, 7],
-    //     },
-    //     {
-    //       value: null,
-    //       isGiven: false,
-    //       draft: [3, 4, 5, 7, 9],
-    //     },
-    //     {
-    //       value: null,
-    //       isGiven: false,
-    //       draft: [5, 8, 9],
-    //     },
-    //     {
-    //       value: null,
-    //       isGiven: false,
-    //       draft: [7, 9],
-    //     },
-    //     {
-    //       value: 6,
-    //       isGiven: false,
-    //       draft: [],
-    //     },
-    //     {
-    //       value: 1,
-    //       isGiven: false,
-    //       draft: [],
-    //     },
-    //     {
-    //       value: null,
-    //       isGiven: false,
-    //       draft: [8, 9],
-    //     },
-    //     {
-    //       value: null,
-    //       isGiven: false,
-    //       draft: [7, 8, 9],
-    //     },
-    //   ],
-    //   [
-    //     {
-    //       value: null,
-    //       isGiven: false,
-    //       draft: [5, 6, 7],
-    //     },
-    //     {
-    //       value: null,
-    //       isGiven: false,
-    //       draft: [5, 6, 7],
-    //     },
-    //     {
-    //       value: null,
-    //       isGiven: false,
-    //       draft: [5, 6, 7, 9],
-    //     },
-    //     {
-    //       value: null,
-    //       isGiven: false,
-    //       draft: [5, 8, 9],
-    //     },
-    //     {
-    //       value: 2,
-    //       isGiven: false,
-    //       draft: [],
-    //     },
-    //     {
-    //       value: 1,
-    //       isGiven: false,
-    //       draft: [],
-    //     },
-    //     {
-    //       value: 4,
-    //       isGiven: false,
-    //       draft: [],
-    //     },
-    //     {
-    //       value: 3,
-    //       isGiven: false,
-    //       draft: [],
-    //     },
-    //     {
-    //       value: null,
-    //       isGiven: false,
-    //       draft: [7, 8, 9],
-    //     },
-    //   ],
-    //   [
-    //     {
-    //       value: 8,
-    //       isGiven: false,
-    //       draft: [],
-    //     },
-    //     {
-    //       value: 1,
-    //       isGiven: false,
-    //       draft: [],
-    //     },
-    //     {
-    //       value: null,
-    //       isGiven: false,
-    //       draft: [7, 9],
-    //     },
-    //     {
-    //       value: 3,
-    //       isGiven: false,
-    //       draft: [],
-    //     },
-    //     {
-    //       value: 4,
-    //       isGiven: false,
-    //       draft: [],
-    //     },
-    //     {
-    //       value: null,
-    //       isGiven: false,
-    //       draft: [7, 9],
-    //     },
-    //     {
-    //       value: 2,
-    //       isGiven: false,
-    //       draft: [],
-    //     },
-    //     {
-    //       value: 5,
-    //       isGiven: false,
-    //       draft: [],
-    //     },
-    //     {
-    //       value: 6,
-    //       isGiven: false,
-    //       draft: [],
-    //     },
-    //   ],
-    //   [
-    //     {
-    //       value: 9,
-    //       isGiven: false,
-    //       draft: [],
-    //     },
-    //     {
-    //       value: 8,
-    //       isGiven: false,
-    //       draft: [],
-    //     },
-    //     {
-    //       value: null,
-    //       isGiven: false,
-    //       draft: [1, 5],
-    //     },
-    //     {
-    //       value: 2,
-    //       isGiven: false,
-    //       draft: [],
-    //     },
-    //     {
-    //       value: 6,
-    //       isGiven: false,
-    //       draft: [],
-    //     },
-    //     {
-    //       value: 4,
-    //       isGiven: false,
-    //       draft: [],
-    //     },
-    //     {
-    //       value: null,
-    //       isGiven: false,
-    //       draft: [3, 5],
-    //     },
-    //     {
-    //       value: 7,
-    //       isGiven: false,
-    //       draft: [],
-    //     },
-    //     {
-    //       value: null,
-    //       isGiven: false,
-    //       draft: [1, 3, 5],
-    //     },
-    //   ],
-    //   [
-    //     {
-    //       value: null,
-    //       isGiven: false,
-    //       draft: [2, 5, 6, 7],
-    //     },
-    //     {
-    //       value: null,
-    //       isGiven: false,
-    //       draft: [2, 5, 6, 7],
-    //     },
-    //     {
-    //       value: null,
-    //       isGiven: false,
-    //       draft: [5, 6, 7],
-    //     },
-    //     {
-    //       value: 1,
-    //       isGiven: false,
-    //       draft: [],
-    //     },
-    //     {
-    //       value: null,
-    //       isGiven: false,
-    //       draft: [3, 8, 9],
-    //     },
-    //     {
-    //       value: null,
-    //       isGiven: false,
-    //       draft: [3, 9],
-    //     },
-    //     {
-    //       value: null,
-    //       isGiven: false,
-    //       draft: [5, 6, 9],
-    //     },
-    //     {
-    //       value: null,
-    //       isGiven: false,
-    //       draft: [8, 9],
-    //     },
-    //     {
-    //       value: 4,
-    //       isGiven: false,
-    //       draft: [],
-    //     },
-    //   ],
-    //   [
-    //     {
-    //       value: 3,
-    //       isGiven: false,
-    //       draft: [],
-    //     },
-    //     {
-    //       value: 4,
-    //       isGiven: false,
-    //       draft: [],
-    //     },
-    //     {
-    //       value: null,
-    //       isGiven: false,
-    //       draft: [1, 6],
-    //     },
-    //     {
-    //       value: 7,
-    //       isGiven: false,
-    //       draft: [],
-    //     },
-    //     {
-    //       value: null,
-    //       isGiven: false,
-    //       draft: [8, 9],
-    //     },
-    //     {
-    //       value: 5,
-    //       isGiven: false,
-    //       draft: [],
-    //     },
-    //     {
-    //       value: null,
-    //       isGiven: false,
-    //       draft: [6, 9],
-    //     },
-    //     {
-    //       value: 2,
-    //       isGiven: false,
-    //       draft: [],
-    //     },
-    //     {
-    //       value: null,
-    //       isGiven: false,
-    //       draft: [1, 8, 9],
-    //     },
-    //   ],
-    //   [
-    //     {
-    //       value: 1,
-    //       isGiven: false,
-    //       draft: [],
-    //     },
-    //     {
-    //       value: null,
-    //       isGiven: false,
-    //       draft: [3, 6],
-    //     },
-    //     {
-    //       value: 8,
-    //       isGiven: false,
-    //       draft: [],
-    //     },
-    //     {
-    //       value: null,
-    //       isGiven: false,
-    //       draft: [6, 9],
-    //     },
-    //     {
-    //       value: 5,
-    //       isGiven: false,
-    //       draft: [],
-    //     },
-    //     {
-    //       value: 2,
-    //       isGiven: false,
-    //       draft: [],
-    //     },
-    //     {
-    //       value: 7,
-    //       isGiven: false,
-    //       draft: [],
-    //     },
-    //     {
-    //       value: 4,
-    //       isGiven: false,
-    //       draft: [],
-    //     },
-    //     {
-    //       value: null,
-    //       isGiven: false,
-    //       draft: [3, 9],
-    //     },
-    //   ],
-    //   [
-    //     {
-    //       value: null,
-    //       isGiven: false,
-    //       draft: [4, 5, 6, 7],
-    //     },
-    //     {
-    //       value: null,
-    //       isGiven: false,
-    //       draft: [3, 5, 6, 7],
-    //     },
-    //     {
-    //       value: null,
-    //       isGiven: false,
-    //       draft: [3, 4, 5, 6, 7],
-    //     },
-    //     {
-    //       value: null,
-    //       isGiven: false,
-    //       draft: [6, 9],
-    //     },
-    //     {
-    //       value: null,
-    //       isGiven: false,
-    //       draft: [3, 7, 9],
-    //     },
-    //     {
-    //       value: 8,
-    //       isGiven: false,
-    //       draft: [],
-    //     },
-    //     {
-    //       value: null,
-    //       isGiven: false,
-    //       draft: [3, 5, 9],
-    //     },
-    //     {
-    //       value: 1,
-    //       isGiven: false,
-    //       draft: [],
-    //     },
-    //     {
-    //       value: 2,
-    //       isGiven: false,
-    //       draft: [],
-    //     },
-    //   ],
-    //   [
-    //     {
-    //       value: null,
-    //       isGiven: false,
-    //       draft: [5, 7],
-    //     },
-    //     {
-    //       value: 9,
-    //       isGiven: false,
-    //       draft: [],
-    //     },
-    //     {
-    //       value: 2,
-    //       isGiven: false,
-    //       draft: [],
-    //     },
-    //     {
-    //       value: 4,
-    //       isGiven: false,
-    //       draft: [],
-    //     },
-    //     {
-    //       value: 1,
-    //       isGiven: false,
-    //       draft: [],
-    //     },
-    //     {
-    //       value: null,
-    //       isGiven: false,
-    //       draft: [3, 7],
-    //     },
-    //     {
-    //       value: 8,
-    //       isGiven: false,
-    //       draft: [],
-    //     },
-    //     {
-    //       value: 6,
-    //       isGiven: false,
-    //       draft: [],
-    //     },
-    //     {
-    //       value: null,
-    //       isGiven: false,
-    //       draft: [3, 5],
-    //     },
-    //   ],
-    // ];
-=======
-    newBoard=[
+    newBoard = [
       [
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  2,
-                  4
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  2,
-                  3
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  3,
-                  4
-              ]
-          },
-          {
-              "value": 5,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  7,
-                  9
-              ]
-          },
-          {
-              "value": 6,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": 1,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  8,
-                  9
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  7,
-                  8,
-                  9
-              ]
-          }
+        {
+          value: 4,
+          isGiven: false,
+          draft: [],
+        },
+        {
+          value: null,
+          isGiven: false,
+          draft: [6, 8],
+        },
+        {
+          value: null,
+          isGiven: false,
+          draft: [1, 3, 8],
+        },
+        {
+          value: 9,
+          isGiven: false,
+          draft: [],
+        },
+        {
+          value: null,
+          isGiven: false,
+          draft: [1, 6],
+        },
+        {
+          value: null,
+          isGiven: false,
+          draft: [1, 3, 8],
+        },
+        {
+          value: 7,
+          isGiven: false,
+          draft: [],
+        },
+        {
+          value: 5,
+          isGiven: false,
+          draft: [],
+        },
+        {
+          value: 2,
+          isGiven: false,
+          draft: [],
+        },
       ],
       [
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  5,
-                  6,
-                  7
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  5,
-                  6,
-                  7
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  5,
-                  6,
-                  7,
-                  9
-              ]
-          },
-          {
-              "value": 8,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": 2,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": 1,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": 4,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": 3,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  7,
-                  9
-              ]
-          }
+        {
+          value: null,
+          isGiven: false,
+          draft: [5, 6, 7, 9],
+        },
+        {
+          value: 2,
+          isGiven: false,
+          draft: [],
+        },
+        {
+          value: null,
+          isGiven: false,
+          draft: [1, 9],
+        },
+        {
+          value: null,
+          isGiven: false,
+          draft: [1, 6, 7],
+        },
+        {
+          value: null,
+          isGiven: false,
+          draft: [1, 5, 6, 7],
+        },
+        {
+          value: null,
+          isGiven: false,
+          draft: [1, 5],
+        },
+        {
+          value: 4,
+          isGiven: false,
+          draft: [],
+        },
+        {
+          value: 8,
+          isGiven: false,
+          draft: [],
+        },
+        {
+          value: 3,
+          isGiven: false,
+          draft: [],
+        },
       ],
       [
-          {
-              "value": 8,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": 1,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  7,
-                  9
-              ]
-          },
-          {
-              "value": 3,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": 4,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  7,
-                  9
-              ]
-          },
-          {
-              "value": 2,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": 5,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": 6,
-              "isGiven": false,
-              "draft": []
-          }
+        {
+          value: null,
+          isGiven: false,
+          draft: [5, 7, 8],
+        },
+        {
+          value: null,
+          isGiven: false,
+          draft: [7, 8],
+        },
+        {
+          value: null,
+          isGiven: false,
+          draft: [3, 8],
+        },
+        {
+          value: null,
+          isGiven: false,
+          draft: [2, 4, 7, 8],
+        },
+        {
+          value: null,
+          isGiven: false,
+          draft: [2, 5, 7],
+        },
+        {
+          value: null,
+          isGiven: false,
+          draft: [2, 3, 4, 5, 8],
+        },
+        {
+          value: 9,
+          isGiven: false,
+          draft: [],
+        },
+        {
+          value: 1,
+          isGiven: false,
+          draft: [],
+        },
+        {
+          value: 6,
+          isGiven: false,
+          draft: [],
+        },
       ],
       [
-          {
-              "value": 9,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": 8,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  5
-              ]
-          },
-          {
-              "value": 2,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": 6,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": 4,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  3,
-                  5
-              ]
-          },
-          {
-              "value": 7,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  3,
-                  5
-              ]
-          }
+        {
+          value: null,
+          isGiven: false,
+          draft: [6, 7, 8],
+        },
+        {
+          value: null,
+          isGiven: false,
+          draft: [1, 6, 7, 8],
+        },
+        {
+          value: 4,
+          isGiven: false,
+          draft: [],
+        },
+        {
+          value: null,
+          isGiven: false,
+          draft: [1, 6, 7, 8],
+        },
+        {
+          value: null,
+          isGiven: false,
+          draft: [1, 5, 6, 7],
+        },
+        {
+          value: null,
+          isGiven: false,
+          draft: [1, 5, 8],
+        },
+        {
+          value: 3,
+          isGiven: false,
+          draft: [],
+        },
+        {
+          value: 2,
+          isGiven: false,
+          draft: [],
+        },
+        {
+          value: 9,
+          isGiven: false,
+          draft: [],
+        },
       ],
       [
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  2,
-                  5,
-                  6,
-                  7
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  2,
-                  5,
-                  6,
-                  7
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  5,
-                  6,
-                  7
-              ]
-          },
-          {
-              "value": 1,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  3,
-                  8,
-                  9
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  3,
-                  9
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  5,
-                  6
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  8,
-                  9
-              ]
-          },
-          {
-              "value": 4,
-              "isGiven": false,
-              "draft": []
-          }
+        {
+          value: null,
+          isGiven: false,
+          draft: [6, 8],
+        },
+        {
+          value: 9,
+          isGiven: false,
+          draft: [],
+        },
+        {
+          value: 2,
+          isGiven: false,
+          draft: [],
+        },
+        {
+          value: null,
+          isGiven: false,
+          draft: [4, 6, 8],
+        },
+        {
+          value: 3,
+          isGiven: false,
+          draft: [],
+        },
+        {
+          value: null,
+          isGiven: false,
+          draft: [4, 8],
+        },
+        {
+          value: 5,
+          isGiven: false,
+          draft: [],
+        },
+        {
+          value: 7,
+          isGiven: false,
+          draft: [],
+        },
+        {
+          value: 1,
+          isGiven: false,
+          draft: [],
+        },
       ],
       [
-          {
-              "value": 3,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": 4,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  6
-              ]
-          },
-          {
-              "value": 7,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  8,
-                  9
-              ]
-          },
-          {
-              "value": 5,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  6,
-                  9
-              ]
-          },
-          {
-              "value": 2,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  8,
-                  9
-              ]
-          }
+        {
+          value: 3,
+          isGiven: false,
+          draft: [],
+        },
+        {
+          value: null,
+          isGiven: false,
+          draft: [1, 7],
+        },
+        {
+          value: 5,
+          isGiven: false,
+          draft: [],
+        },
+        {
+          value: null,
+          isGiven: false,
+          draft: [1, 2, 7],
+        },
+        {
+          value: 9,
+          isGiven: false,
+          draft: [],
+        },
+        {
+          value: null,
+          isGiven: false,
+          draft: [1, 2],
+        },
+        {
+          value: 8,
+          isGiven: false,
+          draft: [],
+        },
+        {
+          value: 6,
+          isGiven: false,
+          draft: [],
+        },
+        {
+          value: 4,
+          isGiven: false,
+          draft: [],
+        },
       ],
       [
-          {
-              "value": 1,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  3,
-                  6
-              ]
-          },
-          {
-              "value": 8,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  6,
-                  9
-              ]
-          },
-          {
-              "value": 5,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": 2,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": 7,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": 4,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  3,
-                  9
-              ]
-          }
+        {
+          value: 1,
+          isGiven: false,
+          draft: [],
+        },
+        {
+          value: 5,
+          isGiven: false,
+          draft: [],
+        },
+        {
+          value: 6,
+          isGiven: false,
+          draft: [],
+        },
+        {
+          value: 3,
+          isGiven: false,
+          draft: [],
+        },
+        {
+          value: 8,
+          isGiven: false,
+          draft: [],
+        },
+        {
+          value: 9,
+          isGiven: false,
+          draft: [],
+        },
+        {
+          value: 2,
+          isGiven: false,
+          draft: [],
+        },
+        {
+          value: 4,
+          isGiven: false,
+          draft: [],
+        },
+        {
+          value: 7,
+          isGiven: false,
+          draft: [],
+        },
       ],
       [
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  4,
-                  5,
-                  6,
-                  7
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  3,
-                  5,
-                  6,
-                  7
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  3,
-                  4
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  6,
-                  9
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  3,
-                  7
-              ]
-          },
-          {
-              "value": 8,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  3,
-                  5,
-                  9
-              ]
-          },
-          {
-              "value": 1,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": 2,
-              "isGiven": false,
-              "draft": []
-          }
+        {
+          value: 2,
+          isGiven: false,
+          draft: [],
+        },
+        {
+          value: 3,
+          isGiven: false,
+          draft: [],
+        },
+        {
+          value: 7,
+          isGiven: false,
+          draft: [],
+        },
+        {
+          value: 5,
+          isGiven: false,
+          draft: [],
+        },
+        {
+          value: 4,
+          isGiven: false,
+          draft: [],
+        },
+        {
+          value: 6,
+          isGiven: false,
+          draft: [],
+        },
+        {
+          value: 1,
+          isGiven: false,
+          draft: [],
+        },
+        {
+          value: 9,
+          isGiven: false,
+          draft: [],
+        },
+        {
+          value: 8,
+          isGiven: false,
+          draft: [],
+        },
       ],
       [
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  5,
-                  7
-              ]
-          },
-          {
-              "value": 9,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": 2,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": 4,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": 1,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  3,
-                  7
-              ]
-          },
-          {
-              "value": 8,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": 6,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  3,
-                  5
-              ]
-          }
-      ]
-  ]
+        {
+          value: null,
+          isGiven: false,
+          draft: [8, 9],
+        },
+        {
+          value: 4,
+          isGiven: false,
+          draft: [],
+        },
+        {
+          value: null,
+          isGiven: false,
+          draft: [8, 9],
+        },
+        {
+          value: null,
+          isGiven: false,
+          draft: [1, 2],
+        },
+        {
+          value: null,
+          isGiven: false,
+          draft: [1, 2],
+        },
+        {
+          value: 7,
+          isGiven: false,
+          draft: [],
+        },
+        {
+          value: 6,
+          isGiven: false,
+          draft: [],
+        },
+        {
+          value: 3,
+          isGiven: false,
+          draft: [],
+        },
+        {
+          value: 5,
+          isGiven: false,
+          draft: [],
+        },
+      ],
+    ];
 
->>>>>>> ec4950aa60413519eaa6c0ae215d25333d9190ee
     updateBoard(newBoard, "生成新棋盘");
 
     // 生成解决方案
@@ -1462,59 +902,16 @@ const Sudoku: React.FC = () => {
   };
 
   const applyHintHighlight = (board: CellData[][], result: Result) => {
-    const { position, target, method, prompt } = result;
+    const { position, target, prompt } = result;
     const newBoard = deepCopyBoard(board);
-
-    switch (method) {
-      case SOLUTION_METHODS.SINGLE_CANDIDATE:
-      case SOLUTION_METHODS.HIDDEN_SINGLE_ROW:
-      case SOLUTION_METHODS.HIDDEN_SINGLE_COLUMN:
-      case SOLUTION_METHODS.HIDDEN_SINGLE_BOX:
-        setSelectedNumber(target[0]);
-        break;
-      default:
-        position.forEach(({ row, col }: Position) => {
-          newBoard[row][col].highlight = "positionHighlight";
-        });
-        break;
-    }
     prompt.forEach(({ row, col }: Position) => {
       newBoard[row][col].highlight = "promptHighlight";
+      newBoard[row][col].highlightCandidates = target;
     });
-
-    // 根据方法高亮行、列或宫
-    if (method.includes("ROW")) {
-      const row = position[0].row;
-      for (let col = 0; col < 9; col++) {
-        if (!newBoard[row][col].highlight) {
-          newBoard[row][col].highlight = "rowHighlight";
-        }
-      }
-    } else if (method.includes("COLUMN")) {
-      const col = position[0].col;
-      for (let row = 0; row < 9; row++) {
-        if (!newBoard[row][col].highlight) {
-          newBoard[row][col].highlight = "columnHighlight";
-        }
-      }
-    } else if (method.includes("BOX")) {
-      const boxRow = Math.floor(position[0].row / 3) * 3;
-      const boxCol = Math.floor(position[0].col / 3) * 3;
-      for (let i = 0; i < 3; i++) {
-        for (let j = 0; j < 3; j++) {
-          if (!newBoard[boxRow + i][boxCol + j].highlight) {
-            newBoard[boxRow + i][boxCol + j].highlight = "boxHighlight";
-          }
-        }
-      }
-    }
-
-    // 高亮目标候选数
-    if (!result.isFill) {
-      position.forEach(({ row, col }: Position) => {
-        newBoard[row][col].highlightCandidates = target;
-      });
-    }
+    position.forEach(({ row, col }: Position) => {
+      newBoard[row][col].highlight = "positionHighlight";
+      newBoard[row][col].highlightCandidates = target;
+    });
 
     return newBoard;
   };
@@ -1532,23 +929,24 @@ const Sudoku: React.FC = () => {
 
   const handleHint = () => {
     const solveFunctions = [
-      // singleCandidate,
-      // hiddenSingle,
-      // blockElimination,
-      // nakedPair,
-      // nakedTriple1,
-      // nakedTriple2,
-      // hiddenPair,
-      // hiddenTriple1,
-      // hiddenTriple2,
-      // xWing,
-      // xWingVarient,
-      // xyWing,
-      // xyzWing,
-      // nakedQuadruple,
+      singleCandidate,
+      hiddenSingle,
+      blockElimination,
+      nakedPair,
+      nakedTriple1,
+      nakedTriple2,
+      hiddenPair,
+      hiddenTriple1,
+      hiddenTriple2,
+      xWing,
+      xWingVarient,
+      xyWing,
+      xyzWing,
+      nakedQuadruple,
       // eureka,
       skyscraper,
-      // swordfish,
+      swordfish,
+      trialAndError,
     ];
     let result = null;
 
@@ -1558,22 +956,19 @@ const Sudoku: React.FC = () => {
         setResult(result);
         setSelectedNumber(null);
         console.log(result);
+        const boardWithHighlight = applyHintHighlight(board, result);
+        setHintMethod(result.method);
+        updateBoard(
+          boardWithHighlight,
+          `提示：${result.method}`,
+          [],
+          false,
+          false
+        );
+        setHintContent(handleHintContent(result));
+        setHintDrawerVisible(true);
         break;
       }
-    }
-
-    if (result) {
-      const boardWithHighlight = applyHintHighlight(board, result);
-      setHintMethod(result.method);
-      updateBoard(
-        boardWithHighlight,
-        `提示：${result.method} (${result.position[0].row}, ${
-          result.position[0].col
-        }) 为 ${result.target.join(", ")}`
-      );
-
-      setHintContent(handleHintContent(result));
-      setHintDrawerVisible(true);
     }
   };
 
@@ -1594,24 +989,29 @@ const Sudoku: React.FC = () => {
             ", "
           )}一个候选数，所以可以确定该单元格的值为${target.join(", ")}`;
         case SOLUTION_METHODS.HIDDEN_SINGLE_ROW:
-          return `候选数在行${
-            position[0].row
-          }中，只有一个候选方格，所以可以确定该单元格的值为${target.join(
+          setSelectedNumber(target[0]);
+          return `候选数${target.join(",")}在第${
+            position[0].row + 1
+          }行中，只有一个候选方格，所以可以确定该单元格的值为${target.join(
             ", "
           )}`;
         case SOLUTION_METHODS.HIDDEN_SINGLE_COLUMN:
-          return `候选数在列${
-            position[0].col
-          }中，只有一个候选方格，所以可以确定该单元格的值为${target.join(
+          setSelectedNumber(target[0]);
+          return `候选数${target.join(",")}在第${
+            position[0].col + 1
+          }列中，只有一个候选方格，所以可以确定该单元格的值为${target.join(
             ", "
           )}`;
         case SOLUTION_METHODS.HIDDEN_SINGLE_BOX:
-          return `候选数在宫${
+          setSelectedNumber(target[0]);
+          return `候选数${target.join(",")}在宫${
             Math.floor(position[0].row / 3) * 3 +
             Math.floor(position[0].col / 3)
           }中，只有一个候选方格，所以可以确定该单元格的值为${target.join(
             ", "
           )}`;
+        case SOLUTION_METHODS.TRIAL_AND_ERROR:
+          return `尝试向只有两个候选数的方格内填入${target[0]}，若后续无解，则说明填入${target[0]}是错误的，应填入另一个候选数`;
       }
     } else {
       switch (method) {
@@ -1625,7 +1025,11 @@ const Sudoku: React.FC = () => {
               prompt[1].row + 1
             }C${prompt[1].col + 1}、R${prompt[2].row + 1}C${prompt[2].col + 1}`;
           }
-          return `在此宫中，候选数${target.join(",")}只能存在这些${posStr}格中，无论存在哪个方格中，这一行上的其他位置都不应出现此候选数${target.join(",")}`;
+          return `在此宫中，候选数${target.join(
+            ","
+          )}只能存在这些${posStr}格中，无论存在哪个方格中，这一行上的其他位置都不应出现此候选数${target.join(
+            ","
+          )}`;
         case SOLUTION_METHODS.BLOCK_ELIMINATION_COLUMN:
           if (prompt.length == 2) {
             posStr = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
@@ -1638,7 +1042,9 @@ const Sudoku: React.FC = () => {
           }
           return `在此宫中，候选数${target.join(
             ","
-          )}只能存在这些${posStr}方格中，无论存在哪个方格中，这一列上的其他位置都不应出现此候选数${target.join(",")}`;
+          )}只能存在这些${posStr}方格中，无论存在哪个方格中，这一列上的其他位置都不应出现此候选数${target.join(
+            ","
+          )}`;
         case SOLUTION_METHODS.BLOCK_ELIMINATION_BOX_ROW:
           if (prompt.length == 2) {
             posStr = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
@@ -1651,7 +1057,9 @@ const Sudoku: React.FC = () => {
           }
           return `在第${prompt[0].row + 1}行中，候选数${target.join(
             ","
-          )}只能存在这些${posStr}方格中，无论存在哪个方格中，这一宫中的其他位置都不应出现此候选数${target.join(",")}`;
+          )}只能存在这些${posStr}方格中，无论存在哪个方格中，这一宫中的其他位置都不应出现此候选数${target.join(
+            ","
+          )}`;
         case SOLUTION_METHODS.BLOCK_ELIMINATION_BOX_COLUMN:
           if (prompt.length == 2) {
             posStr = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
@@ -1664,7 +1072,9 @@ const Sudoku: React.FC = () => {
           }
           return `在第${prompt[0].col + 1}列中，候选数${target.join(
             ","
-          )}只能存在这些${posStr}方格中，无论存在哪个方格中，这一宫中的其他位置都不应出现此候选数${target.join(",")}`;
+          )}只能存在这些${posStr}方格中，无论存在哪个方格中，这一宫中的其他位置都不应出现此候选数${target.join(
+            ","
+          )}`;
         case SOLUTION_METHODS.NAKED_PAIR_ROW:
           posStr = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
             prompt[1].row + 1
@@ -1732,15 +1142,7 @@ const Sudoku: React.FC = () => {
           candStr = target.join(",");
           return `在此宫中，因为候选数${candStr}只能出现在${posStr}这三个方格中，所以此宫其他位置都不应出现候选数${candStr}`;
         case SOLUTION_METHODS.HIDDEN_PAIR_ROW:
-          promptCandidates = prompt.reduce((acc, pos) => {
-            const cell = board[pos.row]?.[pos.col];
-            return acc.concat(cell?.draft ?? []);
-          }, [] as number[]);
-          uniquePromptCandidates = [...new Set(promptCandidates)];
-          diffCandidates = uniquePromptCandidates.filter(
-            (num) => !target.includes(num)
-          );
-          candStr = diffCandidates.join(",");
+          candStr = [...new Set(target)].join(",");
           posStr = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
             prompt[1].row + 1
           }C${prompt[1].col + 1}`;
@@ -1748,15 +1150,7 @@ const Sudoku: React.FC = () => {
             position[0].row + 1
           }行中，因为候选数${candStr}只出现在${posStr}这两个方格中，因此这两个方格不应出现其他候选数`;
         case SOLUTION_METHODS.HIDDEN_PAIR_COLUMN:
-          promptCandidates = prompt.reduce((acc, pos) => {
-            const cell = board[pos.row]?.[pos.col];
-            return acc.concat(cell?.draft ?? []);
-          }, [] as number[]);
-          uniquePromptCandidates = [...new Set(promptCandidates)];
-          diffCandidates = uniquePromptCandidates.filter(
-            (num) => !target.includes(num)
-          );
-          candStr = diffCandidates.join(",");
+          candStr = [...new Set(target)].join(",");
           posStr = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
             prompt[1].row + 1
           }C${prompt[1].col + 1}`;
@@ -1767,11 +1161,13 @@ const Sudoku: React.FC = () => {
           posStr = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
             prompt[1].row + 1
           }C${prompt[1].col + 1}`;
+          candStr = [...new Set(target)].join(",");
           return `在此宫中，因为候选数${candStr}只出现在${posStr}这两个方格中，因此这两个方格不应出现其他候选数`;
         case SOLUTION_METHODS.HIDDEN_TRIPLE_ROW1:
           posStr = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
             prompt[1].row + 1
           }C${prompt[1].col + 1}、R${prompt[2].row + 1}C${prompt[2].col + 1}`;
+          candStr = [...new Set(target)].join(",");
           return `在第${
             position[0].row + 1
           }行中，因为候选数${candStr}只出现在${posStr}这三个方格中，因此这三个方格不应出现其他候选数`;
@@ -1779,6 +1175,7 @@ const Sudoku: React.FC = () => {
           posStr = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
             prompt[1].row + 1
           }C${prompt[1].col + 1}、R${prompt[2].row + 1}C${prompt[2].col + 1}`;
+          candStr = [...new Set(target)].join(",");
           return `在第${
             position[0].col + 1
           }列中，因为候选数${candStr}只出现在${posStr}这三个方格中，因此这三个方格不应出现其他候选数`;
@@ -1786,11 +1183,13 @@ const Sudoku: React.FC = () => {
           posStr = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
             prompt[1].row + 1
           }C${prompt[1].col + 1}、R${prompt[2].row + 1}C${prompt[2].col + 1}`;
+          candStr = [...new Set(target)].join(",");
           return `在此宫中，因为候选数${candStr}只出现在${posStr}这三个方格中，因此这三个方格不应出现其他候选数`;
         case SOLUTION_METHODS.HIDDEN_TRIPLE_ROW2:
           posStr = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
             prompt[1].row + 1
           }C${prompt[1].col + 1}、R${prompt[2].row + 1}C${prompt[2].col + 1}`;
+          candStr = [...new Set(target)].join(",");
           return `在第${
             position[0].row + 1
           }行中，因为候选数${candStr}只出现在${posStr}这三个方格中，因此这三个方格不应出现其他候选数`;
@@ -1798,6 +1197,7 @@ const Sudoku: React.FC = () => {
           posStr = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
             prompt[1].row + 1
           }C${prompt[1].col + 1}、R${prompt[2].row + 1}C${prompt[2].col + 1}`;
+          candStr = [...new Set(target)].join(",");
           return `在第${
             position[0].col + 1
           }列中，因为候选数${candStr}只出现在${posStr}这三个方格中，因此这三个方格不应出现其他候选数`;
@@ -1805,6 +1205,7 @@ const Sudoku: React.FC = () => {
           posStr = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
             prompt[1].row + 1
           }C${prompt[1].col + 1}、R${prompt[2].row + 1}C${prompt[2].col + 1}`;
+          candStr = [...new Set(target)].join(",");
           return `在此宫中，因为候选数${candStr}只出现在${posStr}这三个方格中，因此这三个方格不应出现其他候选数`;
         case SOLUTION_METHODS.NAKED_QUADRUPLE_ROW:
           posStr = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
@@ -1812,6 +1213,7 @@ const Sudoku: React.FC = () => {
           }C${prompt[1].col + 1}、R${prompt[2].row + 1}C${
             prompt[2].col + 1
           }、R${prompt[3].row + 1}C${prompt[3].col + 1}`;
+          candStr = [...new Set(target)].join(",");
           return `在第${
             position[0].row + 1
           }行中，因为候选数${candStr}只出现在${posStr}这四个方格中，因此这四个方格不应出现其他候选数`;
@@ -1821,6 +1223,7 @@ const Sudoku: React.FC = () => {
           }C${prompt[1].col + 1}、R${prompt[2].row + 1}C${
             prompt[2].col + 1
           }、R${prompt[3].row + 1}C${prompt[3].col + 1}`;
+          candStr = [...new Set(target)].join(",");
           return `在第${
             position[0].col + 1
           }列中，因为候选数${candStr}只出现在${posStr}这四个方格中，因此这四个方格不应出现其他候选数`;
@@ -1830,6 +1233,7 @@ const Sudoku: React.FC = () => {
           }C${prompt[1].col + 1}、R${prompt[2].row + 1}C${
             prompt[2].col + 1
           }、R${prompt[3].row + 1}C${prompt[3].col + 1}`;
+          candStr = [...new Set(target)].join(",");
           return `在此宫中，因为候选数${candStr}只出现在${posStr}这四个方格中，因此这四个方格不应出现其他候选数`;
         case SOLUTION_METHODS.X_WING_ROW:
           posStr = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
@@ -1837,6 +1241,7 @@ const Sudoku: React.FC = () => {
           }C${prompt[1].col + 1}、R${prompt[2].row + 1}C${
             prompt[2].col + 1
           }、R${prompt[3].row + 1}C${prompt[3].col + 1}`;
+          candStr = target.join(",");
           return `在${position[0].row + 1}、${
             position[2].row + 1
           }两行中，候选数${candStr}每行都有两个候选方格且他们的列号相同，在这四个候选方格内无论哪两个取值，都会导致这两列其他位置不应出现候选数${candStr}`;
@@ -1846,26 +1251,16 @@ const Sudoku: React.FC = () => {
           }C${prompt[1].col + 1}、R${prompt[2].row + 1}C${
             prompt[2].col + 1
           }、R${prompt[3].row + 1}C${prompt[3].col + 1}`;
+          candStr = target.join(",");
           return `在${position[0].row + 1}、${
             position[2].col + 1
           }两列中，候选数${candStr}每列都有两个候选方格且他们的行号相同，在这四个候选方格内无论哪两个取值，都会导致这两行其他位置不应出现候选数${candStr}`;
-        case SOLUTION_METHODS.SWORDFISH_ROW:
-        case SOLUTION_METHODS.SWORDFISH_COLUMN:
-          if (position.length === 1) {
-            posStr = `R${position[0].row + 1}C${position[0].col + 1}`;
-          } else if (position.length === 2) {
-            posStr = `R${position[0].row + 1}C${position[0].col + 1}、R${
-              position[1].row + 1
-            }C${position[1].col + 1}`;
-          }
-          return `在这几个方格中，无论哪两个方格取值，${posStr}内都不能出现候选数${target[0]}`;
         case SOLUTION_METHODS.XY_WING:
         case SOLUTION_METHODS.XYZ_WING:
           posStr = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
             prompt[1].row + 1
-          }C${prompt[1].col + 1}、R${prompt[2].row + 1}C${
-            prompt[2].col + 1
-          }`;
+          }C${prompt[1].col + 1}、R${prompt[2].row + 1}C${prompt[2].col + 1}`;
+          candStr = target.join(",");
           return `无论${posStr}这三个候选方格内如何取值，R${
             position[0].row + 1
           }C${position[0].col + 1}内都不能出现候选数${target[0]}`;
@@ -1888,7 +1283,11 @@ const Sudoku: React.FC = () => {
               position[2].col + 1
             }`;
           }
-          return `${posStr}四个方格构成共轭链，无论R${prompt[0].row + 1}C${prompt[0].col + 1}还是R${prompt[3].row + 1}C${prompt[3].col + 1}取值为${target[0]}，${deleteStr}内都不能出现候选数${target[0]}`;
+          return `${posStr}四个方格构成共轭链，无论R${prompt[0].row + 1}C${
+            prompt[0].col + 1
+          }还是R${prompt[3].row + 1}C${prompt[3].col + 1}取值为${
+            target[0]
+          }，${deleteStr}内都不能出现候选数${target[0]}`;
         case SOLUTION_METHODS.SWORDFISH_ROW:
           if (prompt.length === 6) {
             posStr = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
@@ -1897,9 +1296,7 @@ const Sudoku: React.FC = () => {
               prompt[2].col + 1
             }、R${prompt[3].row + 1}C${prompt[3].col + 1}、R${
               prompt[4].row + 1
-            }C${prompt[4].col + 1}、R${prompt[5].row + 1}C${
-              prompt[5].col + 1
-            }`;
+            }C${prompt[4].col + 1}、R${prompt[5].row + 1}C${prompt[5].col + 1}`;
           } else if (prompt.length === 7) {
             posStr = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
               prompt[1].row + 1
@@ -1910,7 +1307,7 @@ const Sudoku: React.FC = () => {
             }C${prompt[4].col + 1}、R${prompt[5].row + 1}C${
               prompt[5].col + 1
             }、R${prompt[6].row + 1}C${prompt[6].col + 1}`;
-          }else if (prompt.length === 8) {
+          } else if (prompt.length === 8) {
             posStr = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
               prompt[1].row + 1
             }C${prompt[1].col + 1}、R${prompt[2].row + 1}C${
@@ -1922,7 +1319,7 @@ const Sudoku: React.FC = () => {
             }、R${prompt[6].row + 1}C${prompt[6].col + 1}、R${
               prompt[7].row + 1
             }C${prompt[7].col + 1}`;
-          }else if (prompt.length === 9) {
+          } else if (prompt.length === 9) {
             posStr = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
               prompt[1].row + 1
             }C${prompt[1].col + 1}、R${prompt[2].row + 1}C${
@@ -1933,12 +1330,14 @@ const Sudoku: React.FC = () => {
               prompt[5].col + 1
             }、R${prompt[6].row + 1}C${prompt[6].col + 1}、R${
               prompt[7].row + 1
-            }C${prompt[7].col + 1}、R${prompt[8].row + 1}C${
-              prompt[8].col + 1
-            }`;
+            }C${prompt[7].col + 1}、R${prompt[8].row + 1}C${prompt[8].col + 1}`;
           }
           const columns = [...new Set(prompt.map((pos) => pos.col + 1))];
-          return `无论${posStr}这${prompt.length}个候选方格内如何取${target[0]}，${columns.join("、")}列内都不能出现候选数${target[0]}`;
+          console.log(columns);
+
+          return `无论${posStr}这${prompt.length}个候选方格哪三个取${
+            target[0]
+          }，第${columns.join("、")}列内都不能出现候选数${target[0]}`;
         case SOLUTION_METHODS.SWORDFISH_COLUMN:
           if (prompt.length === 6) {
             posStr = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
@@ -1947,9 +1346,7 @@ const Sudoku: React.FC = () => {
               prompt[2].col + 1
             }、R${prompt[3].row + 1}C${prompt[3].col + 1}、R${
               prompt[4].row + 1
-            }C${prompt[4].col + 1}、R${prompt[5].row + 1}C${
-              prompt[5].col + 1
-            }`;
+            }C${prompt[4].col + 1}、R${prompt[5].row + 1}C${prompt[5].col + 1}`;
           } else if (prompt.length === 7) {
             posStr = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
               prompt[1].row + 1
@@ -1960,7 +1357,7 @@ const Sudoku: React.FC = () => {
             }C${prompt[4].col + 1}、R${prompt[5].row + 1}C${
               prompt[5].col + 1
             }、R${prompt[6].row + 1}C${prompt[6].col + 1}`;
-          }else if (prompt.length === 8) {
+          } else if (prompt.length === 8) {
             posStr = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
               prompt[1].row + 1
             }C${prompt[1].col + 1}、R${prompt[2].row + 1}C${
@@ -1972,7 +1369,7 @@ const Sudoku: React.FC = () => {
             }、R${prompt[6].row + 1}C${prompt[6].col + 1}、R${
               prompt[7].row + 1
             }C${prompt[7].col + 1}`;
-          }else if (prompt.length === 9) {
+          } else if (prompt.length === 9) {
             posStr = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
               prompt[1].row + 1
             }C${prompt[1].col + 1}、R${prompt[2].row + 1}C${
@@ -1983,12 +1380,12 @@ const Sudoku: React.FC = () => {
               prompt[5].col + 1
             }、R${prompt[6].row + 1}C${prompt[6].col + 1}、R${
               prompt[7].row + 1
-            }C${prompt[7].col + 1}、R${prompt[8].row + 1}C${
-              prompt[8].col + 1
-            }`;
+            }C${prompt[7].col + 1}、R${prompt[8].row + 1}C${prompt[8].col + 1}`;
           }
           const rows = [...new Set(prompt.map((pos) => pos.row + 1))];
-          return `无论${posStr}这${prompt.length}个候选方格内如何取${target[0]}，${rows.join("、")}行内都不能出现候选数${target[0]}`;
+          return `无论${posStr}这${prompt.length}个候选方格哪三个取${
+            target[0]
+          }，第${rows.join("、")}行内都不能出现候选数${target[0]}`;
       }
     }
 
@@ -1999,12 +1396,12 @@ const Sudoku: React.FC = () => {
     if (result) {
       const { position, target, isFill } = result;
       const newBoard = deepCopyBoard(board);
-      
+
       position.forEach(({ row, col }) => {
         if (isFill) {
           newBoard[row][col].value = target[0];
           newBoard[row][col].draft = [];
-          
+
           // 更新受影响的单元格
           const affectedCells = updateRelatedCellsDraft(
             newBoard,
@@ -2012,13 +1409,13 @@ const Sudoku: React.FC = () => {
             target[0],
             getCandidates
           );
-          
+
           // 将受影响的单元格合并到 position 中
           position.push(...affectedCells);
         } else {
-          newBoard[row][col].draft = newBoard[row][col].draft?.filter(
-            (num) => !target.includes(num)
-          ) ?? [];
+          newBoard[row][col].draft =
+            newBoard[row][col].draft?.filter((num) => !target.includes(num)) ??
+            [];
         }
       });
 
@@ -2036,7 +1433,7 @@ const Sudoku: React.FC = () => {
 
   const handleCancelHint = () => {
     const updatedBoard = removeHintHighlight(board);
-    updateBoard(updatedBoard, "提示应用取消");
+    updateBoard(updatedBoard, "取消提示", [], false);
     setHintDrawerVisible(false);
   };
 
@@ -2067,15 +1464,20 @@ const Sudoku: React.FC = () => {
     console.log(candidateMap);
   };
 
-  const handleFindFourPath = () => {
-    const result = findFourPath(
-      { row: 0, col: 4 },
-      { row: 4, col: 5 },
-      9,
-      graph
-    );
-    console.log(result);
-  };
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Enter" && hintDrawerVisible) {
+        handleApplyHint();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [hintDrawerVisible, result]);
+
   return (
     <Card title="">
       <div className="gameInfo">
@@ -2120,10 +1522,18 @@ const Sudoku: React.FC = () => {
                     <div
                       key={num}
                       className={`draftCell ${
-                        cell.highlightCandidates?.includes(num)
-                          ? result?.isFill
-                            ? "candidateHighlight2"
-                            : "candidateHighlight1"
+                        cell.draft.includes(num)
+                          ? `${
+                              cell.highlight === "positionHighlight" &&
+                              cell?.highlightCandidates?.includes(num)
+                                ? "candidateHighlightDelete"
+                                : ""
+                            } ${
+                              cell.highlight === "promptHighlight" &&
+                              cell?.highlightCandidates?.includes(num)
+                                ? "candidateHighlightHint"
+                                : ""
+                            }`
                           : ""
                       }`}
                     >
@@ -2180,7 +1590,6 @@ const Sudoku: React.FC = () => {
         <Button onClick={handleCheckStrongLinkParity}>强连接奇偶性</Button>
         <Button onClick={handleGraph}>图</Button>
         <Button onClick={handleDraft}>候选数</Button>
-        <Button onClick={handleFindFourPath}>寻找四路径</Button>
       </div>
       <div className="numberButtons">
         {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((number) => (
@@ -2224,7 +1633,7 @@ const Sudoku: React.FC = () => {
         }}
         headerStyle={{ borderBottom: "none" }}
       >
-        <p style={{ margin: "4px 0" }}>{hintContent}</p>
+        <p style={{ margin: "4px 0", textAlign: "center" }}>{hintContent}</p>
         <div
           style={{
             display: "flex",
