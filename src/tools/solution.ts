@@ -19,6 +19,11 @@ export interface Result {
   prompt: Position[];
   method: string;
   target: number[];
+  rows?: number[];
+  cols?: number[];
+  row?: number;
+  col?: number;
+  box?: number;
 }
 
 // 唯一余数法
@@ -186,6 +191,7 @@ export const blockElimination = (
               method: SOLUTION_METHODS.BLOCK_ELIMINATION_ROW,
               target: [Number(num)],
               isFill: false,
+              row: cells[0].row,
             };
           }
         }
@@ -212,6 +218,7 @@ export const blockElimination = (
               method: SOLUTION_METHODS.BLOCK_ELIMINATION_COLUMN,
               target: [Number(num)],
               isFill: false,
+              col: cells[0].col,
             };
           }
         }
@@ -258,6 +265,7 @@ export const blockElimination = (
               method: SOLUTION_METHODS.BLOCK_ELIMINATION_BOX_ROW,
               target: [Number(num)],
               isFill: false,
+              row,
             };
           }
         }
@@ -304,6 +312,7 @@ export const blockElimination = (
               method: SOLUTION_METHODS.BLOCK_ELIMINATION_BOX_COLUMN,
               target: [Number(num)],
               isFill: false,
+              col,
             };
           }
         }
@@ -423,6 +432,9 @@ export const nakedPair = (
               method,
               target,
               isFill: false,
+              row: cell1.row,
+              col: cell1.col,
+              box: Math.floor(cell1.row / 3) * 3 + Math.floor(cell1.col / 3),
             };
           }
         }
@@ -609,6 +621,11 @@ const checkNakedTriple1 = (
                   method,
                   target: uniqueCandidates,
                   isFill: false,
+                  row: cellA.pos.row,
+                  col: cellA.pos.col,
+                  box:
+                    Math.floor(cellA.pos.row / 3) * 3 +
+                    Math.floor(cellA.pos.col / 3),
                 };
               }
             }
@@ -728,6 +745,11 @@ const checkNakedTriple2 = (
                 method,
                 target: uniqueCandidates,
                 isFill: false,
+                row: cellA.pos.row,
+                col: cellA.pos.col,
+                box:
+                  Math.floor(cellA.pos.row / 3) * 3 +
+                  Math.floor(cellA.pos.col / 3),
               };
             }
           }
@@ -880,6 +902,11 @@ const checkNakedQuadruple = (
                     method,
                     target: uniqueCandidates,
                     isFill: false,
+                    row: cellA.pos.row,
+                    col: cellA.pos.col,
+                    box:
+                      Math.floor(cellA.pos.row / 3) * 3 +
+                      Math.floor(cellA.pos.col / 3),
                   };
                 }
               }
@@ -975,6 +1002,10 @@ const checkHiddenPair = (
                   ],
                 target: [...new Set(targetNumbers)],
                 isFill: false,
+                row: pair[0].row,
+                col: pair[0].col,
+                box:
+                  Math.floor(pair[0].row / 3) * 3 + Math.floor(pair[0].col / 3),
               };
             }
           }
@@ -1054,6 +1085,7 @@ const checkHiddenTriple1 = (
               target: candidates.filter((c) => !target.includes(c)),
               method: SOLUTION_METHODS.HIDDEN_TRIPLE_ROW1,
               isFill: false,
+              row: candidateCells[0].row,
             };
           }
         }
@@ -1103,6 +1135,7 @@ const checkHiddenTriple1 = (
               target: candidates.filter((c) => !target.includes(c)),
               method: SOLUTION_METHODS.HIDDEN_TRIPLE_COLUMN1,
               isFill: false,
+              col: candidateCells[0].col,
             };
           }
         }
@@ -1152,6 +1185,7 @@ const checkHiddenTriple1 = (
               target: candidates.filter((c) => !target.includes(c)),
               method: SOLUTION_METHODS.HIDDEN_TRIPLE_BOX1,
               isFill: false,
+              box,
             };
           }
         }
@@ -1254,6 +1288,11 @@ const checkHiddenTriple2 = (
                     target: otherCandidates,
                     method,
                     isFill: false,
+                    row: positionsArray[0].row,
+                    col: positionsArray[0].col,
+                    box:
+                      Math.floor(positionsArray[0].row / 3) * 3 +
+                      Math.floor(positionsArray[0].col / 3),
                   };
                 }
               }
@@ -1337,9 +1376,14 @@ const checkXWing = (board: CellData[][], isRow: boolean): Result | null => {
               return {
                 position: affectedPositions,
                 prompt: [pos1, pos2, pos3, pos4],
-                method: isRow ? SOLUTION_METHODS.X_WING_ROW : SOLUTION_METHODS.X_WING_COLUMN,
+                method: isRow
+                  ? SOLUTION_METHODS.X_WING_ROW
+                  : SOLUTION_METHODS.X_WING_COLUMN,
                 target: [num],
                 isFill: false,
+                row: pos1.row,
+                col: pos1.col,
+                box: Math.floor(pos1.row / 3) * 3 + Math.floor(pos1.col / 3),
               };
             }
           }
@@ -1478,6 +1522,10 @@ const checkXWingVarient = (
                       : SOLUTION_METHODS.X_WING_VARIENT_COLUMN,
                     target: [num],
                     isFill: false,
+                    row: posA.row,
+                    col: posA.col,
+                    box:
+                      Math.floor(posA.row / 3) * 3 + Math.floor(posA.col / 3),
                   };
                 }
               }
@@ -1577,6 +1625,9 @@ export const xyWing = (board: CellData[][]): Result | null => {
             method: SOLUTION_METHODS.XY_WING,
             target: [targetNumber],
             isFill: false,
+            row: cellA.row,
+            col: cellA.col,
+            box: Math.floor(cellA.row / 3) * 3 + Math.floor(cellA.col / 3),
           };
         }
       }
@@ -1712,6 +1763,9 @@ export const xyzWing = (
                   method: SOLUTION_METHODS.XYZ_WING,
                   target: cellA.draft,
                   isFill: false,
+                  row: rowA,
+                  col: colA,
+                  box: Math.floor(rowA / 3) * 3 + Math.floor(colA / 3),
                 };
               }
             }
@@ -2077,6 +2131,130 @@ export const checkStrongLinkParity = (
   return 0;
 };
 
+// 互斥环
+export const eureka = (
+  board: CellData[][],
+  candidateMap: CandidateMap,
+  graph: Graph
+): Result | null => {
+  for (const [num, nodes] of Object.entries(graph)) {
+    const cycles = findCyclesOfLength(nodes, 5);
+
+    for (const cycle of cycles) {
+      for (let i = 0; i < 5; i++) {
+        for (let j = i + 1; j < 5; j++) {
+          const node1 = cycle[i];
+          const node2 = cycle[j];
+
+          if (areCellsInSameUnit(node1, node2)) {
+            const commonUnit = getCommonUnit(node1, node2);
+            const otherNodesInUnit = getOtherNodesInUnit(
+              commonUnit,
+              Number(num),
+              candidateMap
+            ).filter(
+              (node) =>
+                !cycle.some(
+                  (cycleNode) =>
+                    cycleNode.row === node.row && cycleNode.col === node.col
+                )
+            );
+
+            if (otherNodesInUnit.length === 0) {
+              const nodesToRemove = cycle.filter(
+                (_, index) => index !== i && index !== j
+              );
+              const affectedPositions = nodesToRemove.map((node) => ({
+                row: node.row,
+                col: node.col,
+              }));
+
+              if (affectedPositions.length > 0) {
+                return {
+                  position: affectedPositions,
+                  prompt: cycle.map((node) => ({
+                    row: node.row,
+                    col: node.col,
+                  })),
+                  method: SOLUTION_METHODS.EUREKA,
+                  target: [Number(num)],
+                  isFill: false,
+                };
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return null;
+};
+
+const findCyclesOfLength = (
+  nodes: GraphNode[],
+  length: number
+): GraphNode[][] => {
+  const cycles: GraphNode[][] = [];
+
+  const dfs = (node: GraphNode, path: GraphNode[], visited: Set<string>) => {
+    if (path.length === length) {
+      if (node.next.some((nextNode) => nextNode === path[0])) {
+        cycles.push([...path]);
+      }
+      return;
+    }
+
+    for (const nextNode of node.next) {
+      const key = `${nextNode.row},${nextNode.col}`;
+      if (!visited.has(key)) {
+        visited.add(key);
+        path.push(nextNode);
+        dfs(nextNode, path, visited);
+        path.pop();
+        visited.delete(key);
+      }
+    }
+  };
+
+  for (const startNode of nodes) {
+    const visited = new Set<string>();
+    const key = `${startNode.row},${startNode.col}`;
+    visited.add(key);
+    dfs(startNode, [startNode], visited);
+  }
+
+  return cycles;
+};
+
+const getCommonUnit = (
+  node1: GraphNode,
+  node2: GraphNode
+): "row" | "col" | "box" => {
+  if (node1.row === node2.row) return "row";
+  if (node1.col === node2.col) return "col";
+  return "box";
+};
+
+const getOtherNodesInUnit = (
+  unit: "row" | "col" | "box",
+  num: number,
+  candidateMap: CandidateMap
+): Candidate[] => {
+  const unitMap = candidateMap[num][unit];
+  if (!unitMap) return [];
+
+  const unitValue =
+    unit === "row"
+      ? candidateMap[num].all[0].row
+      : unit === "col"
+      ? candidateMap[num].all[0].col
+      : Math.floor(candidateMap[num].all[0].row / 3) * 3 +
+        Math.floor(candidateMap[num].all[0].col / 3);
+
+  return unitMap.get(unitValue)?.positions ?? [];
+};
+
 // 摩天楼
 export const skyscraper = (
   board: CellData[][],
@@ -2103,27 +2281,40 @@ export const skyscraper = (
         }
 
         // 找到共同影响的区域
-        const affectedPositions = findCommonAffectedPositions(
+        let affectedPositions = findCommonAffectedPositions(
           pos1,
           pos2,
           board,
           num
         );
 
-        if (
-          affectedPositions.length > 0 &&
-          !areCellsInSameUnit(path[1], affectedPositions[0]) &&
-          !areCellsInSameUnit(path[2], affectedPositions[0])
-        ) {
-          return path.length === 4
-            ? {
-                position: affectedPositions,
-                prompt: path,
-                method: SOLUTION_METHODS.SKYSCRAPER,
-                target: [num],
-                isFill: false,
-              }
-            : null;
+        // 排除与路径开头和结尾都为强连接的位置
+        affectedPositions = affectedPositions.filter((pos) => {
+          const isStrongLinkWithStart = isUnitStrongLink(
+            board,
+            pos,
+            path[0],
+            num,
+            candidateMap,
+          );
+          const isStrongLinkWithEnd = isUnitStrongLink(
+            board,
+            pos,
+            path[3],
+            num,
+            candidateMap,
+          );
+          return !(isStrongLinkWithStart && isStrongLinkWithEnd);
+        });
+
+        if (affectedPositions.length > 0) {
+          return {
+            position: affectedPositions,
+            prompt: path,
+            method: SOLUTION_METHODS.SKYSCRAPER,
+            target: [num],
+            isFill: false,
+          };
         }
       }
     }
@@ -2293,13 +2484,13 @@ const checkSwordfish = (
             );
 
             if (uniqueIndices.size === 3) {
-              let a = isRow
+              const a = isRow
                 ? candidatePositions[0][0].row
                 : candidatePositions[0][0].col;
-              let b = isRow
+              const b = isRow
                 ? candidatePositions[1][0].row
                 : candidatePositions[1][0].col;
-              let c = isRow
+              const c = isRow
                 ? candidatePositions[2][0].row
                 : candidatePositions[2][0].col;
               if (
@@ -2341,6 +2532,8 @@ const checkSwordfish = (
                     : SOLUTION_METHODS.SWORDFISH_COLUMN,
                   target: [num],
                   isFill: false,
+                  rows: isRow ? [a, b, c] : undefined,
+                  cols: isRow ? undefined : [a, b, c],
                 };
               }
             }
