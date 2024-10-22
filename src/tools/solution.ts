@@ -2139,45 +2139,43 @@ export const eureka = (
 
     for (const cycle of cycles) {
       for (let i = 0; i < 5; i++) {
-        for (let j = i + 1; j < 5; j++) {
-          const node1 = cycle[i];
-          const node2 = cycle[j];
+        const node1 = cycle[i];
+        const node2 = cycle[(i + 1) % 5];
 
-          if (areCellsInSameUnit(node1, node2)) {
-            const commonUnit = getCommonUnit(node1, node2);
-            const otherNodesInUnit = getOtherNodesInUnit(
-              commonUnit,
-              Number(num),
-              candidateMap
-            ).filter(
-              (node) =>
-                !cycle.some(
-                  (cycleNode) =>
-                    cycleNode.row === node.row && cycleNode.col === node.col
-                )
+        if (areCellsInSameUnit(node1, node2)) {
+          const commonUnit = getCommonUnit(node1, node2);
+          const otherNodesInUnit = getOtherNodesInUnit(
+            commonUnit,
+            Number(num),
+            candidateMap
+          ).filter(
+            (node) =>
+              !cycle.some(
+                (cycleNode) =>
+                  cycleNode.row === node.row && cycleNode.col === node.col
+              )
+          );
+
+          if (otherNodesInUnit.length === 0) {
+            const nodesToRemove = cycle.filter(
+              (_, index) => index !== i && index !== (i + 1) % 5
             );
+            const affectedPositions = nodesToRemove.map((node) => ({
+              row: node.row,
+              col: node.col,
+            }));
 
-            if (otherNodesInUnit.length === 0) {
-              const nodesToRemove = cycle.filter(
-                (_, index) => index !== i && index !== j
-              );
-              const affectedPositions = nodesToRemove.map((node) => ({
-                row: node.row,
-                col: node.col,
-              }));
-
-              if (affectedPositions.length > 0) {
-                return {
-                  position: affectedPositions,
-                  prompt: cycle.map((node) => ({
-                    row: node.row,
-                    col: node.col,
-                  })),
-                  method: SOLUTION_METHODS.EUREKA,
-                  target: [Number(num)],
-                  isFill: false,
-                };
-              }
+            if (affectedPositions.length > 0) {
+              return {
+                position: affectedPositions,
+                prompt: cycle.map((node) => ({
+                  row: node.row,
+                  col: node.col,
+                })),
+                method: SOLUTION_METHODS.EUREKA,
+                target: [Number(num)],
+                isFill: false,
+              };
             }
           }
         }
