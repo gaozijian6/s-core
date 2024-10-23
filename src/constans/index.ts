@@ -1,4 +1,5 @@
 export const SOLUTION_METHODS = {
+  CHECK_CANDIDATE: "检查候选数法",
   SINGLE_CANDIDATE: "唯一余数法",
   HIDDEN_SINGLE_ROW: "隐性单数法（行）",
   HIDDEN_SINGLE_COLUMN: "隐性单数法（列）",

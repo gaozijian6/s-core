@@ -446,6 +446,8 @@ export const createGraph = (
 // 创建一个新的 hook 来管理棋盘状态和历史
 export const useSudokuBoard = (initialBoard: CellData[][]) => {
   const [board, setBoard] = useState<CellData[][]>(initialBoard);
+  const [answerBoard, setAnswerBoard] = useState<CellData[][]>(initialBoard);
+  const [isSolved, setIsSolved] = useState<boolean>(false);
   const [history, setHistory] = useState<BoardHistory[]>([]);
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [candidateMap, setCandidateMap] = useState<CandidateMap>(() => {
@@ -516,7 +518,13 @@ export const useSudokuBoard = (initialBoard: CellData[][]) => {
     isOfficialDraft: boolean = false,
     isRecord: boolean = true
   ) => {
-    if (isRecord){
+    if (!isSolved) {
+      const solvedBoard = board.map((row) => row.map((cell) => ({ ...cell })));
+      solve(solvedBoard);
+      setAnswerBoard(solvedBoard);
+      setIsSolved(true);
+    }
+    if (isRecord) {
       const newHistory = history.slice(0, currentStep + 1);
       newHistory.push({
         board: newBoard,
