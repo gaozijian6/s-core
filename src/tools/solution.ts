@@ -1,5 +1,5 @@
 import { SOLUTION_METHODS } from "../constans";
-import { areCellsInSameUnit,solve } from "./index";
+import { areCellsInSameUnit, solve } from "./index";
 import type {
   CandidateMap,
   CandidateStats,
@@ -37,7 +37,7 @@ export const checkCandidate = (
     for (let col = 0; col < 9; col++) {
       const cell = board[row]?.[col];
       const answerCell = answerBoard[row]?.[col];
-      
+
       if (cell?.value === null && answerCell?.value !== null) {
         const missingCandidate = answerCell.value;
         if (!cell.draft?.includes(missingCandidate)) {
@@ -46,13 +46,13 @@ export const checkCandidate = (
             prompt: [{ row, col }],
             method: SOLUTION_METHODS.CHECK_CANDIDATE,
             target: [missingCandidate],
-            isFill: false
+            isFill: false,
           };
         }
       }
     }
   }
-  
+
   return null;
 };
 
@@ -1566,7 +1566,11 @@ const checkXWingVarient = (
   return null;
 };
 // XY-Wing
-export const xyWing = (board: CellData[][]): Result | null => {
+export const xyWing = (
+  board: CellData[][],
+  candidateMap: CandidateMap,
+  graph: Graph
+): Result | null => {
   // 找出所有只有两个候选数的格子
   const cellsWithTwoCandidates: Position[] = [];
   for (let row = 0; row < 9; row++) {
@@ -1598,64 +1602,211 @@ export const xyWing = (board: CellData[][]): Result | null => {
       const cellB = cellsWithTwoCandidates[j];
       const candidatesB = board[cellB.row]?.[cellB.col]?.draft ?? [];
 
-      // 检查 A 和 B 是否在同一单元
-      if (!areCellsInSameUnit(cellA, cellB)) continue;
-
       for (let k = 0; k < cellsWithTwoCandidates.length; k++) {
         if (k === i || k === j) continue;
         const cellC = cellsWithTwoCandidates[k];
         const candidatesC = board[cellC.row]?.[cellC.col]?.draft ?? [];
-
-        // 检查 A 和 C 是否在同一单元，B 和 C 是否不在同一单元
         if (
-          !areCellsInSameUnit(cellA, cellC) ||
-          areCellsInSameUnit(cellB, cellC)
-        )
-          continue;
+          areCellsInSameUnit(cellA, cellB) &&
+          areCellsInSameUnit(cellA, cellC) &&
+          !areCellsInSameUnit(cellB, cellC)
+        ) {
+          // 检查候选数是否符合 XY-Wing 模式
+          const commonCandidateBC = candidatesB.find((num) =>
+            candidatesC.includes(num)
+          );
+          const commonCandidateAC = candidatesA.find((num) =>
+            candidatesC.includes(num)
+          );
+          const commonCandidateAB = candidatesA.find((num) =>
+            candidatesB.includes(num)
+          );
+          if (!commonCandidateBC || !commonCandidateAC || !commonCandidateAB) {
+            continue;
+          }
+          if (
+            new Set([
+              commonCandidateBC,
+              commonCandidateAC,
+              commonCandidateAB,
+            ]).size !== 3
+          ) {
+            continue;
+          }
+          // 找到符合条件的 XY-Wing
+          const targetNumber = commonCandidateBC as number;
+          const affectedPositions: Position[] = [];
 
-        // 检查候选数是否符合 XY-Wing 模式
-        const [a, b] = candidatesA;
-        const [b2, c] = candidatesB;
-        const [a2, c2] = candidatesC;
+          // 检查与 B 和 C 在同一单元的格子
+          for (let row = 0; row < 9; row++) {
+            for (let col = 0; col < 9; col++) {
+              if (
+                (row === cellB.row && col === cellB.col) ||
+                (row === cellC.row && col === cellC.col)
+              )
+                continue;
 
-        if (a !== a2 || b !== b2 || c !== c2) continue;
+              const isInSameUnitWithB = areCellsInSameUnit(cellB, { row, col });
+              const isInSameUnitWithC = areCellsInSameUnit(cellC, { row, col });
 
-        // 找到符合条件的 XY-Wing
-        const targetNumber = c;
-        const affectedPositions: Position[] = [];
-
-        // 检查与 B 和 C 在同一单元的格子
-        for (let row = 0; row < 9; row++) {
-          for (let col = 0; col < 9; col++) {
-            if (
-              (row === cellB.row && col === cellB.col) ||
-              (row === cellC.row && col === cellC.col)
-            )
-              continue;
-
-            const isInSameUnitWithB = areCellsInSameUnit(cellB, { row, col });
-            const isInSameUnitWithC = areCellsInSameUnit(cellC, { row, col });
-
-            if (isInSameUnitWithB && isInSameUnitWithC) {
-              const cell = board[row]?.[col];
-              if (cell?.value === null && cell.draft?.includes(targetNumber)) {
-                affectedPositions.push({ row, col });
+              if (isInSameUnitWithB && isInSameUnitWithC) {
+                const cell = board[row]?.[col];
+                if (
+                  cell?.value === null &&
+                  cell.draft?.includes(targetNumber)
+                ) {
+                  affectedPositions.push({ row, col });
+                }
               }
             }
           }
-        }
 
-        if (affectedPositions.length > 0) {
-          return {
-            position: affectedPositions,
-            prompt: [cellA, cellB, cellC],
-            method: SOLUTION_METHODS.XY_WING,
-            target: [targetNumber],
-            isFill: false,
-            row: cellA.row,
-            col: cellA.col,
-            box: Math.floor(cellA.row / 3) * 3 + Math.floor(cellA.col / 3),
-          };
+          if (affectedPositions.length > 0) {
+            return {
+              position: affectedPositions,
+              prompt: [cellA, cellB, cellC],
+              method: SOLUTION_METHODS.XY_WING,
+              target: [targetNumber],
+              isFill: false,
+              row: cellA.row,
+              col: cellA.col,
+              box: Math.floor(cellA.row / 3) * 3 + Math.floor(cellA.col / 3),
+            };
+          }
+        } else if (
+          areCellsInSameUnit(cellB, cellA) &&
+          areCellsInSameUnit(cellB, cellC) &&
+          !areCellsInSameUnit(cellA, cellC)
+        ) {
+          // 检查候选数是否符合 XY-Wing 模式
+          const commonCandidateAC = candidatesA.find((num) =>
+            candidatesC.includes(num)
+          );
+          const commonCandidateBA = candidatesB.find((num) =>
+            candidatesA.includes(num)
+          );
+          const commonCandidateBC = candidatesB.find((num) =>
+            candidatesC.includes(num)
+          );
+          if (!commonCandidateAC || !commonCandidateBA || !commonCandidateBC) {
+            continue;
+          }
+          if (
+            new Set([
+              commonCandidateAC,
+              commonCandidateBA,
+              commonCandidateBC,
+            ]).size !== 3
+          ) {
+            continue;
+          }
+          // 找到符合条件的 XY-Wing
+          const targetNumber = commonCandidateAC as number;
+          const affectedPositions: Position[] = [];
+
+          // 检查与 A 和 C 在同一单元的格子
+          for (let row = 0; row < 9; row++) {
+            for (let col = 0; col < 9; col++) {
+              if (
+                (row === cellA.row && col === cellA.col) ||
+                (row === cellC.row && col === cellC.col)
+              )
+                continue;
+
+              const isInSameUnitWithA = areCellsInSameUnit(cellA, { row, col });
+              const isInSameUnitWithC = areCellsInSameUnit(cellC, { row, col });
+
+              if (isInSameUnitWithA && isInSameUnitWithC) {
+                const cell = board[row]?.[col];
+                if (
+                  cell?.value === null &&
+                  cell.draft?.includes(targetNumber)
+                ) {
+                  affectedPositions.push({ row, col });
+                }
+              }
+            }
+          }
+
+          if (affectedPositions.length > 0) {
+            return {
+              position: affectedPositions,
+              prompt: [cellB, cellA, cellC],
+              method: SOLUTION_METHODS.XY_WING,
+              target: [targetNumber],
+              isFill: false,
+              row: cellB.row,
+              col: cellB.col,
+              box: Math.floor(cellB.row / 3) * 3 + Math.floor(cellB.col / 3),
+            };
+          }
+        } else if (
+          areCellsInSameUnit(cellC, cellA) &&
+          areCellsInSameUnit(cellC, cellB) &&
+          !areCellsInSameUnit(cellA, cellB)
+        ) {
+          // 检查候选数是否符合 XY-Wing 模式
+          const commonCandidateAB = candidatesA.find((num) =>
+            candidatesB.includes(num)
+          );
+          const commonCandidateCA = candidatesC.find((num) =>
+            candidatesA.includes(num)
+          );
+          const commonCandidateCB = candidatesC.find((num) =>
+            candidatesB.includes(num)
+          );
+          if (!commonCandidateAB || !commonCandidateCA || !commonCandidateCB) {
+            continue;
+          }
+          if (
+            new Set([
+              commonCandidateAB,
+              commonCandidateCA,
+              commonCandidateCB,
+            ]).size !== 3
+          ) {
+            continue;
+          }
+          // 找到符合条件的 XY-Wing
+          const targetNumber = commonCandidateAB as number;
+          const affectedPositions: Position[] = [];
+
+          // 检查与 A 和 B 在同一单元的格子
+          for (let row = 0; row < 9; row++) {
+            for (let col = 0; col < 9; col++) {
+              if (
+                (row === cellA.row && col === cellA.col) ||
+                (row === cellB.row && col === cellB.col)
+              )
+                continue;
+
+              const isInSameUnitWithA = areCellsInSameUnit(cellA, { row, col });
+              const isInSameUnitWithB = areCellsInSameUnit(cellB, { row, col });
+
+              if (isInSameUnitWithA && isInSameUnitWithB) {
+                const cell = board[row]?.[col];
+                if (
+                  cell?.value === null &&
+                  cell.draft?.includes(targetNumber)
+                ) {
+                  affectedPositions.push({ row, col });
+                }
+              }
+            }
+          }
+
+          if (affectedPositions.length > 0) {
+            return {
+              position: affectedPositions,
+              prompt: [cellC, cellA, cellB],
+              method: SOLUTION_METHODS.XY_WING,
+              target: [targetNumber],
+              isFill: false,
+              row: cellC.row,
+              col: cellC.col,
+              box: Math.floor(cellC.row / 3) * 3 + Math.floor(cellC.col / 3),
+            };
+          }
         }
       }
     }
@@ -2199,9 +2350,9 @@ export const eureka = (
 
               if (affectedPositions.length > 0) {
                 console.log(node1, node2);
-                console.log('commonUnit', commonUnit);
-                console.log('otherNodesInUnit', otherNodesInUnit);
-                
+                console.log("commonUnit", commonUnit);
+                console.log("otherNodesInUnit", otherNodesInUnit);
+
                 return {
                   position: affectedPositions,
                   prompt: cycle.map((node) => ({
@@ -2285,12 +2436,13 @@ const getOtherNodesInUnit = (
   node2: GraphNode
 ): Candidate[] => {
   let unitValue: number;
-  
+
   if (unit === "row") {
     unitValue = node1.row;
   } else if (unit === "col") {
     unitValue = node1.col;
-  } else { // box
+  } else {
+    // box
     unitValue = Math.floor(node1.row / 3) * 3 + Math.floor(node1.col / 3);
   }
 
@@ -2298,11 +2450,12 @@ const getOtherNodesInUnit = (
   if (!unitMap) return [];
 
   const allPositions = unitMap.get(unitValue)?.positions ?? [];
-  
+
   // 过滤掉 node1 和 node2
-  return allPositions.filter(pos => 
-    !(pos.row === node1.row && pos.col === node1.col) && 
-    !(pos.row === node2.row && pos.col === node2.col)
+  return allPositions.filter(
+    (pos) =>
+      !(pos.row === node1.row && pos.col === node1.col) &&
+      !(pos.row === node2.row && pos.col === node2.col)
   );
 };
 
@@ -2346,14 +2499,14 @@ export const skyscraper = (
             pos,
             path[0],
             num,
-            candidateMap,
+            candidateMap
           );
           const isStrongLinkWithEnd = isUnitStrongLink(
             board,
             pos,
             path[3],
             num,
-            candidateMap,
+            candidateMap
           );
           return !(isStrongLinkWithStart && isStrongLinkWithEnd);
         });
@@ -2598,8 +2751,12 @@ const checkSwordfish = (
 };
 
 // 试数法
-export const trialAndError = (board: CellData[][], candidateMap: CandidateMap, graph: Graph): Result | null => {
-  const newBoard = board.map(row => row.map(cell => ({ ...cell })));
+export const trialAndError = (
+  board: CellData[][],
+  candidateMap: CandidateMap,
+  graph: Graph
+): Result | null => {
+  const newBoard = board.map((row) => row.map((cell) => ({ ...cell })));
   if (solve(newBoard)) {
     for (let row = 0; row < 9; row++) {
       for (let col = 0; col < 9; col++) {
@@ -2611,11 +2768,11 @@ export const trialAndError = (board: CellData[][], candidateMap: CandidateMap, g
             prompt: [{ row, col }],
             method: SOLUTION_METHODS.TRIAL_AND_ERROR,
             target: [correctValue as number],
-            isFill: true
+            isFill: true,
           };
         }
       }
     }
   }
   return null;
-}
+};

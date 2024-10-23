@@ -114,14 +114,13 @@
   animation: errorFlashCandidate 0.5s ease-in-out 2;
 }
 .sudokuGrid .sudokuCell.positionHighlight {
-  background-color: #ff9f8e !important;
-  /* 红色高亮 */
-  transition: background-color 0.5s ease;
+  background-color: #fe9e9e !important;
 }
 .sudokuGrid .sudokuCell.promptHighlight {
-  background-color: #8dd3ff !important;
-  /* 蓝色高亮 */
-  transition: background-color 0.5s ease;
+  background-color: #9dc3ff !important;
+}
+.sudokuGrid .sudokuCell.positionHighlight.promptHighlight {
+  background-color: #f3f37f !important;
 }
 .selectMode,
 .controlButtons,
@@ -207,18 +206,18 @@
   /* 金色高亮 */
   transition: background-color 0.5s ease;
 }
-.candidateHighlightHint {
-  color: #ffffff !important;
-  /* 深蓝色文字 */
-  transition: color 0.5s ease;
-  background-color: #0000ff;
-  border-radius: 40%;
-}
 .candidateHighlightDelete {
   color: #ffffff !important;
   /* 红色文字 */
   transition: color 0.5s ease;
   background-color: #ff0000;
+  border-radius: 40%;
+}
+.candidateHighlightHint {
+  color: #ffffff !important;
+  /* 深蓝色文字 */
+  transition: color 0.5s ease;
+  background-color: #0000ff;
   border-radius: 40%;
 }
 .draftCell {
