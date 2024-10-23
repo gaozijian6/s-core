@@ -761,7 +761,7 @@ const checkNakedTriple2 = (
   return null;
 };
 
-// 显性四数对��
+// 显性四数对
 export const nakedQuadruple = (
   board: CellData[][],
   candidateMap: CandidateMap,
@@ -2142,40 +2142,47 @@ export const eureka = (
         const node1 = cycle[i];
         const node2 = cycle[(i + 1) % 5];
 
-        if (areCellsInSameUnit(node1, node2)) {
-          const commonUnit = getCommonUnit(node1, node2);
-          const otherNodesInUnit = getOtherNodesInUnit(
-            commonUnit,
-            Number(num),
-            candidateMap
-          ).filter(
-            (node) =>
-              !cycle.some(
-                (cycleNode) =>
-                  cycleNode.row === node.row && cycleNode.col === node.col
-              )
-          );
-
-          if (otherNodesInUnit.length === 0) {
-            const nodesToRemove = cycle.filter(
-              (_, index) => index !== i && index !== (i + 1) % 5
+        const commonUnits = getCommonUnit(node1, node2);
+        if (commonUnits.length > 0) {
+          for (const commonUnit of commonUnits) {
+            const otherNodesInUnit = getOtherNodesInUnit(
+              commonUnit,
+              Number(num),
+              candidateMap,
+              node1,
+              node2
+            ).filter(
+              (node) =>
+                !cycle.some(
+                  (cycleNode) =>
+                    cycleNode.row === node.row && cycleNode.col === node.col
+                )
             );
-            const affectedPositions = nodesToRemove.map((node) => ({
-              row: node.row,
-              col: node.col,
-            }));
+            if (otherNodesInUnit.length === 0) {
+              const nodesToRemove = cycle.filter(
+                (_, index) => index !== i && index !== (i + 1) % 5
+              );
+              const affectedPositions = nodesToRemove.map((node) => ({
+                row: node.row,
+                col: node.col,
+              }));
 
-            if (affectedPositions.length > 0) {
-              return {
-                position: affectedPositions,
-                prompt: cycle.map((node) => ({
-                  row: node.row,
-                  col: node.col,
-                })),
-                method: SOLUTION_METHODS.EUREKA,
-                target: [Number(num)],
-                isFill: false,
-              };
+              if (affectedPositions.length > 0) {
+                console.log(node1, node2);
+                console.log('commonUnit', commonUnit);
+                console.log('otherNodesInUnit', otherNodesInUnit);
+                
+                return {
+                  position: affectedPositions,
+                  prompt: cycle.map((node) => ({
+                    row: node.row,
+                    col: node.col,
+                  })),
+                  method: SOLUTION_METHODS.EUREKA,
+                  target: [Number(num)],
+                  isFill: false,
+                };
+              }
             }
           }
         }
@@ -2225,29 +2232,48 @@ const findCyclesOfLength = (
 const getCommonUnit = (
   node1: GraphNode,
   node2: GraphNode
-): "row" | "col" | "box" => {
-  if (node1.row === node2.row) return "row";
-  if (node1.col === node2.col) return "col";
-  return "box";
+): ("row" | "col" | "box")[] => {
+  const commonUnits: ("row" | "col" | "box")[] = [];
+
+  if (node1.row === node2.row) commonUnits.push("row");
+  if (node1.col === node2.col) commonUnits.push("col");
+  if (
+    Math.floor(node1.row / 3) === Math.floor(node2.row / 3) &&
+    Math.floor(node1.col / 3) === Math.floor(node2.col / 3)
+  ) {
+    commonUnits.push("box");
+  }
+
+  return commonUnits;
 };
 
 const getOtherNodesInUnit = (
   unit: "row" | "col" | "box",
   num: number,
-  candidateMap: CandidateMap
+  candidateMap: CandidateMap,
+  node1: GraphNode,
+  node2: GraphNode
 ): Candidate[] => {
+  let unitValue: number;
+  
+  if (unit === "row") {
+    unitValue = node1.row;
+  } else if (unit === "col") {
+    unitValue = node1.col;
+  } else { // box
+    unitValue = Math.floor(node1.row / 3) * 3 + Math.floor(node1.col / 3);
+  }
+
   const unitMap = candidateMap[num][unit];
   if (!unitMap) return [];
 
-  const unitValue =
-    unit === "row"
-      ? candidateMap[num].all[0].row
-      : unit === "col"
-      ? candidateMap[num].all[0].col
-      : Math.floor(candidateMap[num].all[0].row / 3) * 3 +
-        Math.floor(candidateMap[num].all[0].col / 3);
-
-  return unitMap.get(unitValue)?.positions ?? [];
+  const allPositions = unitMap.get(unitValue)?.positions ?? [];
+  
+  // 过滤掉 node1 和 node2
+  return allPositions.filter(pos => 
+    !(pos.row === node1.row && pos.col === node1.col) && 
+    !(pos.row === node2.row && pos.col === node2.col)
+  );
 };
 
 // 摩天楼
