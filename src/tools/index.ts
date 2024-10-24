@@ -526,13 +526,13 @@ export const useSudokuBoard = (initialBoard: CellData[][]) => {
     }
     if (isRecord) {
       const newHistory = history.slice(0, currentStep + 1);
-      newHistory.push({
+    newHistory.push({
         board: newBoard,
         action,
         affectedCells,
         isOfficialDraft,
       });
-      setHistory(newHistory);
+    setHistory(newHistory);
       setCurrentStep(newHistory.length - 1);
     }
     setBoard(newBoard);
@@ -599,3 +599,4 @@ export const areCellsInSameUnit = (cell1: Position, cell2: Position) => {
 
   return sameRow || sameColumn || sameBox;
 };
+

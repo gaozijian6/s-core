@@ -1625,11 +1625,8 @@ export const xyWing = (
             continue;
           }
           if (
-            new Set([
-              commonCandidateBC,
-              commonCandidateAC,
-              commonCandidateAB,
-            ]).size !== 3
+            new Set([commonCandidateBC, commonCandidateAC, commonCandidateAB])
+              .size !== 3
           ) {
             continue;
           }
@@ -1692,11 +1689,8 @@ export const xyWing = (
             continue;
           }
           if (
-            new Set([
-              commonCandidateAC,
-              commonCandidateBA,
-              commonCandidateBC,
-            ]).size !== 3
+            new Set([commonCandidateAC, commonCandidateBA, commonCandidateBC])
+              .size !== 3
           ) {
             continue;
           }
@@ -1759,11 +1753,8 @@ export const xyWing = (
             continue;
           }
           if (
-            new Set([
-              commonCandidateAB,
-              commonCandidateCA,
-              commonCandidateCB,
-            ]).size !== 3
+            new Set([commonCandidateAB, commonCandidateCA, commonCandidateCB])
+              .size !== 3
           ) {
             continue;
           }
@@ -2511,7 +2502,14 @@ export const skyscraper = (
           return !(isStrongLinkWithStart && isStrongLinkWithEnd);
         });
 
-        if (affectedPositions.length > 0) {
+        if (
+          affectedPositions.length > 0 &&
+          !affectedPositions.some((pos) =>
+            path.some(
+              (pathPos) => pathPos.row === pos.row && pathPos.col === pos.col
+            )
+          )
+        ) {
           return {
             position: affectedPositions,
             prompt: path,
