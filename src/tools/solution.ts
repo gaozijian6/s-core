@@ -2501,7 +2501,6 @@ export const skyscraper = (
           );
           return !(isStrongLinkWithStart && isStrongLinkWithEnd);
         });
-
         if (
           affectedPositions.length > 0 &&
           !affectedPositions.some((pos) =>

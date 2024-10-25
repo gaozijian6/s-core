@@ -105,7 +105,227 @@ const Sudoku: React.FC = () => {
       }))
     );
 
-    newBoard = [
+    newBoard =[
+      [
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": []
+          }
+      ],
+      [
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  1
+              ],
+              "highlights": [
+                  "promptHighlight"
+              ],
+              "highlightCandidates": [
+                  1
+              ]
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  1
+              ],
+              "highlights": [
+                  "promptHighlight"
+              ],
+              "highlightCandidates": [
+                  1
+              ]
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": []
+          }
+      ],
+      [
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": []
+          }
+      ],
+      [
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  1
+              ],
+              "highlights": [
+                  "promptHighlight"
+              ],
+              "highlightCandidates": [
+                  1
+              ]
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  1
+              ],
+              "highlights": [
+                  "promptHighlight"
+              ],
+              "highlightCandidates": [
+                  1
+              ]
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": []
+          }
+      ],
       [
           {
               "value": null,
@@ -263,169 +483,11 @@ const Sudoku: React.FC = () => {
               "isGiven": false,
               "draft": [
                   1
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          }
-      ],
-      [
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          }
-      ],
-      [
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          }
-      ],
-      [
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
+              ],
+              "highlights": [
+                  "promptHighlight"
+              ],
+              "highlightCandidates": [
                   1
               ]
           },
@@ -443,13 +505,6 @@ const Sudoku: React.FC = () => {
               "value": null,
               "isGiven": false,
               "draft": []
-          }
-      ],
-      [
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
           },
           {
               "value": null,
@@ -459,32 +514,15 @@ const Sudoku: React.FC = () => {
           {
               "value": null,
               "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
+              "draft": [
+                  1
+              ],
+              "highlights": [
+                  "promptHighlight"
+              ],
+              "highlightCandidates": [
+                  1
+              ]
           },
           {
               "value": null,
@@ -531,7 +569,9 @@ const Sudoku: React.FC = () => {
           {
               "value": null,
               "isGiven": false,
-              "draft": []
+              "draft": [
+                  1
+              ]
           },
           {
               "value": null,
@@ -913,10 +953,14 @@ const Sudoku: React.FC = () => {
     setSelectedNumber(null);
   };
 
-  const applyHintHighlight = (board: CellData[][], result: Result,type: "position" | "prompt" | "both") => {
+  const applyHintHighlight = (
+    board: CellData[][],
+    result: Result,
+    type: "position" | "prompt" | "both"
+  ) => {
     const { position, target, prompt } = result;
     const newBoard = deepCopyBoard(board);
-    if(type === "position" || type === "both"){
+    if (type === "position" || type === "both") {
       position.forEach(({ row, col }: Position) => {
         newBoard[row][col].highlights = newBoard[row][col].highlights || [];
         newBoard[row][col].highlights.push("positionHighlight");
@@ -958,12 +1002,11 @@ const Sudoku: React.FC = () => {
       // hiddenTriple2,
       // xWing,
       // xWingVarient,
-      xyWing,
-      // xyzWing,
+      // xyWing,
       // nakedQuadruple,
       // eureka,
       // skyscraper,
-      // swordfish,
+      swordfish,
       // trialAndError,
     ];
     let result = null;
@@ -1026,7 +1069,8 @@ const Sudoku: React.FC = () => {
           boardWithHighlight = applyHintHighlight(board, result, "prompt");
           hintContent = `候选数${target.join(",")}在第${
             Math.floor(position[0].row / 3) * 3 +
-            Math.floor(position[0].col / 3) + 1
+            Math.floor(position[0].col / 3) +
+            1
           }宫中，只有一个候选方格，所以可以确定该单元格的值为${target.join(
             ", "
           )}`;
@@ -1051,7 +1095,11 @@ const Sudoku: React.FC = () => {
               prompt[1].row + 1
             }C${prompt[1].col + 1}、R${prompt[2].row + 1}C${prompt[2].col + 1}`;
           }
-          hintContent = `在第${Math.floor(prompt[0].row / 3) * 3 + Math.floor(prompt[0].col / 3) + 1}宫中，候选数${target.join(
+          hintContent = `在第${
+            Math.floor(prompt[0].row / 3) * 3 +
+            Math.floor(prompt[0].col / 3) +
+            1
+          }宫中，候选数${target.join(
             ","
           )}只存在${posStr}中，无论存在哪个方格中，这一行上的其他位置都不应出现此候选数${target.join(
             ","
@@ -1069,7 +1117,11 @@ const Sudoku: React.FC = () => {
               prompt[1].row + 1
             }C${prompt[1].col + 1}、R${prompt[2].row + 1}C${prompt[2].col + 1}`;
           }
-          hintContent = `在第${Math.floor(prompt[0].row / 3) * 3 + Math.floor(prompt[0].col / 3) + 1}宫中，候选数${target.join(
+          hintContent = `在第${
+            Math.floor(prompt[0].row / 3) * 3 +
+            Math.floor(prompt[0].col / 3) +
+            1
+          }宫中，候选数${target.join(
             ","
           )}只存在${posStr}中，无论存在哪个方格中，这一列上的其他位置都不应出现此候选数${target.join(
             ","
@@ -1143,7 +1195,11 @@ const Sudoku: React.FC = () => {
             prompt[1].row + 1
           }C${prompt[1].col + 1}`;
           candStr = target.join(",");
-          hintContent = `在第${Math.floor(prompt[0].row / 3) * 3 + Math.floor(prompt[0].col / 3) + 1}宫中，因为候选数${candStr}只能出现在${posStr}这两个方格中，所以此宫其他位置都不应出现候选数${candStr}`;
+          hintContent = `在第${
+            Math.floor(prompt[0].row / 3) * 3 +
+            Math.floor(prompt[0].col / 3) +
+            1
+          }宫中，因为候选数${candStr}只能出现在${posStr}这两个方格中，所以此宫其他位置都不应出现候选数${candStr}`;
           break;
         case SOLUTION_METHODS.NAKED_TRIPLE_ROW1:
           setPrompts(target);
@@ -1177,7 +1233,11 @@ const Sudoku: React.FC = () => {
             prompt[1].row + 1
           }C${prompt[1].col + 1}、R${prompt[2].row + 1}C${prompt[2].col + 1}`;
           candStr = target.join(",");
-          hintContent = `在第${Math.floor(prompt[0].row / 3) * 3 + Math.floor(prompt[0].col / 3) + 1}宫中，因为候选数${candStr}只能出现在${posStr}这三个方格中，所以此宫其他位置都不应出现候选数${candStr}`;
+          hintContent = `在第${
+            Math.floor(prompt[0].row / 3) * 3 +
+            Math.floor(prompt[0].col / 3) +
+            1
+          }宫中，因为候选数${candStr}只能出现在${posStr}这三个方格中，所以此宫其他位置都不应出现候选数${candStr}`;
           break;
         case SOLUTION_METHODS.NAKED_TRIPLE_ROW2:
           setPrompts(target);
@@ -1211,7 +1271,11 @@ const Sudoku: React.FC = () => {
             prompt[1].row + 1
           }C${prompt[1].col + 1}、R${prompt[2].row + 1}C${prompt[2].col + 1}`;
           candStr = target.join(",");
-          hintContent = `在第${Math.floor(prompt[0].row / 3) * 3 + Math.floor(prompt[0].col / 3) + 1}宫中，因为候选数${candStr}只能出现在${posStr}这三个方格中，所以此宫其他位置都不应出现候选数${candStr}`;
+          hintContent = `在第${
+            Math.floor(prompt[0].row / 3) * 3 +
+            Math.floor(prompt[0].col / 3) +
+            1
+          }宫中，因为候选数${candStr}只能出现在${posStr}这三个方格中，所以此宫其他位置都不应出现候选数${candStr}`;
           break;
         case SOLUTION_METHODS.HIDDEN_PAIR_ROW:
           boardWithHighlight = applyHintHighlight(board, result, "prompt");
@@ -1266,7 +1330,11 @@ const Sudoku: React.FC = () => {
             prompt[1].row + 1
           }C${prompt[1].col + 1}`;
           candStr = [...new Set(prompts)].join(",");
-          hintContent = `在第${Math.floor(prompt[0].row / 3) * 3 + Math.floor(prompt[0].col / 3) + 1}宫中，因为候选数${candStr}只出现在${posStr}这两个方格中，因此这两个方格不应出现其他候选数`;
+          hintContent = `在第${
+            Math.floor(prompt[0].row / 3) * 3 +
+            Math.floor(prompt[0].col / 3) +
+            1
+          }宫中，因为候选数${candStr}只出现在${posStr}这两个方格中，因此这两个方格不应出现其他候选数`;
           break;
         case SOLUTION_METHODS.HIDDEN_TRIPLE_ROW1:
           boardWithHighlight = applyHintHighlight(board, result, "prompt");
@@ -1321,7 +1389,11 @@ const Sudoku: React.FC = () => {
             prompt[1].row + 1
           }C${prompt[1].col + 1}、R${prompt[2].row + 1}C${prompt[2].col + 1}`;
           candStr = [...new Set(prompts)].join(",");
-          hintContent = `在第${Math.floor(prompt[0].row / 3) * 3 + Math.floor(prompt[0].col / 3) + 1}宫中，因为候选数${candStr}只出现在${posStr}这三个方格中，因此这三个方格不应出现其他候选数`;
+          hintContent = `在第${
+            Math.floor(prompt[0].row / 3) * 3 +
+            Math.floor(prompt[0].col / 3) +
+            1
+          }宫中，因为候选数${candStr}只出现在${posStr}这三个方格中，因此这三个方格不应出现其他候选数`;
           break;
         case SOLUTION_METHODS.HIDDEN_TRIPLE_ROW2:
           boardWithHighlight = applyHintHighlight(board, result, "prompt");
@@ -1376,7 +1448,11 @@ const Sudoku: React.FC = () => {
             prompt[1].row + 1
           }C${prompt[1].col + 1}、R${prompt[2].row + 1}C${prompt[2].col + 1}`;
           candStr = [...new Set(prompts)].join(",");
-          hintContent = `在第${Math.floor(prompt[0].row / 3) * 3 + Math.floor(prompt[0].col / 3) + 1}宫中，因为候选数${candStr}只出现在${posStr}这三个方格中，因此这三个方格不应出现其他候选数`;
+          hintContent = `在第${
+            Math.floor(prompt[0].row / 3) * 3 +
+            Math.floor(prompt[0].col / 3) +
+            1
+          }宫中，因为候选数${candStr}只出现在${posStr}这三个方格中，因此这三个方格不应出现其他候选数`;
           break;
         case SOLUTION_METHODS.NAKED_QUADRUPLE_ROW:
           boardWithHighlight = applyHintHighlight(board, result, "prompt");
@@ -1398,7 +1474,7 @@ const Sudoku: React.FC = () => {
             prompt[2].col + 1
           }、R${prompt[3].row + 1}C${prompt[3].col + 1}`;
           candStr = [...new Set(target)].join(",");
-            hintContent = `在第${
+          hintContent = `在第${
             position[0].col + 1
           }列中，因为候选数${candStr}只出现在${posStr}这四个方格中，因此这四个方格不应出现其他候选数`;
           break;
@@ -1410,7 +1486,11 @@ const Sudoku: React.FC = () => {
             prompt[2].col + 1
           }、R${prompt[3].row + 1}C${prompt[3].col + 1}`;
           candStr = [...new Set(target)].join(",");
-          hintContent = `在第${Math.floor(prompt[0].row / 3) * 3 + Math.floor(prompt[0].col / 3) + 1}宫中，因为候选数${candStr}只出现在${posStr}这四个方格中，因此这四个方格不应出现其他候选数`;
+          hintContent = `在第${
+            Math.floor(prompt[0].row / 3) * 3 +
+            Math.floor(prompt[0].col / 3) +
+            1
+          }宫中，因为候选数${candStr}只出现在${posStr}这四个方格中，因此这四个方格不应出现其他候选数`;
           break;
         case SOLUTION_METHODS.X_WING_ROW:
           boardWithHighlight = applyHintHighlight(board, result, "both");
@@ -1421,8 +1501,8 @@ const Sudoku: React.FC = () => {
             prompt[2].col + 1
           }、R${prompt[3].row + 1}C${prompt[3].col + 1}`;
           candStr = target.join(",");
-          hintContent = `在${position[0].row + 1}、${
-            position[2].row + 1
+          hintContent = `在${prompt[0].row + 1}、${
+            prompt[2].row + 1
           }两行中，候选数${candStr}每行都有两个候选方格且他们的列号相同，在这四个候选方格内无论哪两个取值，都会导致这两列其他位置不应出现候选数${candStr}`;
           break;
         case SOLUTION_METHODS.X_WING_COLUMN:
@@ -1434,8 +1514,8 @@ const Sudoku: React.FC = () => {
             prompt[2].col + 1
           }、R${prompt[3].row + 1}C${prompt[3].col + 1}`;
           candStr = target.join(",");
-          hintContent = `在${position[0].row + 1}、${
-            position[2].col + 1
+          hintContent = `在${prompt[0].row + 1}、${
+            prompt[2].col + 1
           }两列中，候选数${candStr}每列都有两个候选方格且他们的行号相同，在这四个候选方格内无论哪两个取值，都会导致这两行其他位置不应出现候选数${candStr}`;
           break;
         case SOLUTION_METHODS.X_WING_VARIENT_COLUMN:
@@ -1460,13 +1540,14 @@ const Sudoku: React.FC = () => {
           }
           candStr = target.join(",");
           setPrompts(target);
-          hintContent = `在${posStr}这${prompt.length}个候选方格内无论哪两个取${candStr}，都会导致R${
+          hintContent = `在${posStr}这${
+            prompt.length
+          }个候选方格内无论哪两个取${candStr}，都会导致R${
             position[0].row + 1
           }C${position[0].col + 1}内不应出现候选数${candStr}`;
           break;
         case SOLUTION_METHODS.XY_WING:
-        case SOLUTION_METHODS.XYZ_WING:
-          boardWithHighlight = applyHintHighlight(board, result, "prompt");
+          boardWithHighlight = applyHintHighlight(board, result, "both");
           setPrompts(target);
           posStr = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
             prompt[1].row + 1
@@ -1477,13 +1558,58 @@ const Sudoku: React.FC = () => {
               position[0].row + 1
             }C${position[0].col + 1}内都不能出现候选数${target[0]}`;
           }
-          hintContent = `无论${posStr}这三个候选方格内如何取值，R${
-            position[0].row + 1
-          }C${position[0].col + 1}、R${position[1].row + 1}C${
-            position[1].col + 1
-          }内都不能出现候选数${target[0]}`;
+          if (position.length === 1) {
+            hintContent = `无论${posStr}这三个候选方格内如何取值，R${
+              position[0].row + 1
+            }C${position[0].col + 1}内都不能出现候选数${target[0]}`;
+          } else if (position.length === 2) {
+            hintContent = `无论${posStr}这三个候选方格内如何取值，R${
+              position[0].row + 1
+            }C${position[0].col + 1}、R${position[1].row + 1}C${
+              position[1].col + 1
+            }内都不能出现候选数${target[0]}`;
+          }
+          break;
+        case SOLUTION_METHODS.XYZ_WING:
+          boardWithHighlight = applyHintHighlight(board, result, "both");
+          setPrompts(target);
+          const candidateCounts = new Map();
+          prompt.forEach(cell => {
+            const candidates = board[cell.row][cell.col].draft;
+            candidates.forEach(num => {
+              candidateCounts.set(num, (candidateCounts.get(num) || 0) + 1);
+            });
+          });
+          const twiceAppearingCandidates = Array.from(candidateCounts.keys())
+            .filter(num => candidateCounts.get(num) === 2)
+            .map(Number);
+          setPositions(twiceAppearingCandidates);
+          posStr = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
+            prompt[1].row + 1
+          }C${prompt[1].col + 1}、R${prompt[2].row + 1}C${prompt[2].col + 1}`;
+          candStr = target.join(",");
+          if (position.length === 1) {
+            hintContent = `无论${posStr}这三个候选方格内如何取值，R${
+              position[0].row + 1
+            }C${position[0].col + 1}内都不能出现候选数${target[0]}`;
+          }
+          if (position.length === 1) {
+            hintContent = `无论${posStr}这三个候选方格内如何取值，R${
+              position[0].row + 1
+            }C${position[0].col + 1}内都不能出现候选数${target[0]}`;
+          } else if (position.length === 2) {
+            hintContent = `无论${posStr}这三个候选方格内如何取值，R${
+              position[0].row + 1
+            }C${position[0].col + 1}、R${position[1].row + 1}C${
+              position[1].col + 1
+            }内都不能出现候选数${target[0]}`;
+          }
           break;
         case SOLUTION_METHODS.EUREKA:
+          setPositions(target);
+          setPrompts(target);
+          const diffPositions = prompt.filter(p => !position.some(pos => pos.row === p.row && pos.col === p.col));
+          result.prompt=diffPositions          
           boardWithHighlight = applyHintHighlight(board, result, "both");
           posStr = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
             prompt[1].row + 1
@@ -1524,14 +1650,14 @@ const Sudoku: React.FC = () => {
               position[2].col + 1
             }`;
           }
-          hintContent = `${posStr}四个方格构成共轭链，无论R${prompt[0].row + 1}C${
-            prompt[0].col + 1
-          }还是R${prompt[3].row + 1}C${prompt[3].col + 1}取值为${
-            target[0]
-          }，${deleteStr}内都不能出现候选数${target[0]}`;
+          hintContent = `${posStr}四个方格构成共轭链，无论R${
+            prompt[0].row + 1
+          }C${prompt[0].col + 1}还是R${prompt[3].row + 1}C${
+            prompt[3].col + 1
+          }取值为${target[0]}，${deleteStr}内都不能出现候选数${target[0]}`;
           break;
-        case SOLUTION_METHODS.SWORDFISH_ROW: {
-          boardWithHighlight = applyHintHighlight(board, result, "prompt");
+        case SOLUTION_METHODS.SWORDFISH_ROW:
+          boardWithHighlight = applyHintHighlight(board, result, "both");
           if (prompt.length === 6) {
             posStr = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
               prompt[1].row + 1
@@ -1580,9 +1706,8 @@ const Sudoku: React.FC = () => {
             target[0]
           }，第${columns.join("、")}列内都不能出现候选数${target[0]}`;
           break;
-        }
-        case SOLUTION_METHODS.SWORDFISH_COLUMN: {
-          boardWithHighlight = applyHintHighlight(board, result, "prompt");
+        case SOLUTION_METHODS.SWORDFISH_COLUMN:
+          boardWithHighlight = applyHintHighlight(board, result, "both");
           if (prompt.length === 6) {
             posStr = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
               prompt[1].row + 1
@@ -1631,7 +1756,6 @@ const Sudoku: React.FC = () => {
             target[0]
           }，第${rows.join("、")}行内都不能出现候选数${target[0]}`;
           break;
-        }
       }
     }
 
