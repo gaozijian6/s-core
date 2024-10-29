@@ -105,655 +105,655 @@ const Sudoku: React.FC = () => {
       }))
     );
 
-    newBoard = [
-      [
-          {
-              "value": 5,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": 3,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  4,
-                  6,
-                  7,
-                  8
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  6,
-                  7,
-                  8,
-                  9
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  4,
-                  6,
-                  7
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  4,
-                  6,
-                  7
-              ]
-          },
-          {
-              "value": 2,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  4
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  7,
-                  8,
-                  9
-              ]
-          }
-      ],
-      [
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  4,
-                  6,
-                  8
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  7,
-                  8
-              ],
-              "highlights": [
-                  "promptHighlight"
-              ],
-              "highlightCandidates": [
-                  7
-              ]
-          },
-          {
-              "value": 9,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  6,
-                  7,
-                  8
-              ]
-          },
-          {
-              "value": 2,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": 5,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": 3,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  4
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  7,
-                  8
-              ],
-              "highlights": [
-                  "positionHighlight"
-              ],
-              "highlightCandidates": [
-                  7
-              ]
-          }
-      ],
-      [
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  4,
-                  8
-              ]
-          },
-          {
-              "value": 2,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  4,
-                  7,
-                  8
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  3,
-                  7,
-                  8,
-                  9
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  3,
-                  4,
-                  7
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  3,
-                  4,
-                  7
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  7,
-                  8,
-                  9
-              ]
-          },
-          {
-              "value": 5,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": 6,
-              "isGiven": false,
-              "draft": []
-          }
-      ],
-      [
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  9
-              ]
-          },
-          {
-              "value": 5,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  3,
-                  7
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  3,
-                  6,
-                  7
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  3,
-                  6,
-                  7
-              ]
-          },
-          {
-              "value": 8,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": 4,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  7,
-                  9
-              ],
-              "highlights": [
-                  "promptHighlight"
-              ],
-              "highlightCandidates": [
-                  7
-              ]
-          },
-          {
-              "value": 2,
-              "isGiven": false,
-              "draft": []
-          }
-      ],
-      [
-          {
-              "value": 2,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  7,
-                  8,
-                  9
-              ],
-              "highlights": [
-                  "promptHighlight"
-              ],
-              "highlightCandidates": [
-                  7
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  7,
-                  8
-              ]
-          },
-          {
-              "value": 5,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  4,
-                  7
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  4,
-                  7
-              ]
-          },
-          {
-              "value": 6,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  7,
-                  8,
-                  9
-              ],
-              "highlights": [
-                  "promptHighlight"
-              ],
-              "highlightCandidates": [
-                  7
-              ]
-          },
-          {
-              "value": 3,
-              "isGiven": false,
-              "draft": []
-          }
-      ],
-      [
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  4,
-                  8
-              ]
-          },
-          {
-              "value": 6,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  3,
-                  4,
-                  7,
-                  8
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  3,
-                  7
-              ]
-          },
-          {
-              "value": 9,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": 2,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": 1,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  7,
-                  8
-              ],
-              "highlights": [
-                  "promptHighlight"
-              ],
-              "highlightCandidates": [
-                  7
-              ]
-          },
-          {
-              "value": 5,
-              "isGiven": false,
-              "draft": []
-          }
-      ],
-      [
-          {
-              "value": 3,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  8,
-                  9
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  5,
-                  6,
-                  8
-              ]
-          },
-          {
-              "value": 1,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  5,
-                  7,
-                  8
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  6,
-                  7,
-                  9
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  7,
-                  8,
-                  9
-              ]
-          },
-          {
-              "value": 2,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": 4,
-              "isGiven": false,
-              "draft": []
-          }
-      ],
-      [
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  6,
-                  8,
-                  9
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  8,
-                  9
-              ]
-          },
-          {
-              "value": 2,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": 4,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  6,
-                  7,
-                  8
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  6,
-                  7,
-                  9
-              ]
-          },
-          {
-              "value": 5,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": 3,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  7,
-                  8,
-                  9
-              ]
-          }
-      ],
-      [
-          {
-              "value": 7,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": 4,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  5,
-                  8
-              ]
-          },
-          {
-              "value": 2,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  3,
-                  5,
-                  8
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  3,
-                  9
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  8,
-                  9
-              ]
-          },
-          {
-              "value": 6,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  8,
-                  9
-              ]
-          }
-      ]
-  ]
+  //   newBoard = [
+  //     [
+  //         {
+  //             "value": 5,
+  //             "isGiven": false,
+  //             "draft": []
+  //         },
+  //         {
+  //             "value": 3,
+  //             "isGiven": false,
+  //             "draft": []
+  //         },
+  //         {
+  //             "value": null,
+  //             "isGiven": false,
+  //             "draft": [
+  //                 1,
+  //                 4,
+  //                 6,
+  //                 7,
+  //                 8
+  //             ]
+  //         },
+  //         {
+  //             "value": null,
+  //             "isGiven": false,
+  //             "draft": [
+  //                 6,
+  //                 7,
+  //                 8,
+  //                 9
+  //             ]
+  //         },
+  //         {
+  //             "value": null,
+  //             "isGiven": false,
+  //             "draft": [
+  //                 1,
+  //                 4,
+  //                 6,
+  //                 7
+  //             ]
+  //         },
+  //         {
+  //             "value": null,
+  //             "isGiven": false,
+  //             "draft": [
+  //                 1,
+  //                 4,
+  //                 6,
+  //                 7
+  //             ]
+  //         },
+  //         {
+  //             "value": 2,
+  //             "isGiven": false,
+  //             "draft": []
+  //         },
+  //         {
+  //             "value": null,
+  //             "isGiven": false,
+  //             "draft": [
+  //                 1,
+  //                 4
+  //             ]
+  //         },
+  //         {
+  //             "value": null,
+  //             "isGiven": false,
+  //             "draft": [
+  //                 7,
+  //                 8,
+  //                 9
+  //             ]
+  //         }
+  //     ],
+  //     [
+  //         {
+  //             "value": null,
+  //             "isGiven": false,
+  //             "draft": [
+  //                 1,
+  //                 4,
+  //                 6,
+  //                 8
+  //             ]
+  //         },
+  //         {
+  //             "value": null,
+  //             "isGiven": false,
+  //             "draft": [
+  //                 1,
+  //                 7,
+  //                 8
+  //             ],
+  //             "highlights": [
+  //                 "promptHighlight"
+  //             ],
+  //             "highlightCandidates": [
+  //                 7
+  //             ]
+  //         },
+  //         {
+  //             "value": 9,
+  //             "isGiven": false,
+  //             "draft": []
+  //         },
+  //         {
+  //             "value": null,
+  //             "isGiven": false,
+  //             "draft": [
+  //                 6,
+  //                 7,
+  //                 8
+  //             ]
+  //         },
+  //         {
+  //             "value": 2,
+  //             "isGiven": false,
+  //             "draft": []
+  //         },
+  //         {
+  //             "value": 5,
+  //             "isGiven": false,
+  //             "draft": []
+  //         },
+  //         {
+  //             "value": 3,
+  //             "isGiven": false,
+  //             "draft": []
+  //         },
+  //         {
+  //             "value": null,
+  //             "isGiven": false,
+  //             "draft": [
+  //                 1,
+  //                 4
+  //             ]
+  //         },
+  //         {
+  //             "value": null,
+  //             "isGiven": false,
+  //             "draft": [
+  //                 7,
+  //                 8
+  //             ],
+  //             "highlights": [
+  //                 "positionHighlight"
+  //             ],
+  //             "highlightCandidates": [
+  //                 7
+  //             ]
+  //         }
+  //     ],
+  //     [
+  //         {
+  //             "value": null,
+  //             "isGiven": false,
+  //             "draft": [
+  //                 1,
+  //                 4,
+  //                 8
+  //             ]
+  //         },
+  //         {
+  //             "value": 2,
+  //             "isGiven": false,
+  //             "draft": []
+  //         },
+  //         {
+  //             "value": null,
+  //             "isGiven": false,
+  //             "draft": [
+  //                 1,
+  //                 4,
+  //                 7,
+  //                 8
+  //             ]
+  //         },
+  //         {
+  //             "value": null,
+  //             "isGiven": false,
+  //             "draft": [
+  //                 3,
+  //                 7,
+  //                 8,
+  //                 9
+  //             ]
+  //         },
+  //         {
+  //             "value": null,
+  //             "isGiven": false,
+  //             "draft": [
+  //                 1,
+  //                 3,
+  //                 4,
+  //                 7
+  //             ]
+  //         },
+  //         {
+  //             "value": null,
+  //             "isGiven": false,
+  //             "draft": [
+  //                 1,
+  //                 3,
+  //                 4,
+  //                 7
+  //             ]
+  //         },
+  //         {
+  //             "value": null,
+  //             "isGiven": false,
+  //             "draft": [
+  //                 7,
+  //                 8,
+  //                 9
+  //             ]
+  //         },
+  //         {
+  //             "value": 5,
+  //             "isGiven": false,
+  //             "draft": []
+  //         },
+  //         {
+  //             "value": 6,
+  //             "isGiven": false,
+  //             "draft": []
+  //         }
+  //     ],
+  //     [
+  //         {
+  //             "value": null,
+  //             "isGiven": false,
+  //             "draft": [
+  //                 1,
+  //                 9
+  //             ]
+  //         },
+  //         {
+  //             "value": 5,
+  //             "isGiven": false,
+  //             "draft": []
+  //         },
+  //         {
+  //             "value": null,
+  //             "isGiven": false,
+  //             "draft": [
+  //                 1,
+  //                 3,
+  //                 7
+  //             ]
+  //         },
+  //         {
+  //             "value": null,
+  //             "isGiven": false,
+  //             "draft": [
+  //                 3,
+  //                 6,
+  //                 7
+  //             ]
+  //         },
+  //         {
+  //             "value": null,
+  //             "isGiven": false,
+  //             "draft": [
+  //                 1,
+  //                 3,
+  //                 6,
+  //                 7
+  //             ]
+  //         },
+  //         {
+  //             "value": 8,
+  //             "isGiven": false,
+  //             "draft": []
+  //         },
+  //         {
+  //             "value": 4,
+  //             "isGiven": false,
+  //             "draft": []
+  //         },
+  //         {
+  //             "value": null,
+  //             "isGiven": false,
+  //             "draft": [
+  //                 7,
+  //                 9
+  //             ],
+  //             "highlights": [
+  //                 "promptHighlight"
+  //             ],
+  //             "highlightCandidates": [
+  //                 7
+  //             ]
+  //         },
+  //         {
+  //             "value": 2,
+  //             "isGiven": false,
+  //             "draft": []
+  //         }
+  //     ],
+  //     [
+  //         {
+  //             "value": 2,
+  //             "isGiven": false,
+  //             "draft": []
+  //         },
+  //         {
+  //             "value": null,
+  //             "isGiven": false,
+  //             "draft": [
+  //                 1,
+  //                 7,
+  //                 8,
+  //                 9
+  //             ],
+  //             "highlights": [
+  //                 "promptHighlight"
+  //             ],
+  //             "highlightCandidates": [
+  //                 7
+  //             ]
+  //         },
+  //         {
+  //             "value": null,
+  //             "isGiven": false,
+  //             "draft": [
+  //                 1,
+  //                 7,
+  //                 8
+  //             ]
+  //         },
+  //         {
+  //             "value": 5,
+  //             "isGiven": false,
+  //             "draft": []
+  //         },
+  //         {
+  //             "value": null,
+  //             "isGiven": false,
+  //             "draft": [
+  //                 1,
+  //                 4,
+  //                 7
+  //             ]
+  //         },
+  //         {
+  //             "value": null,
+  //             "isGiven": false,
+  //             "draft": [
+  //                 1,
+  //                 4,
+  //                 7
+  //             ]
+  //         },
+  //         {
+  //             "value": 6,
+  //             "isGiven": false,
+  //             "draft": []
+  //         },
+  //         {
+  //             "value": null,
+  //             "isGiven": false,
+  //             "draft": [
+  //                 7,
+  //                 8,
+  //                 9
+  //             ],
+  //             "highlights": [
+  //                 "promptHighlight"
+  //             ],
+  //             "highlightCandidates": [
+  //                 7
+  //             ]
+  //         },
+  //         {
+  //             "value": 3,
+  //             "isGiven": false,
+  //             "draft": []
+  //         }
+  //     ],
+  //     [
+  //         {
+  //             "value": null,
+  //             "isGiven": false,
+  //             "draft": [
+  //                 4,
+  //                 8
+  //             ]
+  //         },
+  //         {
+  //             "value": 6,
+  //             "isGiven": false,
+  //             "draft": []
+  //         },
+  //         {
+  //             "value": null,
+  //             "isGiven": false,
+  //             "draft": [
+  //                 3,
+  //                 4,
+  //                 7,
+  //                 8
+  //             ]
+  //         },
+  //         {
+  //             "value": null,
+  //             "isGiven": false,
+  //             "draft": [
+  //                 3,
+  //                 7
+  //             ]
+  //         },
+  //         {
+  //             "value": 9,
+  //             "isGiven": false,
+  //             "draft": []
+  //         },
+  //         {
+  //             "value": 2,
+  //             "isGiven": false,
+  //             "draft": []
+  //         },
+  //         {
+  //             "value": 1,
+  //             "isGiven": false,
+  //             "draft": []
+  //         },
+  //         {
+  //             "value": null,
+  //             "isGiven": false,
+  //             "draft": [
+  //                 7,
+  //                 8
+  //             ],
+  //             "highlights": [
+  //                 "promptHighlight"
+  //             ],
+  //             "highlightCandidates": [
+  //                 7
+  //             ]
+  //         },
+  //         {
+  //             "value": 5,
+  //             "isGiven": false,
+  //             "draft": []
+  //         }
+  //     ],
+  //     [
+  //         {
+  //             "value": 3,
+  //             "isGiven": false,
+  //             "draft": []
+  //         },
+  //         {
+  //             "value": null,
+  //             "isGiven": false,
+  //             "draft": [
+  //                 8,
+  //                 9
+  //             ]
+  //         },
+  //         {
+  //             "value": null,
+  //             "isGiven": false,
+  //             "draft": [
+  //                 5,
+  //                 6,
+  //                 8
+  //             ]
+  //         },
+  //         {
+  //             "value": 1,
+  //             "isGiven": false,
+  //             "draft": []
+  //         },
+  //         {
+  //             "value": null,
+  //             "isGiven": false,
+  //             "draft": [
+  //                 5,
+  //                 7,
+  //                 8
+  //             ]
+  //         },
+  //         {
+  //             "value": null,
+  //             "isGiven": false,
+  //             "draft": [
+  //                 6,
+  //                 7,
+  //                 9
+  //             ]
+  //         },
+  //         {
+  //             "value": null,
+  //             "isGiven": false,
+  //             "draft": [
+  //                 7,
+  //                 8,
+  //                 9
+  //             ]
+  //         },
+  //         {
+  //             "value": 2,
+  //             "isGiven": false,
+  //             "draft": []
+  //         },
+  //         {
+  //             "value": 4,
+  //             "isGiven": false,
+  //             "draft": []
+  //         }
+  //     ],
+  //     [
+  //         {
+  //             "value": null,
+  //             "isGiven": false,
+  //             "draft": [
+  //                 1,
+  //                 6,
+  //                 8,
+  //                 9
+  //             ]
+  //         },
+  //         {
+  //             "value": null,
+  //             "isGiven": false,
+  //             "draft": [
+  //                 1,
+  //                 8,
+  //                 9
+  //             ]
+  //         },
+  //         {
+  //             "value": 2,
+  //             "isGiven": false,
+  //             "draft": []
+  //         },
+  //         {
+  //             "value": 4,
+  //             "isGiven": false,
+  //             "draft": []
+  //         },
+  //         {
+  //             "value": null,
+  //             "isGiven": false,
+  //             "draft": [
+  //                 6,
+  //                 7,
+  //                 8
+  //             ]
+  //         },
+  //         {
+  //             "value": null,
+  //             "isGiven": false,
+  //             "draft": [
+  //                 6,
+  //                 7,
+  //                 9
+  //             ]
+  //         },
+  //         {
+  //             "value": 5,
+  //             "isGiven": false,
+  //             "draft": []
+  //         },
+  //         {
+  //             "value": 3,
+  //             "isGiven": false,
+  //             "draft": []
+  //         },
+  //         {
+  //             "value": null,
+  //             "isGiven": false,
+  //             "draft": [
+  //                 1,
+  //                 7,
+  //                 8,
+  //                 9
+  //             ]
+  //         }
+  //     ],
+  //     [
+  //         {
+  //             "value": 7,
+  //             "isGiven": false,
+  //             "draft": []
+  //         },
+  //         {
+  //             "value": 4,
+  //             "isGiven": false,
+  //             "draft": []
+  //         },
+  //         {
+  //             "value": null,
+  //             "isGiven": false,
+  //             "draft": [
+  //                 1,
+  //                 5,
+  //                 8
+  //             ]
+  //         },
+  //         {
+  //             "value": 2,
+  //             "isGiven": false,
+  //             "draft": []
+  //         },
+  //         {
+  //             "value": null,
+  //             "isGiven": false,
+  //             "draft": [
+  //                 3,
+  //                 5,
+  //                 8
+  //             ]
+  //         },
+  //         {
+  //             "value": null,
+  //             "isGiven": false,
+  //             "draft": [
+  //                 3,
+  //                 9
+  //             ]
+  //         },
+  //         {
+  //             "value": null,
+  //             "isGiven": false,
+  //             "draft": [
+  //                 8,
+  //                 9
+  //             ]
+  //         },
+  //         {
+  //             "value": 6,
+  //             "isGiven": false,
+  //             "draft": []
+  //         },
+  //         {
+  //             "value": null,
+  //             "isGiven": false,
+  //             "draft": [
+  //                 1,
+  //                 8,
+  //                 9
+  //             ]
+  //         }
+  //     ]
+  // ]
 
     updateBoard(newBoard, "生成新棋盘");
 
