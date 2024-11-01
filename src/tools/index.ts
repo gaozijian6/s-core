@@ -516,24 +516,37 @@ export const useSudokuBoard = (initialBoard: CellData[][]) => {
     action: string,
     affectedCells?: { row: number; col: number }[],
     isOfficialDraft: boolean = false,
-    isRecord: boolean = true
+    isRecord: boolean = true,
+    isCorrectValue: boolean = false
   ) => {
     if (!isSolved) {
-      const solvedBoard = board.map((row) => row.map((cell) => ({ ...cell })));
+      const solvedBoard = newBoard.map((row) => row.map((cell) => ({ ...cell })));
       solve(solvedBoard);
       setAnswerBoard(solvedBoard);
       setIsSolved(true);
     }
     if (isRecord) {
-      const newHistory = history.slice(0, currentStep + 1);
-    newHistory.push({
-        board: newBoard,
-        action,
-        affectedCells,
-        isOfficialDraft,
-      });
-    setHistory(newHistory);
-      setCurrentStep(newHistory.length - 1);
+      if (isCorrectValue) {
+        // 如果填入正确值，清空历史记录并只保存当前操作
+        setHistory([{
+          board: newBoard,
+          action,
+          affectedCells,
+          isOfficialDraft,
+        }]);
+        setCurrentStep(0);
+      } else {
+        // 其他操作保持原有逻辑
+        const newHistory = history.slice(0, currentStep + 1);
+        newHistory.push({
+          board: newBoard,
+          action,
+          affectedCells,
+          isOfficialDraft,
+        });
+        setHistory(newHistory);
+        setCurrentStep(newHistory.length - 1);
+      }
     }
     setBoard(newBoard);
     updateCandidateMap(newBoard);
@@ -571,6 +584,7 @@ export const useSudokuBoard = (initialBoard: CellData[][]) => {
     currentStep,
     candidateMap,
     graph,
+    answerBoard,
   };
 };
 
