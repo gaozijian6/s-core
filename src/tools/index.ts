@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { isUnitStrongLink } from "./solution";
 
 export interface Position {
@@ -357,7 +357,9 @@ export const createGraph = (
             const key1 = `${position1.row},${position1.col}`;
             const key2 = `${position2.row},${position2.col}`;
 
-            if (isUnitStrongLink(board, position1, position2, num, candidateMap)) {
+            if (
+              isUnitStrongLink(board, position1, position2, num, candidateMap)
+            ) {
               let newNode = subGraph.find(
                 (node) =>
                   node.row === position2.row && node.col === position2.col
@@ -516,37 +518,37 @@ export const useSudokuBoard = (initialBoard: CellData[][]) => {
     action: string,
     affectedCells?: { row: number; col: number }[],
     isOfficialDraft: boolean = false,
-    isRecord: boolean = true,
-    isCorrectValue: boolean = false
+    isRecord: boolean = true
   ) => {
     if (!isSolved) {
-      const solvedBoard = newBoard.map((row) => row.map((cell) => ({ ...cell })));
+      const solvedBoard = newBoard.map((row) =>
+        row.map((cell) => ({ ...cell }))
+      );
       solve(solvedBoard);
       setAnswerBoard(solvedBoard);
       setIsSolved(true);
     }
     if (isRecord) {
-      if (isCorrectValue) {
-        // 如果填入正确值，清空历史记录并只保存当前操作
-        setHistory([{
+      // 如果填入正确值，清空历史记录并只保存当前操作
+      setHistory([
+        {
           board: newBoard,
           action,
           affectedCells,
           isOfficialDraft,
-        }]);
-        setCurrentStep(0);
-      } else {
-        // 其他操作保持原有逻辑
-        const newHistory = history.slice(0, currentStep + 1);
-        newHistory.push({
-          board: newBoard,
-          action,
-          affectedCells,
-          isOfficialDraft,
-        });
-        setHistory(newHistory);
-        setCurrentStep(newHistory.length - 1);
-      }
+        },
+      ]);
+      setCurrentStep(0);
+      // 其他操作保持原有逻辑
+      const newHistory = history.slice(0, currentStep + 1);
+      newHistory.push({
+        board: newBoard,
+        action,
+        affectedCells,
+        isOfficialDraft,
+      });
+      setHistory(newHistory);
+      setCurrentStep(newHistory.length - 1);
     }
     setBoard(newBoard);
     updateCandidateMap(newBoard);
@@ -575,6 +577,21 @@ export const useSudokuBoard = (initialBoard: CellData[][]) => {
     }
   };
 
+    // 添加清空历史记录的函数
+    const clearHistory = useCallback(() => {
+      // 保存当前棋盘状态作为唯一的历史记录
+      const newHistory = [
+        {
+          board: board,
+          action: '清空历史记录',
+          affectedCells: [],
+          isOfficialDraft: false,
+        },
+      ];
+      setHistory(newHistory);
+      setCurrentStep(0);
+    }, [board]);
+
   return {
     board,
     updateBoard,
@@ -585,6 +602,7 @@ export const useSudokuBoard = (initialBoard: CellData[][]) => {
     candidateMap,
     graph,
     answerBoard,
+    clearHistory,
   };
 };
 
@@ -613,4 +631,3 @@ export const areCellsInSameUnit = (cell1: Position, cell2: Position) => {
 
   return sameRow || sameColumn || sameBox;
 };
-
