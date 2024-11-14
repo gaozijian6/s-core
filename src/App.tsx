@@ -1,11 +1,10 @@
-import Sudoku from './views/sudoku';
+import { useState } from "react";
+import Sudoku from "./views/sudoku";
+
+
 function App() {
 
-  return (
-    <>
-      <Sudoku />
-    </>
-  )
+  return <Sudoku />;
 }
 
-export default App
+export default App;

@@ -110,57 +110,136 @@ const Sudoku: React.FC = () => {
           {
               "value": null,
               "isGiven": false,
-              "draft": []
+              "draft": [
+                  1,
+                  2,
+                  4,
+                  5,
+                  6,
+                  7
+              ]
           },
           {
               "value": null,
               "isGiven": false,
-              "draft": []
+              "draft": [
+                  1,
+                  2,
+                  3,
+                  6,
+                  7
+              ]
           },
           {
               "value": null,
               "isGiven": false,
-              "draft": []
+              "draft": [
+                  1,
+                  3,
+                  4,
+                  5,
+                  6
+              ]
           },
           {
               "value": null,
               "isGiven": false,
-              "draft": []
+              "draft": [
+                  1,
+                  2,
+                  3,
+                  4,
+                  5
+              ]
           },
           {
               "value": null,
               "isGiven": false,
-              "draft": []
+              "draft": [
+                  1,
+                  2,
+                  3,
+                  7,
+                  9
+              ]
           },
           {
               "value": null,
               "isGiven": false,
-              "draft": []
+              "draft": [
+                  1,
+                  2,
+                  3,
+                  4,
+                  5,
+                  7,
+                  9
+              ]
           },
           {
               "value": null,
               "isGiven": false,
-              "draft": []
+              "draft": [
+                  1,
+                  3,
+                  4,
+                  6,
+                  8,
+                  9
+              ]
           },
           {
               "value": null,
               "isGiven": false,
-              "draft": []
+              "draft": [
+                  1,
+                  2,
+                  4,
+                  8,
+                  9
+              ]
           },
           {
               "value": null,
               "isGiven": false,
-              "draft": []
+              "draft": [
+                  1,
+                  3,
+                  4,
+                  6,
+                  8
+              ]
           }
       ],
       [
           {
               "value": null,
               "isGiven": false,
-              "draft": []
+              "draft": [
+                  1,
+                  2,
+                  4,
+                  5,
+                  6
+              ]
           },
           {
               "value": null,
+              "isGiven": false,
+              "draft": [
+                  1,
+                  2,
+                  3,
+                  6
+              ]
+          },
+          {
+              "value": 9,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": 8,
               "isGiven": false,
               "draft": []
           },
@@ -168,22 +247,60 @@ const Sudoku: React.FC = () => {
               "value": null,
               "isGiven": false,
               "draft": [
-                  1
-              ],
-              "highlights": [
-                  "promptHighlight"
-              ],
-              "highlightCandidates": [
-                  1
+                  1,
+                  2,
+                  3
               ]
           },
           {
               "value": null,
               "isGiven": false,
-              "draft": []
+              "draft": [
+                  1,
+                  2,
+                  3,
+                  4,
+                  5
+              ]
           },
           {
               "value": null,
+              "isGiven": false,
+              "draft": [
+                  1,
+                  3,
+                  4,
+                  6
+              ]
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  1,
+                  2,
+                  4
+              ]
+          },
+          {
+              "value": 7,
+              "isGiven": false,
+              "draft": []
+          }
+      ],
+      [
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  1,
+                  2,
+                  4,
+                  7
+              ]
+          },
+          {
+              "value": 8,
               "isGiven": false,
               "draft": []
           },
@@ -191,101 +308,23 @@ const Sudoku: React.FC = () => {
               "value": null,
               "isGiven": false,
               "draft": [
-                  1
-              ],
-              "highlights": [
-                  "promptHighlight"
-              ],
-              "highlightCandidates": [
-                  1
+                  1,
+                  3,
+                  4
               ]
           },
           {
               "value": null,
               "isGiven": false,
-              "draft": []
+              "draft": [
+                  1,
+                  2,
+                  3,
+                  4
+              ]
           },
           {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          }
-      ],
-      [
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          }
-      ],
-      [
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
+              "value": 6,
               "isGiven": false,
               "draft": []
           },
@@ -293,17 +332,26 @@ const Sudoku: React.FC = () => {
               "value": null,
               "isGiven": false,
               "draft": [
-                  1
-              ],
-              "highlights": [
-                  "promptHighlight"
-              ],
-              "highlightCandidates": [
-                  1
+                  1,
+                  2,
+                  3,
+                  4,
+                  7,
+                  9
               ]
           },
           {
               "value": null,
+              "isGiven": false,
+              "draft": [
+                  1,
+                  3,
+                  4,
+                  9
+              ]
+          },
+          {
+              "value": 5,
               "isGiven": false,
               "draft": []
           },
@@ -311,170 +359,26 @@ const Sudoku: React.FC = () => {
               "value": null,
               "isGiven": false,
               "draft": [
-                  1
-              ],
-              "highlights": [
-                  "promptHighlight"
-              ],
-              "highlightCandidates": [
-                  1
+                  1,
+                  3,
+                  4
+              ]
+          }
+      ],
+      [
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  1,
+                  2,
+                  6,
+                  8,
+                  9
               ]
           },
           {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          }
-      ],
-      [
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          }
-      ],
-      [
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          }
-      ],
-      [
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          }
-      ],
-      [
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
+              "value": 5,
               "isGiven": false,
               "draft": []
           },
@@ -482,32 +386,22 @@ const Sudoku: React.FC = () => {
               "value": null,
               "isGiven": false,
               "draft": [
-                  1
-              ],
-              "highlights": [
-                  "promptHighlight"
-              ],
-              "highlightCandidates": [
-                  1
+                  1,
+                  6,
+                  8
               ]
           },
           {
               "value": null,
               "isGiven": false,
-              "draft": []
+              "draft": [
+                  1,
+                  2,
+                  6
+              ]
           },
           {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
+              "value": 4,
               "isGiven": false,
               "draft": []
           },
@@ -515,17 +409,109 @@ const Sudoku: React.FC = () => {
               "value": null,
               "isGiven": false,
               "draft": [
-                  1
-              ],
-              "highlights": [
-                  "promptHighlight"
-              ],
-              "highlightCandidates": [
-                  1
+                  1,
+                  2,
+                  7,
+                  8
               ]
           },
           {
               "value": null,
+              "isGiven": false,
+              "draft": [
+                  1,
+                  6,
+                  7,
+                  8,
+                  9
+              ]
+          },
+          {
+              "value": 3,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  1,
+                  6,
+                  8
+              ]
+          }
+      ],
+      [
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  1,
+                  4,
+                  6,
+                  8
+              ]
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  1,
+                  3,
+                  6
+              ]
+          },
+          {
+              "value": 7,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": 9,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  1,
+                  3,
+                  8
+              ]
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  1,
+                  3,
+                  5,
+                  8
+              ]
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  1,
+                  4,
+                  5,
+                  6,
+                  8
+              ]
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  1,
+                  4,
+                  8
+              ]
+          },
+          {
+              "value": 2,
               "isGiven": false,
               "draft": []
           }
@@ -534,35 +520,133 @@ const Sudoku: React.FC = () => {
           {
               "value": null,
               "isGiven": false,
-              "draft": []
+              "draft": [
+                  1,
+                  2,
+                  4,
+                  6,
+                  8,
+                  9
+              ]
           },
           {
               "value": null,
               "isGiven": false,
-              "draft": []
+              "draft": [
+                  1,
+                  2,
+                  3,
+                  6,
+                  9
+              ]
           },
           {
               "value": null,
               "isGiven": false,
-              "draft": []
+              "draft": [
+                  1,
+                  3,
+                  4,
+                  6,
+                  8
+              ]
           },
           {
               "value": null,
               "isGiven": false,
-              "draft": []
+              "draft": [
+                  1,
+                  2,
+                  3,
+                  5,
+                  6
+              ]
           },
           {
               "value": null,
               "isGiven": false,
-              "draft": []
+              "draft": [
+                  1,
+                  2,
+                  3,
+                  7,
+                  8
+              ]
           },
           {
               "value": null,
               "isGiven": false,
-              "draft": []
+              "draft": [
+                  1,
+                  2,
+                  3,
+                  5,
+                  7,
+                  8
+              ]
           },
           {
               "value": null,
+              "isGiven": false,
+              "draft": [
+                  1,
+                  4,
+                  5,
+                  6,
+                  7,
+                  8,
+                  9
+              ]
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  1,
+                  4,
+                  7,
+                  8,
+                  9
+              ]
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  1,
+                  4,
+                  5,
+                  6,
+                  8
+              ]
+          }
+      ],
+      [
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  1,
+                  5,
+                  6,
+                  8
+              ]
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  1,
+                  6
+              ]
+          },
+          {
+              "value": 2,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": 7,
               "isGiven": false,
               "draft": []
           },
@@ -570,16 +654,192 @@ const Sudoku: React.FC = () => {
               "value": null,
               "isGiven": false,
               "draft": [
-                  1
+                  1,
+                  3,
+                  8
               ]
           },
           {
               "value": null,
               "isGiven": false,
+              "draft": [
+                  1,
+                  3,
+                  4,
+                  8
+              ]
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  1,
+                  3,
+                  4,
+                  5,
+                  8
+              ]
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  1,
+                  4,
+                  8
+              ]
+          },
+          {
+              "value": 9,
+              "isGiven": false,
               "draft": []
+          }
+      ],
+      [
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  7,
+                  9
+              ]
+          },
+          {
+              "value": 4,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  1,
+                  8
+              ]
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  1,
+                  2,
+                  3
+              ]
+          },
+          {
+              "value": 5,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  1,
+                  2,
+                  3,
+                  8,
+                  9
+              ]
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  1,
+                  3,
+                  7,
+                  8
+              ]
+          },
+          {
+              "value": 6,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  1,
+                  3,
+                  8
+              ]
+          }
+      ],
+      [
+          {
+              "value": 3,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  7,
+                  9
+              ]
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  1,
+                  5,
+                  8
+              ]
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  1,
+                  4
+              ]
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  1,
+                  8,
+                  9
+              ]
+          },
+          {
+              "value": 6,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": 2,
+              "isGiven": false,
+              "draft": []
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  1,
+                  4,
+                  7,
+                  8
+              ]
+          },
+          {
+              "value": null,
+              "isGiven": false,
+              "draft": [
+                  1,
+                  4,
+                  5,
+                  8
+              ]
           }
       ]
   ]
+
 
     updateBoard(newBoard, "生成新棋盘");
 
@@ -991,23 +1251,23 @@ const Sudoku: React.FC = () => {
 
   const handleHint = () => {
     const solveFunctions = [
-      // singleCandidate,
-      // hiddenSingle,
-      // blockElimination,
-      // nakedPair,
-      // nakedTriple1,
-      // nakedTriple2,
-      // hiddenPair,
-      // hiddenTriple1,
-      // hiddenTriple2,
-      // xWing,
-      // xWingVarient,
-      // xyWing,
-      // nakedQuadruple,
-      // eureka,
-      // skyscraper,
+      singleCandidate,
+      hiddenSingle,
+      blockElimination,
+      nakedPair,
+      nakedTriple1,
+      nakedTriple2,
+      hiddenPair,
+      hiddenTriple1,
+      hiddenTriple2,
+      xWing,
+      xWingVarient,
+      xyWing,
+      nakedQuadruple,
+      eureka,
+      skyscraper,
       swordfish,
-      // trialAndError,
+      trialAndError,
     ];
     let result = null;
 
