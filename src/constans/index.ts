@@ -35,7 +35,6 @@ export const SOLUTION_METHODS = {
   X_WING_VARIENT_COLUMN: "二阶退化鱼(列)",
   XY_WING: "XY-Wing",
   XYZ_WING: "XYZ-Wing",
-  EUREKA: "互斥环",
   SKYSCRAPER: "摩天楼",
   SWORDFISH_ROW: "三阶鱼(行)",
   SWORDFISH_COLUMN: "三阶鱼(列)",
