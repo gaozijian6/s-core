@@ -1,35 +1,274 @@
-[
+const board = [
+    [
+        {
+            "value": 4,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": 2,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": null,
+            "isGiven": false,
+            "draft": [
+                6,
+                8
+            ]
+        },
+        {
+            "value": null,
+            "isGiven": false,
+            "draft": [
+                8,
+                9
+            ]
+        },
+        {
+            "value": 7,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": 3,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": 5,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": 1,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": null,
+            "isGiven": false,
+            "draft": [
+                6,
+                8,
+                9
+            ]
+        }
+    ],
+    [
+        {
+            "value": null,
+            "isGiven": false,
+            "draft": [
+                5,
+                6,
+                8,
+                9
+            ]
+        },
+        {
+            "value": null,
+            "isGiven": false,
+            "draft": [
+                5,
+                6,
+                8,
+                9
+            ]
+        },
+        {
+            "value": 7,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": 2,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": null,
+            "isGiven": false,
+            "draft": [
+                5,
+                6,
+                8
+            ]
+        },
+        {
+            "value": 1,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": 3,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": 4,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": null,
+            "isGiven": false,
+            "draft": [
+                6,
+                8
+            ]
+        }
+    ],
+    [
+        {
+            "value": 3,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": 1,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": null,
+            "isGiven": false,
+            "draft": [
+                5,
+                6,
+                8
+            ]
+        },
+        {
+            "value": 4,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": null,
+            "isGiven": false,
+            "draft": [
+                5,
+                6,
+                8,
+                9
+            ]
+        },
+        {
+            "value": null,
+            "isGiven": false,
+            "draft": [
+                5,
+                6,
+                8,
+                9
+            ]
+        },
+        {
+            "value": null,
+            "isGiven": false,
+            "draft": [
+                8,
+                9
+            ]
+        },
+        {
+            "value": 7,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": 2,
+            "isGiven": false,
+            "draft": []
+        }
+    ],
+    [
+        {
+            "value": null,
+            "isGiven": false,
+            "draft": [
+                5,
+                8,
+                9
+            ]
+        },
+        {
+            "value": 7,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": 3,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": 6,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": null,
+            "isGiven": false,
+            "draft": [
+                5,
+                8,
+                9
+            ]
+        },
+        {
+            "value": 4,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": 1,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": 2,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": null,
+            "isGiven": false,
+            "draft": [
+                5,
+                8,
+                9
+            ]
+        }
+    ],
     [
         {
             "value": null,
             "isGiven": false,
             "draft": [
                 2,
-                4,
                 5,
-                7
-            ]
-        },
-        {
-            "value": null,
-            "isGiven": false,
-            "draft": [
-                2,
-                3,
-                5,
-                7
-            ]
-        },
-        {
-            "value": null,
-            "isGiven": false,
-            "draft": [
-                3,
-                4,
-                5,
-                7,
+                6,
+                8,
                 9
             ]
+        },
+        {
+            "value": null,
+            "isGiven": false,
+            "draft": [
+                5,
+                6,
+                8,
+                9
+            ]
+        },
+        {
+            "value": 4,
+            "isGiven": false,
+            "draft": []
         },
         {
             "value": null,
@@ -40,22 +279,19 @@
             ]
         },
         {
-            "value": null,
-            "isGiven": false,
-            "draft": [
-                7,
-                9
-            ]
-        },
-        {
-            "value": 6,
-            "isGiven": false,
-            "draft": []
-        },
-        {
             "value": 1,
             "isGiven": false,
             "draft": []
+        },
+        {
+            "value": null,
+            "isGiven": false,
+            "draft": [
+                2,
+                5,
+                8,
+                9
+            ]
         },
         {
             "value": null,
@@ -66,10 +302,76 @@
             ]
         },
         {
+            "value": 3,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": 7,
+            "isGiven": false,
+            "draft": []
+        }
+    ],
+    [
+        {
             "value": null,
             "isGiven": false,
             "draft": [
-                7,
+                2,
+                5,
+                8,
+                9
+            ]
+        },
+        {
+            "value": null,
+            "isGiven": false,
+            "draft": [
+                5,
+                8,
+                9
+            ]
+        },
+        {
+            "value": 1,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": 7,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": 3,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": null,
+            "isGiven": false,
+            "draft": [
+                2,
+                5,
+                8,
+                9
+            ]
+        },
+        {
+            "value": 4,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": 6,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": null,
+            "isGiven": false,
+            "draft": [
+                5,
                 8,
                 9
             ]
@@ -82,83 +384,25 @@
             "draft": [
                 5,
                 6,
-                7
-            ]
-        },
-        {
-            "value": null,
-            "isGiven": false,
-            "draft": [
-                5,
-                6,
-                7
-            ]
-        },
-        {
-            "value": null,
-            "isGiven": false,
-            "draft": [
-                5,
-                6,
-                7,
-                9
-            ]
-        },
-        {
-            "value": null,
-            "isGiven": false,
-            "draft": [
-                5,
                 8
             ]
         },
         {
-            "value": 2,
-            "isGiven": false,
-            "draft": []
-        },
-        {
-            "value": 1,
-            "isGiven": false,
-            "draft": []
-        },
-        {
-            "value": 4,
-            "isGiven": false,
-            "draft": []
-        },
-        {
-            "value": 3,
-            "isGiven": false,
-            "draft": []
-        },
-        {
             "value": null,
             "isGiven": false,
             "draft": [
-                7,
-                8,
-                9
+                5,
+                6,
+                8
             ]
-        }
-    ],
-    [
-        {
-            "value": 8,
-            "isGiven": false,
-            "draft": []
-        },
-        {
-            "value": 1,
-            "isGiven": false,
-            "draft": []
         },
         {
             "value": null,
             "isGiven": false,
             "draft": [
-                7,
-                9
+                5,
+                6,
+                8
             ]
         },
         {
@@ -170,72 +414,6 @@
             "value": 4,
             "isGiven": false,
             "draft": []
-        },
-        {
-            "value": null,
-            "isGiven": false,
-            "draft": [
-                7,
-                9
-            ]
-        },
-        {
-            "value": 2,
-            "isGiven": false,
-            "draft": []
-        },
-        {
-            "value": 5,
-            "isGiven": false,
-            "draft": []
-        },
-        {
-            "value": 6,
-            "isGiven": false,
-            "draft": []
-        }
-    ],
-    [
-        {
-            "value": 9,
-            "isGiven": false,
-            "draft": []
-        },
-        {
-            "value": 8,
-            "isGiven": false,
-            "draft": []
-        },
-        {
-            "value": null,
-            "isGiven": false,
-            "draft": [
-                1,
-                5
-            ]
-        },
-        {
-            "value": 2,
-            "isGiven": false,
-            "draft": []
-        },
-        {
-            "value": 6,
-            "isGiven": false,
-            "draft": []
-        },
-        {
-            "value": 4,
-            "isGiven": false,
-            "draft": []
-        },
-        {
-            "value": null,
-            "isGiven": false,
-            "draft": [
-                3,
-                5
-            ]
         },
         {
             "value": 7,
@@ -243,24 +421,46 @@
             "draft": []
         },
         {
-            "value": null,
+            "value": 2,
             "isGiven": false,
-            "draft": [
-                1,
-                3,
-                5
-            ]
+            "draft": []
+        },
+        {
+            "value": 9,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": 1,
+            "isGiven": false,
+            "draft": []
         }
     ],
     [
+        {
+            "value": 1,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": 3,
+            "isGiven": false,
+            "draft": []
+        },
         {
             "value": null,
             "isGiven": false,
             "draft": [
                 2,
+                9
+            ]
+        },
+        {
+            "value": null,
+            "isGiven": false,
+            "draft": [
                 5,
-                6,
-                7
+                9
             ]
         },
         {
@@ -270,37 +470,6 @@
                 2,
                 5,
                 6,
-                7
-            ]
-        },
-        {
-            "value": null,
-            "isGiven": false,
-            "draft": [
-                5,
-                6,
-                7
-            ]
-        },
-        {
-            "value": 1,
-            "isGiven": false,
-            "draft": []
-        },
-        {
-            "value": null,
-            "isGiven": false,
-            "draft": [
-                3,
-                8,
-                9
-            ]
-        },
-        {
-            "value": null,
-            "isGiven": false,
-            "draft": [
-                3,
                 9
             ]
         },
@@ -311,39 +480,6 @@
                 5,
                 6,
                 9
-            ]
-        },
-        {
-            "value": null,
-            "isGiven": false,
-            "draft": [
-                8,
-                9
-            ]
-        },
-        {
-            "value": 4,
-            "isGiven": false,
-            "draft": []
-        }
-    ],
-    [
-        {
-            "value": 3,
-            "isGiven": false,
-            "draft": []
-        },
-        {
-            "value": 4,
-            "isGiven": false,
-            "draft": []
-        },
-        {
-            "value": null,
-            "isGiven": false,
-            "draft": [
-                1,
-                6
             ]
         },
         {
@@ -352,78 +488,17 @@
             "draft": []
         },
         {
-            "value": null,
-            "isGiven": false,
-            "draft": [
-                8,
-                9
-            ]
-        },
-        {
-            "value": 5,
-            "isGiven": false,
-            "draft": []
-        },
-        {
-            "value": null,
-            "isGiven": false,
-            "draft": [
-                6,
-                9
-            ]
-        },
-        {
-            "value": 2,
-            "isGiven": false,
-            "draft": []
-        },
-        {
-            "value": null,
-            "isGiven": false,
-            "draft": [
-                1,
-                8,
-                9
-            ]
-        }
-    ],
-    [
-        {
-            "value": 1,
-            "isGiven": false,
-            "draft": []
-        },
-        {
-            "value": null,
-            "isGiven": false,
-            "draft": [
-                3,
-                6
-            ]
-        },
-        {
             "value": 8,
             "isGiven": false,
             "draft": []
         },
         {
-            "value": null,
-            "isGiven": false,
-            "draft": [
-                6,
-                9
-            ]
-        },
-        {
-            "value": 5,
+            "value": 4,
             "isGiven": false,
             "draft": []
-        },
-        {
-            "value": 2,
-            "isGiven": false,
-            "draft": []
-        },
+        }
+    ],
+    [
         {
             "value": 7,
             "isGiven": false,
@@ -438,70 +513,7 @@
             "value": null,
             "isGiven": false,
             "draft": [
-                3,
-                9
-            ]
-        }
-    ],
-    [
-        {
-            "value": null,
-            "isGiven": false,
-            "draft": [
-                4,
-                5,
-                6,
-                7
-            ]
-        },
-        {
-            "value": null,
-            "isGiven": false,
-            "draft": [
-                3,
-                5,
-                6,
-                7
-            ]
-        },
-        {
-            "value": null,
-            "isGiven": false,
-            "draft": [
-                3,
-                4,
-                5,
-                6,
-                7
-            ]
-        },
-        {
-            "value": null,
-            "isGiven": false,
-            "draft": [
-                6,
-                9
-            ]
-        },
-        {
-            "value": null,
-            "isGiven": false,
-            "draft": [
-                3,
-                7
-            ]
-        },
-        {
-            "value": 8,
-            "isGiven": false,
-            "draft": []
-        },
-        {
-            "value": null,
-            "isGiven": false,
-            "draft": [
-                3,
-                5,
+                2,
                 9
             ]
         },
@@ -511,52 +523,21 @@
             "draft": []
         },
         {
-            "value": 2,
-            "isGiven": false,
-            "draft": []
-        }
-    ],
-    [
-        {
             "value": null,
             "isGiven": false,
             "draft": [
-                5,
-                7
+                2,
+                8,
+                9
             ]
-        },
-        {
-            "value": 9,
-            "isGiven": false,
-            "draft": []
-        },
-        {
-            "value": 2,
-            "isGiven": false,
-            "draft": []
-        },
-        {
-            "value": 4,
-            "isGiven": false,
-            "draft": []
-        },
-        {
-            "value": 1,
-            "isGiven": false,
-            "draft": []
         },
         {
             "value": null,
             "isGiven": false,
             "draft": [
-                3,
-                7
+                8,
+                9
             ]
-        },
-        {
-            "value": 8,
-            "isGiven": false,
-            "draft": []
         },
         {
             "value": 6,
@@ -564,12 +545,15 @@
             "draft": []
         },
         {
-            "value": null,
+            "value": 5,
             "isGiven": false,
-            "draft": [
-                3,
-                5
-            ]
+            "draft": []
+        },
+        {
+            "value": 3,
+            "isGiven": false,
+            "draft": []
         }
     ]
 ]
+export default board;

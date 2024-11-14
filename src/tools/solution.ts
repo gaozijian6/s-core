@@ -1424,7 +1424,7 @@ const checkXWing = (board: CellData[][], isRow: boolean): Result | null => {
   return null;
 };
 
-// X-Wing变种
+// 二阶退化鱼
 export const xWingVarient = (
   board: CellData[][],
   candidateMap: CandidateMap,
@@ -1542,7 +1542,13 @@ const checkXWingVarient = (
                   }
                 }
 
-                if (positionsToExclude.length > 0) {
+                if (
+                  positionsToExclude.length > 0 &&
+                  Math.floor(groupD[0].row / 3) ===
+                    Math.floor(positionsToExclude[0].row / 3) &&
+                  Math.floor(groupD[0].col / 3) ===
+                    Math.floor(positionsToExclude[0].col / 3)
+                ) {
                   return {
                     position: positionsToExclude,
                     prompt: [posA, posB, posC, ...groupD],
@@ -1630,7 +1636,7 @@ export const xyWing = (
           ) {
             continue;
           }
-          // 找到符合条件的 XY-Wing
+          // 找到符合条���的 XY-Wing
           const targetNumber = commonCandidateBC as number;
           const affectedPositions: Position[] = [];
 
@@ -1658,7 +1664,7 @@ export const xyWing = (
             }
           }
 
-          if (affectedPositions.length > 0) {
+          if (affectedPositions.length ===1) {
             return {
               position: affectedPositions,
               prompt: [cellA, cellB, cellC],
@@ -1722,7 +1728,7 @@ export const xyWing = (
             }
           }
 
-          if (affectedPositions.length > 0) {
+          if (affectedPositions.length ===1) {
             return {
               position: affectedPositions,
               prompt: [cellB, cellA, cellC],
@@ -1786,7 +1792,7 @@ export const xyWing = (
             }
           }
 
-          if (affectedPositions.length > 0) {
+          if (affectedPositions.length ===1) {
             return {
               position: affectedPositions,
               prompt: [cellC, cellA, cellB],
@@ -1812,132 +1818,99 @@ export const xyzWing = (
   candidateMap: CandidateMap,
   graph: Graph
 ): Result | null => {
-  // 遍历所有单元格
-  for (let rowA = 0; rowA < 9; rowA++) {
-    for (let colA = 0; colA < 9; colA++) {
-      const cellA = board[rowA]?.[colA];
-      if (cellA?.value !== null || cellA?.draft?.length !== 3) continue;
+  // 遍历每个数字的候选位置
+  for (let num = 1; num <= 9; num++) {
+    const candidates = candidateMap[num]?.all ?? [];
 
-      // 寻找候选数是A的子集的单元格B
-      for (let rowB = 0; rowB < 9; rowB++) {
-        for (let colB = 0; colB < 9; colB++) {
-          if (rowA === rowB && colA === colB) continue;
+    // 遍历所有候选位置，寻找三个候选数的方格A
+    for (const cellA of candidates) {
+      if (cellA.candidates.length !== 3) continue;
+      let [x, y, z] = cellA.candidates;
+      if (num !== x) {
+        // 调整顺序使得x为num
+        if (num === y) {
+          [x, y] = [y, x];
+        } else if (num === z) {
+          [x, z] = [z, x];
+        }
+      }
+
+      // 在A所在宫中寻找方格B
+      const boxRow = Math.floor(cellA.row / 3);
+      const boxCol = Math.floor(cellA.col / 3);
+      const box = boxRow * 3 + boxCol;
+
+      const cellsInBox = candidateMap[x]?.box?.get(box)?.positions ?? [];
+      for (const cellB of cellsInBox) {
+        if (cellB.row === cellA.row && cellB.col === cellA.col) continue;
+        const cellBDraft = board[cellB.row][cellB.col].draft;
+        if (cellBDraft.length !== 2) continue;
+        
+        // 检查B的候选数是否为xy或xz
+        const hasXY = cellBDraft.includes(x) && cellBDraft.includes(y);
+        const hasXZ = cellBDraft.includes(x) && cellBDraft.includes(z);
+        if (!hasXY && !hasXZ) continue;
+
+        // 在A所在的行和列中寻找方格C
+        const cellsInRow = candidateMap[x]?.row?.get(cellA.row)?.positions ?? [];
+        const cellsInCol = candidateMap[x]?.col?.get(cellA.col)?.positions ?? [];
+        const potentialCells = [...cellsInRow, ...cellsInCol];
+
+        for (const cellC of potentialCells) {
           if (
-            !areCellsInSameUnit(
-              { row: rowA, col: colA },
-              { row: rowB, col: colB }
-            )
-          )
-            continue;
+            (cellC.row === cellA.row && cellC.col === cellA.col) ||
+            (cellC.row === cellB.row && cellC.col === cellB.col)
+          ) continue;
 
-          const cellB = board[rowB]?.[colB];
-          if (
-            cellB?.value !== null ||
-            cellB?.draft?.length < 2 ||
-            cellB?.draft?.length > 3
-          )
-            continue;
-          if (!cellB.draft.every((num) => cellA.draft?.includes(num))) continue;
+          const cellCDraft = board[cellC.row][cellC.col].draft;
+          if (cellCDraft.length !== 2) continue;
 
-          // 寻找候选数是A的子集的单元格C
-          for (let rowC = 0; rowC < 9; rowC++) {
-            for (let colC = 0; colC < 9; colC++) {
+          // 检查C的候选数是否为xy或xz，且与B不同
+          const hasCXY = cellCDraft.includes(x) && cellCDraft.includes(y);
+          const hasCXZ = cellCDraft.includes(x) && cellCDraft.includes(z);
+          if ((!hasCXY && !hasCXZ) || (hasCXY && hasXY) || (hasCXZ && hasXZ)) continue;
+
+          // 寻找受影响的方格D
+          const affectedPositions: Position[] = [];
+          
+          // 在A所在宫中寻找D
+          for (let row = boxRow * 3; row < boxRow * 3 + 3; row++) {
+            for (let col = boxCol * 3; col < boxCol * 3 + 3; col++) {
               if (
-                (rowA === rowC && colA === colC) ||
-                (rowB === rowC && colB === colC)
-              )
-                continue;
-              if (
-                !areCellsInSameUnit(
-                  { row: rowA, col: colA },
-                  { row: rowC, col: colC }
-                )
-              )
-                continue;
-              if (
-                !areCellsInSameUnit(
-                  { row: rowB, col: colB },
-                  { row: rowC, col: colC }
-                )
-              )
-                continue;
+                (row === cellA.row && col === cellA.col) ||
+                (row === cellB.row && col === cellB.col) ||
+                (row === cellC.row && col === cellC.col)
+              ) continue;
 
-              const cellC = board[rowC]?.[colC];
-              if (
-                cellC?.value !== null ||
-                cellC?.draft?.length < 2 ||
-                cellC?.draft?.length > 3
-              )
-                continue;
-              if (!cellC.draft.every((num) => cellA.draft?.includes(num)))
-                continue;
+              // D必须与A和C的共同行或列上
+              const isInSameLineWithAC = 
+                (row === cellA.row && row === cellC.row) || 
+                (col === cellA.col && col === cellC.col);
 
-              // 检查B和C的候选数是否覆盖了A的所有候选数
-              const combinedCandidates = new Set([
-                ...cellB.draft,
-                ...cellC.draft,
-              ]);
-              if (combinedCandidates.size !== 3) continue;
-
-              // 找到符合条件的XYZ-Wing
-              const affectedPositions: Position[] = [];
-
-              // 检查与ABC在同一元的格子
-              for (let row = 0; row < 9; row++) {
-                for (let col = 0; col < 9; col++) {
-                  if (
-                    (row === rowA && col === colA) ||
-                    (row === rowB && col === colB) ||
-                    (row === rowC && col === colC)
-                  )
-                    continue;
-
-                  const isInSameUnitWithA = areCellsInSameUnit(
-                    { row: rowA, col: colA },
-                    { row, col }
-                  );
-                  const isInSameUnitWithB = areCellsInSameUnit(
-                    { row: rowB, col: colB },
-                    { row, col }
-                  );
-                  const isInSameUnitWithC = areCellsInSameUnit(
-                    { row: rowC, col: colC },
-                    { row, col }
-                  );
-
-                  if (
-                    isInSameUnitWithA &&
-                    isInSameUnitWithB &&
-                    isInSameUnitWithC
-                  ) {
-                    const cell = board[row]?.[col];
-                    if (
-                      cell?.value === null &&
-                      cellA.draft?.some((num) => cell.draft?.includes(num))
-                    ) {
-                      affectedPositions.push({ row, col });
-                    }
-                  }
+              if (isInSameLineWithAC) {
+                const cell = board[row][col];
+                if (cell.value === null && cell.draft.includes(x)) {
+                  affectedPositions.push({ row, col });
                 }
               }
-
-              if (affectedPositions.length > 0) {
-                return {
-                  position: affectedPositions,
-                  prompt: [
-                    { row: rowA, col: colA },
-                    { row: rowB, col: colB },
-                    { row: rowC, col: colC },
-                  ],
-                  method: SOLUTION_METHODS.XYZ_WING,
-                  target: cellA.draft,
-                  isFill: false,
-                  row: rowA,
-                  col: colA,
-                  box: Math.floor(rowA / 3) * 3 + Math.floor(colA / 3),
-                };
-              }
             }
+          }
+
+          if (affectedPositions.length > 0) {
+            return {
+              position: affectedPositions,
+              prompt: [
+                { row: cellA.row, col: cellA.col },
+                { row: cellB.row, col: cellB.col },
+                { row: cellC.row, col: cellC.col },
+              ],
+              method: SOLUTION_METHODS.XYZ_WING,
+              target: [x],
+              isFill: false,
+              row: cellA.row,
+              col: cellA.col,
+              box: Math.floor(cellA.row / 3) * 3 + Math.floor(cellA.col / 3),
+            };
           }
         }
       }

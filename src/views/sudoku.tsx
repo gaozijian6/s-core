@@ -39,6 +39,7 @@ import "./sudoku.less";
 import type { CellData, Position } from "../tools";
 import type { Result } from "../tools/solution";
 import { SOLUTION_METHODS } from "../constans";
+import mockBoard from "./mock";
 
 const Sudoku: React.FC = () => {
   const initialBoard = Array(9)
@@ -53,6 +54,8 @@ const Sudoku: React.FC = () => {
     currentStep,
     candidateMap,
     graph,
+    answerBoard,
+    clearHistory,
   } = useSudokuBoard(initialBoard);
   const [selectedNumber, setSelectedNumber] = useState<number | null>(1);
   const [errorCount, setErrorCount] = useState<number>(0);
@@ -105,740 +108,7 @@ const Sudoku: React.FC = () => {
       }))
     );
 
-    newBoard =[
-      [
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  2,
-                  4,
-                  5,
-                  6,
-                  7
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  2,
-                  3,
-                  6,
-                  7
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  3,
-                  4,
-                  5,
-                  6
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  2,
-                  3,
-                  4,
-                  5
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  2,
-                  3,
-                  7,
-                  9
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  2,
-                  3,
-                  4,
-                  5,
-                  7,
-                  9
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  3,
-                  4,
-                  6,
-                  8,
-                  9
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  2,
-                  4,
-                  8,
-                  9
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  3,
-                  4,
-                  6,
-                  8
-              ]
-          }
-      ],
-      [
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  2,
-                  4,
-                  5,
-                  6
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  2,
-                  3,
-                  6
-              ]
-          },
-          {
-              "value": 9,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": 8,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  2,
-                  3
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  2,
-                  3,
-                  4,
-                  5
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  3,
-                  4,
-                  6
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  2,
-                  4
-              ]
-          },
-          {
-              "value": 7,
-              "isGiven": false,
-              "draft": []
-          }
-      ],
-      [
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  2,
-                  4,
-                  7
-              ]
-          },
-          {
-              "value": 8,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  3,
-                  4
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  2,
-                  3,
-                  4
-              ]
-          },
-          {
-              "value": 6,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  2,
-                  3,
-                  4,
-                  7,
-                  9
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  3,
-                  4,
-                  9
-              ]
-          },
-          {
-              "value": 5,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  3,
-                  4
-              ]
-          }
-      ],
-      [
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  2,
-                  6,
-                  8,
-                  9
-              ]
-          },
-          {
-              "value": 5,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  6,
-                  8
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  2,
-                  6
-              ]
-          },
-          {
-              "value": 4,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  2,
-                  7,
-                  8
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  6,
-                  7,
-                  8,
-                  9
-              ]
-          },
-          {
-              "value": 3,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  6,
-                  8
-              ]
-          }
-      ],
-      [
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  4,
-                  6,
-                  8
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  3,
-                  6
-              ]
-          },
-          {
-              "value": 7,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": 9,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  3,
-                  8
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  3,
-                  5,
-                  8
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  4,
-                  5,
-                  6,
-                  8
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  4,
-                  8
-              ]
-          },
-          {
-              "value": 2,
-              "isGiven": false,
-              "draft": []
-          }
-      ],
-      [
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  2,
-                  4,
-                  6,
-                  8,
-                  9
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  2,
-                  3,
-                  6,
-                  9
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  3,
-                  4,
-                  6,
-                  8
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  2,
-                  3,
-                  5,
-                  6
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  2,
-                  3,
-                  7,
-                  8
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  2,
-                  3,
-                  5,
-                  7,
-                  8
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  4,
-                  5,
-                  6,
-                  7,
-                  8,
-                  9
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  4,
-                  7,
-                  8,
-                  9
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  4,
-                  5,
-                  6,
-                  8
-              ]
-          }
-      ],
-      [
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  5,
-                  6,
-                  8
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  6
-              ]
-          },
-          {
-              "value": 2,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": 7,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  3,
-                  8
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  3,
-                  4,
-                  8
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  3,
-                  4,
-                  5,
-                  8
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  4,
-                  8
-              ]
-          },
-          {
-              "value": 9,
-              "isGiven": false,
-              "draft": []
-          }
-      ],
-      [
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  7,
-                  9
-              ]
-          },
-          {
-              "value": 4,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  8
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  2,
-                  3
-              ]
-          },
-          {
-              "value": 5,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  2,
-                  3,
-                  8,
-                  9
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  3,
-                  7,
-                  8
-              ]
-          },
-          {
-              "value": 6,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  3,
-                  8
-              ]
-          }
-      ],
-      [
-          {
-              "value": 3,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  7,
-                  9
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  5,
-                  8
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  4
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  8,
-                  9
-              ]
-          },
-          {
-              "value": 6,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": 2,
-              "isGiven": false,
-              "draft": []
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  4,
-                  7,
-                  8
-              ]
-          },
-          {
-              "value": null,
-              "isGiven": false,
-              "draft": [
-                  1,
-                  4,
-                  5,
-                  8
-              ]
-          }
-      ]
-  ]
+    newBoard = deepCopyBoard(mockBoard);
 
 
     updateBoard(newBoard, "生成新棋盘");
@@ -1077,8 +347,7 @@ const Sudoku: React.FC = () => {
     // 处理非草稿模式
     else if (selectedNumber) {
       // 验证填入的数字是否为有效候选数字
-      const candidates = getCandidates(newBoard, row, col);
-      if (candidates.includes(selectedNumber)) {
+      if (answerBoard[row][col].value == selectedNumber) {
         cell.value = selectedNumber;
         cell.draft = [];
 
@@ -1095,6 +364,7 @@ const Sudoku: React.FC = () => {
           `设置 (${row}, ${col}) 为 ${selectedNumber}`,
           affectedCells
         );
+        clearHistory();
       } else {
         const currentTime = Date.now();
         if (
@@ -1123,6 +393,7 @@ const Sudoku: React.FC = () => {
 
   const solveSudoku = () => {
     const solvedBoard = board.map((row) => row.map((cell) => ({ ...cell })));
+    console.log("solvedBoard", solvedBoard);
     if (solve(solvedBoard)) {
       updateBoard(solvedBoard, "求解数独");
     }
@@ -1263,6 +534,7 @@ const Sudoku: React.FC = () => {
       xWing,
       xWingVarient,
       xyWing,
+      xyzWing,
       nakedQuadruple,
       eureka,
       skyscraper,
@@ -1832,27 +1104,19 @@ const Sudoku: React.FC = () => {
           break;
         case SOLUTION_METHODS.XYZ_WING:
           boardWithHighlight = applyHintHighlight(board, result, "both");
+          setPositions(target);
           setPrompts(target);
           const candidateCounts = new Map();
-          prompt.forEach(cell => {
+          prompt.forEach((cell) => {
             const candidates = board[cell.row][cell.col].draft;
-            candidates.forEach(num => {
+            candidates.forEach((num) => {
               candidateCounts.set(num, (candidateCounts.get(num) || 0) + 1);
             });
           });
-          const twiceAppearingCandidates = Array.from(candidateCounts.keys())
-            .filter(num => candidateCounts.get(num) === 2)
-            .map(Number);
-          setPositions(twiceAppearingCandidates);
           posStr = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
             prompt[1].row + 1
           }C${prompt[1].col + 1}、R${prompt[2].row + 1}C${prompt[2].col + 1}`;
           candStr = target.join(",");
-          if (position.length === 1) {
-            hintContent = `无论${posStr}这三个候选方格内如何取值，R${
-              position[0].row + 1
-            }C${position[0].col + 1}内都不能出现候选数${target[0]}`;
-          }
           if (position.length === 1) {
             hintContent = `无论${posStr}这三个候选方格内如何取值，R${
               position[0].row + 1
@@ -1868,8 +1132,11 @@ const Sudoku: React.FC = () => {
         case SOLUTION_METHODS.EUREKA:
           setPositions(target);
           setPrompts(target);
-          const diffPositions = prompt.filter(p => !position.some(pos => pos.row === p.row && pos.col === p.col));
-          result.prompt=diffPositions          
+          const diffPositions = prompt.filter(
+            (p) =>
+              !position.some((pos) => pos.row === p.row && pos.col === p.col)
+          );
+          result.prompt = diffPositions;
           boardWithHighlight = applyHintHighlight(board, result, "both");
           posStr = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
             prompt[1].row + 1
@@ -2066,6 +1333,7 @@ const Sudoku: React.FC = () => {
 
       setHintDrawerVisible(false);
       setResult(null); // 重置 result
+      clearHistory();
     }
   };
 
