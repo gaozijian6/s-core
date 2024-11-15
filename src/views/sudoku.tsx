@@ -536,7 +536,7 @@ const Sudoku: React.FC = () => {
       xyWing,
       xyzWing,
       nakedQuadruple,
-      eureka,
+      // eureka,
       skyscraper,
       swordfish,
       trialAndError,
