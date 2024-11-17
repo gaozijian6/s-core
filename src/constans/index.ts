@@ -38,6 +38,7 @@ export const SOLUTION_METHODS = {
   SKYSCRAPER: "摩天楼",
   SWORDFISH_ROW: "三阶鱼(行)",
   SWORDFISH_COLUMN: "三阶鱼(列)",
+  WXYZ_WING: "WXYZ-Wing",
   SWORDFISH_WITH_FIN_ROW: "三阶鱼带鳍(行)",
   SWORDFISH_WITH_FIN_COLUMN: "三阶鱼带鳍(列)",
   TRIAL_AND_ERROR: "试数法",

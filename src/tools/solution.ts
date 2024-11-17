@@ -1636,7 +1636,7 @@ export const xyWing = (
           ) {
             continue;
           }
-          // 找到符合条���的 XY-Wing
+          // 找到符合条的 XY-Wing
           const targetNumber = commonCandidateBC as number;
           const affectedPositions: Position[] = [];
 
@@ -1664,7 +1664,7 @@ export const xyWing = (
             }
           }
 
-          if (affectedPositions.length ===1) {
+          if (affectedPositions.length === 1) {
             return {
               position: affectedPositions,
               prompt: [cellA, cellB, cellC],
@@ -1728,7 +1728,7 @@ export const xyWing = (
             }
           }
 
-          if (affectedPositions.length ===1) {
+          if (affectedPositions.length === 1) {
             return {
               position: affectedPositions,
               prompt: [cellB, cellA, cellC],
@@ -1792,7 +1792,7 @@ export const xyWing = (
             }
           }
 
-          if (affectedPositions.length ===1) {
+          if (affectedPositions.length === 1) {
             return {
               position: affectedPositions,
               prompt: [cellC, cellA, cellB],
@@ -1845,22 +1845,25 @@ export const xyzWing = (
         if (cellB.row === cellA.row && cellB.col === cellA.col) continue;
         const cellBDraft = board[cellB.row][cellB.col].draft;
         if (cellBDraft.length !== 2) continue;
-        
+
         // 检查B的候选数是否为xy或xz
         const hasXY = cellBDraft.includes(x) && cellBDraft.includes(y);
         const hasXZ = cellBDraft.includes(x) && cellBDraft.includes(z);
         if (!hasXY && !hasXZ) continue;
 
         // 在A所在的行和列中寻找方格C
-        const cellsInRow = candidateMap[x]?.row?.get(cellA.row)?.positions ?? [];
-        const cellsInCol = candidateMap[x]?.col?.get(cellA.col)?.positions ?? [];
+        const cellsInRow =
+          candidateMap[x]?.row?.get(cellA.row)?.positions ?? [];
+        const cellsInCol =
+          candidateMap[x]?.col?.get(cellA.col)?.positions ?? [];
         const potentialCells = [...cellsInRow, ...cellsInCol];
 
         for (const cellC of potentialCells) {
           if (
             (cellC.row === cellA.row && cellC.col === cellA.col) ||
             (cellC.row === cellB.row && cellC.col === cellB.col)
-          ) continue;
+          )
+            continue;
 
           const cellCDraft = board[cellC.row][cellC.col].draft;
           if (cellCDraft.length !== 2) continue;
@@ -1868,11 +1871,12 @@ export const xyzWing = (
           // 检查C的候选数是否为xy或xz，且与B不同
           const hasCXY = cellCDraft.includes(x) && cellCDraft.includes(y);
           const hasCXZ = cellCDraft.includes(x) && cellCDraft.includes(z);
-          if ((!hasCXY && !hasCXZ) || (hasCXY && hasXY) || (hasCXZ && hasXZ)) continue;
+          if ((!hasCXY && !hasCXZ) || (hasCXY && hasXY) || (hasCXZ && hasXZ))
+            continue;
 
           // 寻找受影响的方格D
           const affectedPositions: Position[] = [];
-          
+
           // 在A所在宫中寻找D
           for (let row = boxRow * 3; row < boxRow * 3 + 3; row++) {
             for (let col = boxCol * 3; col < boxCol * 3 + 3; col++) {
@@ -1880,11 +1884,12 @@ export const xyzWing = (
                 (row === cellA.row && col === cellA.col) ||
                 (row === cellB.row && col === cellB.col) ||
                 (row === cellC.row && col === cellC.col)
-              ) continue;
+              )
+                continue;
 
               // D必须与A和C的共同行或列上
-              const isInSameLineWithAC = 
-                (row === cellA.row && row === cellC.row) || 
+              const isInSameLineWithAC =
+                (row === cellA.row && row === cellC.row) ||
                 (col === cellA.col && col === cellC.col);
 
               if (isInSameLineWithAC) {
@@ -2567,6 +2572,197 @@ const checkSwordfish = (
     }
   }
 
+  return null;
+};
+
+// 获取两个格子的共同区域
+const getCommonUnits = (
+  pos1: Position,
+  pos2: Position,
+  board: CellData[][]
+): Position[] => {
+  const units: Position[] = [];
+  const uniquePositions = new Set<string>();
+  const units1 = getUnits(pos1, board);
+  const units2 = getUnits(pos2, board);
+  for (const unit1 of units1) {
+    if (
+      units2.some((unit2) => unit2.row === unit1.row && unit2.col === unit1.col)
+    ) {
+      const key = `${unit1.row},${unit1.col}`;
+      if (!uniquePositions.has(key)) {
+        uniquePositions.add(key);
+        units.push(unit1);
+      }
+    }
+  }
+
+  return units;
+};
+
+// 获取一个格子所在的所有区域
+const getUnits = (pos: Position, board: CellData[][]): Position[] => {
+  const units: Position[] = [];
+  const uniquePositions = new Set<string>();
+
+  // 获取行单元
+  for (let col = 0; col < 9; col++) {
+    if (board[pos.row][col].value === null && col !== pos.col) {
+      const key = `${pos.row},${col}`;
+      if (!uniquePositions.has(key)) {
+        uniquePositions.add(key);
+        units.push({ row: pos.row, col });
+      }
+    }
+  }
+
+  // 获取列单元
+  for (let row = 0; row < 9; row++) {
+    if (board[row][pos.col].value === null && row !== pos.row) {
+      const key = `${row},${pos.col}`;
+      if (!uniquePositions.has(key)) {
+        uniquePositions.add(key);
+        units.push({ row, col: pos.col });
+      }
+    }
+  }
+
+  // 获取宫单元
+  const startRow = Math.floor(pos.row / 3) * 3;
+  const startCol = Math.floor(pos.col / 3) * 3;
+  for (let i = 0; i < 3; i++) {
+    for (let j = 0; j < 3; j++) {
+      if (
+        board[startRow + i][startCol + j].value === null &&
+        (startRow + i !== pos.row || startCol + j !== pos.col)
+      ) {
+        const key = `${startRow + i},${startCol + j}`;
+        if (!uniquePositions.has(key)) {
+          uniquePositions.add(key);
+          units.push({ row: startRow + i, col: startCol + j });
+        }
+      }
+    }
+  }
+
+  return units;
+};
+
+// wxyz-wing
+export const wxyzWing = (
+  board: CellData[][],
+  candidateMap: CandidateMap,
+  graph: Graph
+): Result | null => {
+  // 遍历所有数字找到可能的pivot
+  for (let num1 = 1; num1 <= 8; num1++) {
+    for (let num2 = num1 + 1; num2 <= 9; num2++) {
+      const candidates1 = candidateMap[num1]?.all ?? [];
+      const candidates2 = candidateMap[num2]?.all ?? [];
+
+      // 找到同时包含num1和num2的格子作为pivot
+      const pivots = candidates1.filter((pos1) =>
+        candidates2.some(
+          (pos2) =>
+            pos2.row === pos1.row &&
+            pos2.col === pos1.col &&
+            board[pos1.row][pos1.col].draft.length === 2
+        )
+      );
+
+      for (const pivot of pivots) {
+        const pivotCell = board[pivot.row][pivot.col];
+        const [x, y] = pivotCell.draft;
+
+        // 找C
+        const units = getUnits(pivot, board);
+
+        for (const unit of units) {
+          const cellC = board[unit.row][unit.col];
+          if (cellC.draft.length !== 2) continue;
+          const [w, z] = cellC.draft;
+          if (w === x || w === y || z === x || z === y) {
+            continue;
+          }
+          // 找A
+          const commonUnits = getCommonUnits(unit, pivot, board);
+          for (const commonUnit of commonUnits) {
+            const cellA = board[commonUnit.row][commonUnit.col];
+            if (commonUnit.row == pivot.row && commonUnit.col == pivot.col)
+              continue;
+            if (cellA.draft.length !== 2) continue;
+            const [a1, a2] = cellA.draft;
+            if (pivotCell.draft.includes(a1) && pivotCell.draft.includes(a2))
+              continue;
+            if (cellC.draft.includes(a1) && cellC.draft.includes(a2)) continue;
+            const draft = [...pivotCell.draft, ...cellC.draft];
+            if (!draft.includes(a1) || !draft.includes(a2)) continue;
+
+            // 找B
+            const units2 = getUnits(pivot, board);
+            for (const unit2 of units2) {
+              if (unit2.row === commonUnit.row && unit2.col === commonUnit.col)
+                continue;
+              if (unit2.row === unit.row && unit2.col === unit.col) continue;
+              const cellB = board[unit2.row][unit2.col];
+              if (cellB.draft.length !== 2) continue;
+              const [b1, b2] = cellB.draft;
+              if (cellB.draft.includes(a1) || cellB.draft.includes(a2))
+                continue;
+              if (!draft.includes(b1) || !draft.includes(b2)) continue;
+              const commonUnits2 = getCommonUnits(unit2, unit, board);
+              let commonCandidate = null;
+              if (cellB.draft.includes(b1) && cellC.draft.includes(b1)) {
+                commonCandidate = b1;
+              } else if (cellB.draft.includes(b2) && cellC.draft.includes(b2)) {
+                commonCandidate = b2;
+              }
+
+              if (x == 2 && y == 5 && pivot.col == 7 && w == 6 && z == 9) {
+                console.log(unit, unit2);
+
+                console.log(commonUnits2);
+              }
+              const position: Position[] = [];
+              for (const commonUnit2 of commonUnits2) {
+                if (
+                  commonUnit2.row == commonUnit.row &&
+                  commonUnit2.col == commonUnit.col
+                )
+                  continue;
+                if (commonUnit2.row == unit.row && commonUnit2.col == unit.col)
+                  continue;
+                if (
+                  commonUnit2.row == unit2.row &&
+                  commonUnit2.col == unit2.col
+                )
+                  continue;
+                if (
+                  commonUnit2.row == pivot.row &&
+                  commonUnit2.col == pivot.col
+                )
+                  continue;
+                const cellD = board[commonUnit2.row][commonUnit2.col];
+                if (cellD.draft.includes(commonCandidate!)) {
+                  position.push(commonUnit2);
+                }
+              }
+              if (position.length > 0) {
+                
+                return {
+                  position,
+                  prompt: [{ row: pivot.row, col: pivot.col }, unit, unit2, commonUnit],
+                  method: SOLUTION_METHODS.WXYZ_WING,
+                  target: [commonCandidate!],
+                  isFill: false,
+                };
+              }
+            }
+          }
+        }
+      }
+    }
+  }
   return null;
 };
 
