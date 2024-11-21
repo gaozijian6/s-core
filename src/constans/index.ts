@@ -38,6 +38,7 @@ export const SOLUTION_METHODS = {
   SKYSCRAPER: "摩天楼",
   SKYSCRAPER2: "摩天楼2",
   REMOTE_PAIR: "远程数对",
+  COMBINATION_CHAIN: "组合链",
   SWORDFISH_ROW: "三阶鱼(行)",
   SWORDFISH_COLUMN: "三阶鱼(列)",
   WXYZ_WING: "WXYZ-Wing",

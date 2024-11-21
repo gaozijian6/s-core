@@ -39,6 +39,7 @@ import {
   getGraphNodePaths,
   getGraphNode,
   remotePair,
+  combinationChain,
 } from "../tools/solution";
 import "./sudoku.less";
 import type { CellData, Position } from "../tools";
@@ -544,6 +545,7 @@ const Sudoku: React.FC = () => {
       skyscraper,
       skyscraper2_2,
       remotePair,
+      combinationChain,
       swordfish,
       wxyzWing,
       trialAndError,
@@ -565,7 +567,15 @@ const Sudoku: React.FC = () => {
   };
 
   const handleHintContent = (result: Result): string => {
-    const { position, target, method, prompt, isFill } = result;
+    const {
+      position,
+      target,
+      method,
+      prompt,
+      isFill,
+      isWeakLink,
+      chainStructure,
+    } = result;
     let posStr = "";
     let candStr = "";
     let deleteStr = "";
@@ -1163,26 +1173,43 @@ const Sudoku: React.FC = () => {
           }取值为${target[0]}，${deleteStr}内都不能出现候选数${target[0]}`;
           break;
         case SOLUTION_METHODS.SKYSCRAPER2:
+          if (position.length === 1) {
+            posStr = `R${position[0].row + 1}C${position[0].col + 1}`;
+          } else if (position.length === 2) {
+            posStr = `R${position[0].row + 1}C${position[0].col + 1}、R${
+              position[1].row + 1
+            }C${position[1].col + 1}`;
+          } else if (position.length === 3) {
+            posStr = `R${position[0].row + 1}C${position[0].col + 1}、R${
+              position[1].row + 1
+            }C${position[1].col + 1}、R${position[2].row + 1}C${
+              position[2].col + 1
+            }`;
+          } else if (position.length === 4) {
+            posStr = `R${position[0].row + 1}C${position[0].col + 1}、R${
+              position[1].row + 1
+            }C${position[1].col + 1}、R${position[2].row + 1}C${
+              position[2].col + 1
+            }、R${position[3].row + 1}C${position[3].col + 1}`;
+          }
           boardWithHighlight = applyHintHighlight(board, result, "both");
           setPrompts(target);
           hintContent = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
             prompt[1].row + 1
           }C${prompt[1].col + 1}与R${prompt[2].row + 1}C${
             prompt[2].col + 1
-          }、R${prompt[3].row + 1}C${prompt[3].col + 1}分别构成两个强链，R${
+          }、R${prompt[3].row + 1}C${prompt[3].col + 1}分别构成两个强链，它们通过R${
             prompt[1].row + 1
-          }C${prompt[1].col + 1}与R${prompt[3].row + 1}C${
+          }C${prompt[1].col + 1}、R${prompt[3].row + 1}C${
             prompt[3].col + 1
-          }构成弱链，假设R${prompt[0].row + 1}C${prompt[0].col + 1}为真
+          }构成的弱链相连，假设R${prompt[0].row + 1}C${prompt[0].col + 1}为真
           ，则R${position[0].row + 1}C${position[0].col + 1}为假，假设R${
             prompt[0].row + 1
           }C${prompt[0].col + 1}为假，则会导致R${prompt[3].row + 1}C${
             prompt[3].col + 1
           }为真，R${position[0].row + 1}C${
             position[0].col + 1
-          }依旧为假，无论如何，R${position[0].row + 1}C${
-            position[0].col + 1
-          }都不应出现候选数${target[0]}`;
+          }依旧为假，无论如何，${posStr}内都不应出现候选数${target[0]}`;
           break;
         case SOLUTION_METHODS.REMOTE_PAIR:
           boardWithHighlight = applyHintHighlight(board, result, "both");
@@ -1226,6 +1253,49 @@ const Sudoku: React.FC = () => {
               prompt[0].col + 1
             }、R${prompt[5].row + 1}C${
               prompt[5].col + 1
+            }谁为真，${posStr}内都不能出现候选数${target[0]}`;
+          }
+          break;
+        case SOLUTION_METHODS.COMBINATION_CHAIN:
+          boardWithHighlight = applyHintHighlight(board, result, "both");
+          setPositions(target);
+          setPrompts(target);
+          if (position.length === 1) {
+            posStr = `R${position[0].row + 1}C${position[0].col + 1}`;
+          } else if (position.length === 2) {
+            posStr = `R${position[0].row + 1}C${position[0].col + 1}、R${
+              position[1].row + 1
+            }C${position[1].col + 1}`;
+          }
+          if (!isWeakLink && chainStructure === "3-2") {
+            hintContent = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
+              prompt[1].row + 1
+            }C${prompt[1].col + 1}两个方格的组合与R${prompt[2].row + 1}C${
+              prompt[2].col + 1
+            }、R${prompt[3].row + 1}C${prompt[3].col + 1}、R${
+              prompt[4].row + 1
+            }C${prompt[4].col + 1}成强链，无论R${prompt[0].row + 1}C${
+              prompt[0].col + 1
+            }、R${prompt[1].row + 1}C${prompt[1].col + 1}、R${
+              prompt[4].row + 1
+            }C${prompt[4].col + 1}谁为真，${posStr}内都不能出现候选数${
+              target[0]
+            }`;
+          } else if (isWeakLink && chainStructure === "3-2") {
+            hintContent = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
+              prompt[1].row + 1
+            }C${prompt[1].col + 1}两个方格的组合与R${prompt[2].row + 1}C${
+              prompt[2].col + 1
+            }构成强链，R${prompt[3].row + 1}C${prompt[3].col + 1}、R${
+              prompt[4].row + 1
+            }C${prompt[4].col + 1}两个方格构成强链，这两条强链通过R${
+              prompt[2].row + 1
+            }C${prompt[2].col + 1}、R${prompt[3].row + 1}C${
+              prompt[3].col + 1
+            }构成的弱链相连，无论R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
+              prompt[1].row + 1
+            }C${prompt[1].col + 1}、R${prompt[4].row + 1}C${
+              prompt[4].col + 1
             }谁为真，${posStr}内都不能出现候选数${target[0]}`;
           }
           break;

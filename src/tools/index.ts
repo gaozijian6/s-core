@@ -430,7 +430,7 @@ export const createGraph = (
             }
           }
 
-          if (nodeCount >= 3) {
+          if (nodeCount >= 2) {
             subGraphs.push(subGraph);
           }
         }
