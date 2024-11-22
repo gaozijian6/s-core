@@ -509,7 +509,7 @@ export const useSudokuBoard = (initialBoard: CellData[][]) => {
         }
       });
     });
-
+    setGraph(createGraph(newBoard, newCandidateMap));
     setCandidateMap(newCandidateMap);
   };
 
@@ -552,7 +552,7 @@ export const useSudokuBoard = (initialBoard: CellData[][]) => {
     }
     setBoard(newBoard);
     updateCandidateMap(newBoard);
-    setGraph(createGraph(newBoard, candidateMap));
+    
   };
 
   const undo = () => {
@@ -562,7 +562,6 @@ export const useSudokuBoard = (initialBoard: CellData[][]) => {
       setCurrentStep(newStep);
       setBoard(previousBoard);
       updateCandidateMap(previousBoard);
-      setGraph(createGraph(previousBoard, candidateMap));
     }
   };
 
@@ -573,24 +572,23 @@ export const useSudokuBoard = (initialBoard: CellData[][]) => {
       setCurrentStep(newStep);
       setBoard(nextBoard);
       updateCandidateMap(nextBoard);
-      setGraph(createGraph(nextBoard, candidateMap));
     }
   };
 
-    // 添加清空历史记录的函数
-    const clearHistory = useCallback(() => {
-      // 保存当前棋盘状态作为唯一的历史记录
-      const newHistory = [
-        {
-          board: board,
-          action: '清空历史记录',
-          affectedCells: [],
-          isOfficialDraft: false,
-        },
-      ];
-      setHistory(newHistory);
-      setCurrentStep(0);
-    }, [board]);
+  // 添加清空历史记录的函数
+  const clearHistory = useCallback(() => {
+    // 保存当前棋盘状态作为唯一的历史记录
+    const newHistory = [
+      {
+        board: board,
+        action: "清空历史记录",
+        affectedCells: [],
+        isOfficialDraft: false,
+      },
+    ];
+    setHistory(newHistory);
+    setCurrentStep(0);
+  }, [board]);
 
   return {
     board,
