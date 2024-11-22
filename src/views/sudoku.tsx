@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Card, Button, message, Drawer } from "antd";
+import { Card, Button, message, Drawer, Input } from "antd";
 import { CloseOutlined } from "@ant-design/icons";
 import {
   useTimer,
@@ -26,13 +26,20 @@ import {
   findStrongLink,
   checkStrongLinkParity,
   skyscraper,
+  skyscraper2_2,
   hiddenTriple1,
   nakedTriple1,
   nakedTriple2,
   hiddenTriple2,
   nakedQuadruple,
   swordfish,
+  wxyzWing,
   trialAndError,
+  isUnitStrongLink,
+  getGraphNodePaths,
+  getGraphNode,
+  remotePair,
+  combinationChain,
 } from "../tools/solution";
 import "./sudoku.less";
 import type { CellData, Position } from "../tools";
@@ -81,6 +88,7 @@ const Sudoku: React.FC = () => {
   const [result, setResult] = useState<Result | null>(null);
   const [prompts, setPrompts] = useState<number[]>([]);
   const [positions, setPositions] = useState<number[]>([]);
+  const [inputValue, setInputValue] = useState<string>("");
 
   const generateBoard = () => {
     const initialBoard = Array(9)
@@ -107,7 +115,7 @@ const Sudoku: React.FC = () => {
       }))
     );
 
-    // newBoard = deepCopyBoard(mockBoard);
+    newBoard = deepCopyBoard(mockBoard);
 
 
     updateBoard(newBoard, "生成新棋盘");
@@ -536,7 +544,11 @@ const Sudoku: React.FC = () => {
       xyzWing,
       nakedQuadruple,
       skyscraper,
+      skyscraper2_2,
+      remotePair,
+      combinationChain,
       swordfish,
+      wxyzWing,
       trialAndError,
     ];
     let result = null;
@@ -556,7 +568,15 @@ const Sudoku: React.FC = () => {
   };
 
   const handleHintContent = (result: Result): string => {
-    const { position, target, method, prompt, isFill } = result;
+    const {
+      position,
+      target,
+      method,
+      prompt,
+      isFill,
+      isWeakLink,
+      chainStructure,
+    } = result;
     let posStr = "";
     let candStr = "";
     let deleteStr = "";
@@ -1153,6 +1173,133 @@ const Sudoku: React.FC = () => {
             prompt[3].col + 1
           }取值为${target[0]}，${deleteStr}内都不能出现候选数${target[0]}`;
           break;
+        case SOLUTION_METHODS.SKYSCRAPER2:
+          if (position.length === 1) {
+            posStr = `R${position[0].row + 1}C${position[0].col + 1}`;
+          } else if (position.length === 2) {
+            posStr = `R${position[0].row + 1}C${position[0].col + 1}、R${
+              position[1].row + 1
+            }C${position[1].col + 1}`;
+          } else if (position.length === 3) {
+            posStr = `R${position[0].row + 1}C${position[0].col + 1}、R${
+              position[1].row + 1
+            }C${position[1].col + 1}、R${position[2].row + 1}C${
+              position[2].col + 1
+            }`;
+          } else if (position.length === 4) {
+            posStr = `R${position[0].row + 1}C${position[0].col + 1}、R${
+              position[1].row + 1
+            }C${position[1].col + 1}、R${position[2].row + 1}C${
+              position[2].col + 1
+            }、R${position[3].row + 1}C${position[3].col + 1}`;
+          }
+          boardWithHighlight = applyHintHighlight(board, result, "both");
+          setPrompts(target);
+          hintContent = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
+            prompt[1].row + 1
+          }C${prompt[1].col + 1}与R${prompt[2].row + 1}C${
+            prompt[2].col + 1
+          }、R${prompt[3].row + 1}C${prompt[3].col + 1}分别构成两个强链，它们通过R${
+            prompt[1].row + 1
+          }C${prompt[1].col + 1}、R${prompt[3].row + 1}C${
+            prompt[3].col + 1
+          }构成的弱链相连，假设R${prompt[0].row + 1}C${prompt[0].col + 1}为真
+          ，则R${position[0].row + 1}C${position[0].col + 1}为假，假设R${
+            prompt[0].row + 1
+          }C${prompt[0].col + 1}为假，则会导致R${prompt[3].row + 1}C${
+            prompt[3].col + 1
+          }为真，R${position[0].row + 1}C${
+            position[0].col + 1
+          }依旧为假，无论如何，${posStr}内都不应出现候选数${target[0]}`;
+          break;
+        case SOLUTION_METHODS.REMOTE_PAIR:
+          boardWithHighlight = applyHintHighlight(board, result, "both");
+          setPositions(target);
+          setPrompts(target);
+          if (position.length === 1) {
+            posStr = `R${position[0].row + 1}C${position[0].col + 1}`;
+          } else if (position.length === 2) {
+            posStr = `R${position[0].row + 1}C${position[0].col + 1}、R${
+              position[1].row + 1
+            }C${position[1].col + 1}`;
+          } else if (position.length === 3) {
+            posStr = `R${position[0].row + 1}C${position[0].col + 1}、R${
+              position[1].row + 1
+            }C${position[1].col + 1}、R${position[2].row + 1}C${
+              position[2].col + 1
+            }`;
+          }
+          if (prompt.length === 4) {
+            hintContent = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
+              prompt[3].row + 1
+            }C${prompt[3].col + 1}构成远程数对，这两个远程数对通过R${
+              prompt[1].row + 1
+            }C${prompt[1].col + 1}、R${prompt[2].row + 1}C${
+              prompt[2].col + 1
+            }形成强链，无论R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
+              prompt[3].row + 1
+            }C${prompt[3].col + 1}谁为真，${posStr}内都不能出现候选数${
+              target[0]
+            }`;
+          } else if (prompt.length === 6) {
+            hintContent = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
+              prompt[5].row + 1
+            }C${prompt[5].col + 1}构成远程数对，这两个远程数对通过R${
+              prompt[1].row + 1
+            }C${prompt[1].col + 1}、R${prompt[2].row + 1}C${
+              prompt[2].col + 1
+            }、R${prompt[3].row + 1}C${prompt[3].col + 1}、R${
+              prompt[4].row + 1
+            }C${prompt[4].col + 1}形成强链，无论R${prompt[0].row + 1}C${
+              prompt[0].col + 1
+            }、R${prompt[5].row + 1}C${
+              prompt[5].col + 1
+            }谁为真，${posStr}内都不能出现候选数${target[0]}`;
+          }
+          break;
+        case SOLUTION_METHODS.COMBINATION_CHAIN:
+          boardWithHighlight = applyHintHighlight(board, result, "both");
+          setPositions(target);
+          setPrompts(target);
+          if (position.length === 1) {
+            posStr = `R${position[0].row + 1}C${position[0].col + 1}`;
+          } else if (position.length === 2) {
+            posStr = `R${position[0].row + 1}C${position[0].col + 1}、R${
+              position[1].row + 1
+            }C${position[1].col + 1}`;
+          }
+          if (!isWeakLink && chainStructure === "3-2") {
+            hintContent = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
+              prompt[1].row + 1
+            }C${prompt[1].col + 1}两个方格的组合与R${prompt[2].row + 1}C${
+              prompt[2].col + 1
+            }、R${prompt[3].row + 1}C${prompt[3].col + 1}、R${
+              prompt[4].row + 1
+            }C${prompt[4].col + 1}成强链，无论R${prompt[0].row + 1}C${
+              prompt[0].col + 1
+            }、R${prompt[1].row + 1}C${prompt[1].col + 1}、R${
+              prompt[4].row + 1
+            }C${prompt[4].col + 1}谁为真，${posStr}内都不能出现候选数${
+              target[0]
+            }`;
+          } else if (isWeakLink && chainStructure === "3-2") {
+            hintContent = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
+              prompt[1].row + 1
+            }C${prompt[1].col + 1}两个方格的组合与R${prompt[2].row + 1}C${
+              prompt[2].col + 1
+            }构成强链，R${prompt[3].row + 1}C${prompt[3].col + 1}、R${
+              prompt[4].row + 1
+            }C${prompt[4].col + 1}两个方格构成强链，这两条强链通过R${
+              prompt[2].row + 1
+            }C${prompt[2].col + 1}、R${prompt[3].row + 1}C${
+              prompt[3].col + 1
+            }构成的弱链相连，无论R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
+              prompt[1].row + 1
+            }C${prompt[1].col + 1}、R${prompt[4].row + 1}C${
+              prompt[4].col + 1
+            }谁为真，${posStr}内都不能出现候选数${target[0]}`;
+          }
+          break;
         case SOLUTION_METHODS.SWORDFISH_ROW:
           boardWithHighlight = applyHintHighlight(board, result, "both");
           if (prompt.length === 6) {
@@ -1252,6 +1399,34 @@ const Sudoku: React.FC = () => {
           hintContent = `无论${posStr}这${prompt.length}个候选方格哪三个取${
             target[0]
           }，第${rows.join("、")}行内都不能出现候选数${target[0]}`;
+          break;
+        case SOLUTION_METHODS.WXYZ_WING:
+          boardWithHighlight = applyHintHighlight(board, result, "both");
+          setPositions(target);
+          setPrompts(target);
+          if (position.length === 1) {
+            hintContent = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
+              prompt[1].row + 1
+            }C${prompt[1].col + 1}、R${prompt[2].row + 1}C${
+              prompt[2].col + 1
+            }、R${prompt[3].row + 1}C${prompt[3].col + 1}构成WXYZ-Wing,其中R${
+              prompt[0].row + 1
+            }C${prompt[0].col + 1}为枢纽，无论这四个候选方格内如何取值，R${
+              position[0].row + 1
+            }C${position[0].col + 1}内都不能出现候选数${target[0]}`;
+          } else if (position.length === 2) {
+            hintContent = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
+              prompt[1].row + 1
+            }C${prompt[1].col + 1}、R${prompt[2].row + 1}C${
+              prompt[2].col + 1
+            }、R${prompt[3].row + 1}C${prompt[3].col + 1}构成WXYZ-Wing，其中R${
+              prompt[0].row + 1
+            }C${prompt[0].col + 1}为枢纽，无论这四个候选方格内如何取值，R${
+              position[0].row + 1
+            }C${position[0].col + 1}、R${position[1].row + 1}C${
+              position[1].col + 1
+            }内都不能出现候选数${target[0]}`;
+          }
           break;
       }
     }
@@ -1353,6 +1528,30 @@ const Sudoku: React.FC = () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [hintDrawerVisible, result]);
+
+  const handleIsUnitStrongLink = () => {
+    const arr = inputValue.split(" ");
+    const [row1, col1] = arr[0].split("");
+    const [row2, col2] = arr[1].split("");
+    console.log(
+      isUnitStrongLink(
+        board,
+        { row: parseInt(row1), col: parseInt(col1) },
+        { row: parseInt(row2), col: parseInt(col2) },
+        parseInt(arr[2]),
+        candidateMap
+      )
+    );
+  };
+
+  const handleGraphNodePaths = () => {
+    console.log(
+      getGraphNodePaths(
+        getGraphNode({ row: 0, col: 2 }, 4, graph),
+        getGraphNode({ row: 7, col: 1 }, 4, graph)
+      )
+    );
+  };
 
   return (
     <Card title="">
@@ -1472,6 +1671,7 @@ const Sudoku: React.FC = () => {
         <Button onClick={handleCheckStrongLinkParity}>强连接奇偶性</Button>
         <Button onClick={handleGraph}>图</Button>
         <Button onClick={handleDraft}>候选数</Button>
+        <Button onClick={handleGraphNodePaths}>打印路径</Button>
       </div>
       <div className="numberButtons">
         {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((number) => (
@@ -1531,6 +1731,22 @@ const Sudoku: React.FC = () => {
           <Button onClick={handleCancelHint}>取消</Button>
         </div>
       </Drawer>
+      <div
+        style={{
+          position: "fixed",
+          right: "20px",
+          top: "50%",
+          transform: "translateY(-50%)",
+          zIndex: 1000,
+        }}
+      >
+        <Input
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          placeholder="请输入内容"
+          onPressEnter={handleIsUnitStrongLink}
+        />
+      </div>
     </Card>
   );
 };
