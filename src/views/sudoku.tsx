@@ -4,6 +4,7 @@ import { CloseOutlined } from "@ant-design/icons";
 import {
   useTimer,
   solve,
+  solve3,
   getCellClassName,
   checkSolutionStatus,
   checkNumberInRowColumnAndBox,
@@ -115,13 +116,13 @@ const Sudoku: React.FC = () => {
       }))
     );
 
-    // newBoard = deepCopyBoard(mockBoard);
+    newBoard = deepCopyBoard(mockBoard);
 
     updateBoard(newBoard, "生成新棋盘");
 
     // 生成解决方案
     const solvedBoard = newBoard.map((row) => row.map((cell) => ({ ...cell })));
-    solve(solvedBoard);
+    // solve(solvedBoard);
   };
 
   useEffect(() => {
@@ -398,12 +399,11 @@ const Sudoku: React.FC = () => {
   };
 
   const solveSudoku = () => {
-    const solvedBoard = deepCopyBoard(board);
-    console.log("solvedBoard", solvedBoard);
-    if (solve(solvedBoard)) {
+    const solvedBoard = solve3(deepCopyBoard(board));
+    if (solvedBoard && solve(solvedBoard)) {
       updateBoard(solvedBoard, "求解数独");
     }
-    message.info(`解的情况: ${checkSolutionStatus(deepCopyBoard(board))}`);
+    // message.info(`解的情况: ${checkSolutionStatus(deepCopyBoard(board))}`);
   };
 
   const handleEraseMode = () => {

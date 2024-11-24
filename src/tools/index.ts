@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { isUnitStrongLink } from "./solution";
+import { hiddenSingle, isUnitStrongLink } from "./solution";
 
 export interface Position {
   row: number;
@@ -56,43 +56,243 @@ export const isValid = (
 };
 
 export const solve = (board: CellData[][]): boolean => {
-  for (let row = 0; row < 9; row++) {
-    for (let col = 0; col < 9; col++) {
-      if (board[row][col].value === null) {
-        for (let num = 1; num <= 9; num++) {
-          if (isValid(board, row, col, num)) {
-            board[row][col].value = num;
-            if (solve(board)) {
-              return true;
+  const standardBoard = copyOfficialDraft(board);
+  const s = (board: CellData[][]): boolean => {
+    for (let row = 0; row < 9; row++) {
+      for (let col = 0; col < 9; col++) {
+        if (board[row][col].value === null) {
+          for (let num = 1; num <= 9; num++) {
+            if (!standardBoard[row][col].draft.includes(num)) continue;
+            if (isValid(board, row, col, num)) {
+              board[row][col].value = num;
+              if (s(board)) {
+                return true;
+              }
+              board[row][col].value = null;
             }
-            board[row][col].value = null;
           }
+          return false;
         }
-        return false;
       }
     }
-  }
-  return true;
+    return true;
+  };
+  return s(board);
 };
 
 export const solve2 = (board: CellData[][]): boolean => {
-  for (let row = 0; row < 9; row++) {
-    for (let col = 0; col < 9; col++) {
-      if (board[row][col].value === null) {
-        for (let num = 9; num >= 1; num--) {
-          if (isValid(board, row, col, num)) {
-            board[row][col].value = num;
-            if (solve2(board)) {
-              return true;
+  const standardBoard = copyOfficialDraft(board);
+  const s = (board: CellData[][]): boolean => {
+    for (let row = 0; row < 9; row++) {
+      for (let col = 0; col < 9; col++) {
+        if (board[row][col].value === null) {
+          for (let num = 9; num >= 1; num--) {
+            if (!standardBoard[row][col].draft.includes(num)) continue;
+            if (isValid(board, row, col, num)) {
+              board[row][col].value = num;
+              if (s(board)) {
+                return true;
+              }
+              board[row][col].value = null;
             }
-            board[row][col].value = null;
           }
+          return false;
         }
-        return false;
+      }
+    }
+    return true;
+  };
+  return s(board);
+};
+
+
+// export const solve = (board: CellData[][]): boolean => {
+//   const standardBoard = copyOfficialDraft(board);
+//   for (let row = 0; row < 9; row++) {
+//     for (let col = 0; col < 9; col++) {
+//       if (
+//         board[row][col].value === null &&
+//         standardBoard[row][col].draft.length === 0
+//       )
+//         return false;
+//       if (board[row][col].value === null) {
+//         for (const num of standardBoard[row][col].draft) {
+//           if (isValid(board, row, col, num)) {
+//             board[row][col].value = num;
+//             if (solve(board)) {
+//               return true;
+//             }
+//             board[row][col].value = null;
+//           }
+//         }
+//         return false;
+//       }
+//     }
+//   }
+//   return true;
+// };
+
+// export const solve2 = (board: CellData[][]): boolean => {
+//   const standardBoard = copyOfficialDraft(board);
+//   for (let row = 0; row < 9; row++) {
+//     for (let col = 0; col < 9; col++) {
+//       if (
+//         board[row][col].value === null &&
+//         standardBoard[row][col].draft.length === 0
+//       )
+//         return false;
+//       if (board[row][col].value === null) {
+//         for (
+//           let i = standardBoard[row][col].draft.length - 1;
+//           i >= 0;
+//           i--
+//         ) {
+//           const num = standardBoard[row][col].draft[i];
+//           if (isValid(board, row, col, num)) {
+//             board[row][col].value = num;
+//             if (solve2(board)) {
+//               return true;
+//             }
+//             board[row][col].value = null;
+//           }
+//         }
+//         return false;
+//       }
+//     }
+//   }
+//   return true;
+// };
+
+export const solve3 = (board: CellData[][]) => {
+  const startTime = performance.now();
+  const solveFunctions = [hiddenSingle];
+  const getCounts = (board: CellData[][]) => {
+    let counts = 0;
+    for (let row = 0; row < 9; row++) {
+      for (let col = 0; col < 9; col++) {
+        if (board[row][col].value !== null) {
+          counts++;
+        }
+      }
+    }
+    return counts;
+  };
+  const updateCandidateMap = (newBoard: CellData[][]) => {
+    const startTime = performance.now();
+    const newCandidateMap: CandidateMap = {};
+    for (let num = 1; num <= 9; num++) {
+      newCandidateMap[num] = {
+        row: new Map(),
+        col: new Map(),
+        box: new Map(),
+        all: [],
+      };
+    }
+
+    newBoard.forEach((row, rowIndex) => {
+      row.forEach((cell, colIndex) => {
+        if (cell.value === null) {
+          const boxIndex =
+            Math.floor(rowIndex / 3) * 3 + Math.floor(colIndex / 3);
+          const candidate: Candidate = {
+            row: rowIndex,
+            col: colIndex,
+            candidates: cell.draft,
+          };
+
+          cell.draft.forEach((num) => {
+            const updateStats = (
+              map: Map<number, CandidateStats>,
+              index: number
+            ) => {
+              const stats = map.get(index) ?? { count: 0, positions: [] };
+              stats.count++;
+              stats.positions.push(candidate);
+              map.set(index, stats);
+            };
+
+            updateStats(newCandidateMap[num].row, rowIndex);
+            updateStats(newCandidateMap[num].col, colIndex);
+            updateStats(newCandidateMap[num].box, boxIndex);
+            newCandidateMap[num].all.push(candidate);
+          });
+        }
+      });
+    });
+    return newCandidateMap;
+  };
+
+
+  let counts = getCounts(board);
+  const standardBoard = copyOfficialDraft(board);
+  let candidateMap = updateCandidateMap(standardBoard);
+
+
+
+  firstWhile: while (true) {
+    for (let i = 0; i < solveFunctions.length; i++) {
+      const solveFunction = solveFunctions[i];
+      let result = solveFunction(standardBoard, candidateMap, {});
+
+      if (result) {
+        const { isFill, position, target } = result;
+        position.forEach(({ row, col }) => {
+          if (isFill) {
+            counts++;
+            if (counts === 81) {
+              return standardBoard;
+            }
+            standardBoard[row][col].value = target[0];
+            standardBoard[row][col].draft = [];
+
+            // 更新受影响的单元格
+            const affectedCells = updateRelatedCellsDraft(
+              standardBoard,
+              [{ row, col }],
+              target[0],
+              getCandidates
+            );
+
+            // 将受影响的单元格合并到 position 中
+            position.push(...affectedCells);
+          } else {
+            standardBoard[row][col].draft =
+              standardBoard[row][col].draft?.filter(
+                (num) => !target.includes(num)
+              ) ?? [];
+          }
+        });
+        result = null;
+        candidateMap = updateCandidateMap(standardBoard);
+        continue firstWhile;
+      } else if (!result && i < solveFunctions.length - 1) {
+        continue;
+      } else {
+        break firstWhile;
       }
     }
   }
-  return true;
+  const endTime = performance.now();
+  console.log(`solve3 耗时: ${endTime - startTime}ms`);
+
+
+  const board1 = deepCopyBoard(standardBoard);
+  const board2 = deepCopyBoard(standardBoard);
+  // const starttime1 = performance.now();
+  const solved1 = solve(board1);
+  // const endTime1 = performance.now();
+  // console.log(`solve 耗时: ${endTime1 - starttime1}ms,解:${solved1}`);
+
+  // const starttime2 = performance.now();
+  const solved2 = solve2(board2);
+  // const endTime2 = performance.now();
+  // console.log(`solve2 耗时: ${endTime2 - starttime2}ms,解:${solved2}`);
+
+  if (isSameBoard(board1, board2)) {
+
+    return standardBoard;
+  }
+  return null;
 };
 
 // 检测数独解的情况
@@ -119,9 +319,14 @@ export const checkSolutionStatus = (
   return "有多解";
 };
 
-export const isSameBoard = (board1: CellData[][], board2: CellData[][]): boolean => {
+export const isSameBoard = (
+  board1: CellData[][],
+  board2: CellData[][]
+): boolean => {
   return board1.every((row, rowIndex) =>
-    row.every((cell, colIndex) => cell.value === board2[rowIndex][colIndex].value)
+    row.every(
+      (cell, colIndex) => cell.value === board2[rowIndex][colIndex].value
+    )
   );
 };
 
@@ -177,8 +382,6 @@ export const getCellClassName = (
 
   return baseClass;
 };
-
-
 
 export const checkNumberInRowColumnAndBox = (
   board: CellData[][],
@@ -539,7 +742,7 @@ export const useSudokuBoard = (initialBoard: CellData[][]) => {
       const solvedBoard = newBoard.map((row) =>
         row.map((cell) => ({ ...cell }))
       );
-      solve(solvedBoard);
+      // solve(solvedBoard);
       setAnswerBoard(solvedBoard);
       setIsSolved(true);
     }
@@ -567,7 +770,6 @@ export const useSudokuBoard = (initialBoard: CellData[][]) => {
     }
     setBoard(newBoard);
     updateCandidateMap(newBoard);
-    
   };
 
   const undo = () => {
