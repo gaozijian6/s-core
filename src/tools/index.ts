@@ -1,5 +1,19 @@
 import { useCallback, useEffect, useState } from "react";
-import { hiddenSingle, isUnitStrongLink } from "./solution";
+import {
+  blockElimination,
+  hiddenPair,
+  hiddenSingle,
+  hiddenTriple1,
+  hiddenTriple2,
+  nakedPair,
+  nakedTriple1,
+  nakedTriple2,
+  xWing,
+  xWingVarient,
+  xyWing,
+  xyzWing,
+  nakedQuadruple,
+} from "./solution";
 
 export interface Position {
   row: number;
@@ -55,8 +69,7 @@ export const isValid = (
   return true;
 };
 
-export const solve = (board: CellData[][]): boolean => {
-  const standardBoard = copyOfficialDraft(board);
+export const solve = (standardBoard: CellData[][]): boolean => {
   const s = (board: CellData[][]): boolean => {
     for (let row = 0; row < 9; row++) {
       for (let col = 0; col < 9; col++) {
@@ -77,11 +90,10 @@ export const solve = (board: CellData[][]): boolean => {
     }
     return true;
   };
-  return s(board);
+  return s(standardBoard);
 };
 
-export const solve2 = (board: CellData[][]): boolean => {
-  const standardBoard = copyOfficialDraft(board);
+export const solve2 = (standardBoard: CellData[][]): boolean => {
   const s = (board: CellData[][]): boolean => {
     for (let row = 0; row < 9; row++) {
       for (let col = 0; col < 9; col++) {
@@ -102,9 +114,8 @@ export const solve2 = (board: CellData[][]): boolean => {
     }
     return true;
   };
-  return s(board);
+  return s(standardBoard);
 };
-
 
 // export const solve = (board: CellData[][]): boolean => {
 //   const standardBoard = copyOfficialDraft(board);
@@ -178,7 +189,6 @@ export const solve3 = (board: CellData[][]) => {
     return counts;
   };
   const updateCandidateMap = (newBoard: CellData[][]) => {
-    const startTime = performance.now();
     const newCandidateMap: CandidateMap = {};
     for (let num = 1; num <= 9; num++) {
       newCandidateMap[num] = {
@@ -222,12 +232,9 @@ export const solve3 = (board: CellData[][]) => {
     return newCandidateMap;
   };
 
-
   let counts = getCounts(board);
   const standardBoard = copyOfficialDraft(board);
   let candidateMap = updateCandidateMap(standardBoard);
-
-
 
   firstWhile: while (true) {
     for (let i = 0; i < solveFunctions.length; i++) {
@@ -275,7 +282,6 @@ export const solve3 = (board: CellData[][]) => {
   const endTime = performance.now();
   console.log(`solve3 耗时: ${endTime - startTime}ms`);
 
-
   const board1 = deepCopyBoard(standardBoard);
   const board2 = deepCopyBoard(standardBoard);
   // const starttime1 = performance.now();
@@ -289,7 +295,6 @@ export const solve3 = (board: CellData[][]) => {
   // console.log(`solve2 耗时: ${endTime2 - starttime2}ms,解:${solved2}`);
 
   if (isSameBoard(board1, board2)) {
-
     return standardBoard;
   }
   return null;
