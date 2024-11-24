@@ -115,7 +115,7 @@ const Sudoku: React.FC = () => {
       }))
     );
 
-    newBoard = deepCopyBoard(mockBoard);
+    // newBoard = deepCopyBoard(mockBoard);
 
     updateBoard(newBoard, "生成新棋盘");
 
@@ -398,12 +398,12 @@ const Sudoku: React.FC = () => {
   };
 
   const solveSudoku = () => {
-    const solvedBoard = board.map((row) => row.map((cell) => ({ ...cell })));
+    const solvedBoard = deepCopyBoard(board);
     console.log("solvedBoard", solvedBoard);
     if (solve(solvedBoard)) {
       updateBoard(solvedBoard, "求解数独");
     }
-    message.info(`解的情况: ${checkSolutionStatus(solvedBoard)}`);
+    message.info(`解的情况: ${checkSolutionStatus(deepCopyBoard(board))}`);
   };
 
   const handleEraseMode = () => {

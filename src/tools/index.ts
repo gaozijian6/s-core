@@ -75,6 +75,65 @@ export const solve = (board: CellData[][]): boolean => {
   return true;
 };
 
+export const solve2 = (board: CellData[][]): boolean => {
+  for (let row = 0; row < 9; row++) {
+    for (let col = 0; col < 9; col++) {
+      if (board[row][col].value === null) {
+        for (let num = 9; num >= 1; num--) {
+          if (isValid(board, row, col, num)) {
+            board[row][col].value = num;
+            if (solve2(board)) {
+              return true;
+            }
+            board[row][col].value = null;
+          }
+        }
+        return false;
+      }
+    }
+  }
+  return true;
+};
+
+// 检测数独解的情况
+export const checkSolutionStatus = (
+  board: CellData[][]
+): "无解" | "有唯一解" | "有多解" => {
+  const newBoard1 = deepCopyBoard(board);
+  const newBoard2 = deepCopyBoard(board);
+
+  // 正序填满棋盘
+  const solved1 = solve(newBoard1);
+
+  // 倒序填满棋盘
+  const solved2 = solve2(newBoard2);
+
+  if (!solved1 && !solved2) {
+    return "无解";
+  }
+
+  if (isSameBoard(newBoard1, newBoard2)) {
+    return "有唯一解";
+  }
+
+  return "有多解";
+};
+
+export const isSameBoard = (board1: CellData[][], board2: CellData[][]): boolean => {
+  return board1.every((row, rowIndex) =>
+    row.every((cell, colIndex) => cell.value === board2[rowIndex][colIndex].value)
+  );
+};
+
+export const isValidBoard = (board: CellData[][]): boolean => {
+  const newBoard1 = deepCopyBoard(board);
+  const newBoard2 = deepCopyBoard(board);
+  if (solve(newBoard1) && solve2(newBoard2)) {
+    return isSameBoard(newBoard1, newBoard2);
+  }
+  return false;
+};
+
 export const useTimer = () => {
   const [seconds, setSeconds] = useState(0);
 
@@ -119,51 +178,7 @@ export const getCellClassName = (
   return baseClass;
 };
 
-// 检测数独解的情况
-export const checkSolutionStatus = (
-  board: CellData[][]
-): "无解" | "有唯一解" | "有多解" => {
-  let solutionCount = 0;
-  const emptyCells: [number, number][] = [];
 
-  // 找出所有空白格子
-  for (let row = 0; row < 9; row++) {
-    for (let col = 0; col < 9; col++) {
-      if (board[row][col].value === null) {
-        emptyCells.push([row, col]);
-      }
-    }
-  }
-
-  const backtrack = (index: number): boolean => {
-    if (index === emptyCells.length) {
-      solutionCount++;
-      return solutionCount > 1;
-    }
-
-    const [row, col] = emptyCells[index];
-    for (let num = 1; num <= 9; num++) {
-      if (isValid(board, row, col, num)) {
-        board[row][col].value = num;
-        if (backtrack(index + 1)) {
-          return true;
-        }
-        board[row][col].value = null;
-      }
-    }
-    return false;
-  };
-
-  backtrack(0);
-
-  if (solutionCount === 0) {
-    return "无解";
-  } else if (solutionCount === 1) {
-    return "有唯一解";
-  } else {
-    return "有多解";
-  }
-};
 
 export const checkNumberInRowColumnAndBox = (
   board: CellData[][],
