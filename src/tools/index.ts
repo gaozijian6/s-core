@@ -117,63 +117,6 @@ export const solve2 = (standardBoard: CellData[][]): boolean => {
   return s(standardBoard);
 };
 
-// export const solve = (board: CellData[][]): boolean => {
-//   const standardBoard = copyOfficialDraft(board);
-//   for (let row = 0; row < 9; row++) {
-//     for (let col = 0; col < 9; col++) {
-//       if (
-//         board[row][col].value === null &&
-//         standardBoard[row][col].draft.length === 0
-//       )
-//         return false;
-//       if (board[row][col].value === null) {
-//         for (const num of standardBoard[row][col].draft) {
-//           if (isValid(board, row, col, num)) {
-//             board[row][col].value = num;
-//             if (solve(board)) {
-//               return true;
-//             }
-//             board[row][col].value = null;
-//           }
-//         }
-//         return false;
-//       }
-//     }
-//   }
-//   return true;
-// };
-
-// export const solve2 = (board: CellData[][]): boolean => {
-//   const standardBoard = copyOfficialDraft(board);
-//   for (let row = 0; row < 9; row++) {
-//     for (let col = 0; col < 9; col++) {
-//       if (
-//         board[row][col].value === null &&
-//         standardBoard[row][col].draft.length === 0
-//       )
-//         return false;
-//       if (board[row][col].value === null) {
-//         for (
-//           let i = standardBoard[row][col].draft.length - 1;
-//           i >= 0;
-//           i--
-//         ) {
-//           const num = standardBoard[row][col].draft[i];
-//           if (isValid(board, row, col, num)) {
-//             board[row][col].value = num;
-//             if (solve2(board)) {
-//               return true;
-//             }
-//             board[row][col].value = null;
-//           }
-//         }
-//         return false;
-//       }
-//     }
-//   }
-//   return true;
-// };
-
 export const solve3 = (board: CellData[][]) => {
   const startTime = performance.now();
   const solveFunctions = [hiddenSingle];
@@ -188,58 +131,14 @@ export const solve3 = (board: CellData[][]) => {
     }
     return counts;
   };
-  const updateCandidateMap = (newBoard: CellData[][]) => {
-    const newCandidateMap: CandidateMap = {};
-    for (let num = 1; num <= 9; num++) {
-      newCandidateMap[num] = {
-        row: new Map(),
-        col: new Map(),
-        box: new Map(),
-        all: [],
-      };
-    }
-
-    newBoard.forEach((row, rowIndex) => {
-      row.forEach((cell, colIndex) => {
-        if (cell.value === null) {
-          const boxIndex =
-            Math.floor(rowIndex / 3) * 3 + Math.floor(colIndex / 3);
-          const candidate: Candidate = {
-            row: rowIndex,
-            col: colIndex,
-            candidates: cell.draft,
-          };
-
-          cell.draft.forEach((num) => {
-            const updateStats = (
-              map: Map<number, CandidateStats>,
-              index: number
-            ) => {
-              const stats = map.get(index) ?? { count: 0, positions: [] };
-              stats.count++;
-              stats.positions.push(candidate);
-              map.set(index, stats);
-            };
-
-            updateStats(newCandidateMap[num].row, rowIndex);
-            updateStats(newCandidateMap[num].col, colIndex);
-            updateStats(newCandidateMap[num].box, boxIndex);
-            newCandidateMap[num].all.push(candidate);
-          });
-        }
-      });
-    });
-    return newCandidateMap;
-  };
 
   let counts = getCounts(board);
   const standardBoard = copyOfficialDraft(board);
-  let candidateMap = updateCandidateMap(standardBoard);
 
   firstWhile: while (true) {
     for (let i = 0; i < solveFunctions.length; i++) {
       const solveFunction = solveFunctions[i];
-      let result = solveFunction(standardBoard, candidateMap, {});
+      let result = solveFunction(standardBoard, {}, {});
 
       if (result) {
         const { isFill, position, target } = result;
@@ -270,7 +169,6 @@ export const solve3 = (board: CellData[][]) => {
           }
         });
         result = null;
-        candidateMap = updateCandidateMap(standardBoard);
         continue firstWhile;
       } else if (!result && i < solveFunctions.length - 1) {
         continue;
