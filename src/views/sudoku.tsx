@@ -4,6 +4,7 @@ import { CloseOutlined } from "@ant-design/icons";
 import {
   useTimer,
   solve,
+  solve3,
   getCellClassName,
   checkSolutionStatus,
   checkNumberInRowColumnAndBox,
@@ -122,7 +123,7 @@ const Sudoku: React.FC = () => {
 
     // 生成解决方案
     const solvedBoard = newBoard.map((row) => row.map((cell) => ({ ...cell })));
-    solve(solvedBoard);
+    // solve(solvedBoard);
   };
 
   useEffect(() => {
@@ -399,12 +400,11 @@ const Sudoku: React.FC = () => {
   };
 
   const solveSudoku = () => {
-    const solvedBoard = board.map((row) => row.map((cell) => ({ ...cell })));
-    console.log("solvedBoard", solvedBoard);
-    if (solve(solvedBoard)) {
+    const solvedBoard = solve3(deepCopyBoard(board));
+    if (solvedBoard && solve(solvedBoard)) {
       updateBoard(solvedBoard, "求解数独");
     }
-    message.info(`解的情况: ${checkSolutionStatus(solvedBoard)}`);
+    // message.info(`解的情况: ${checkSolutionStatus(deepCopyBoard(board))}`);
   };
 
   const handleEraseMode = () => {
@@ -827,7 +827,7 @@ const Sudoku: React.FC = () => {
           }宫中，因为候选数${candStr}只能出现在${posStr}这三个方格中，所以此宫其他位置都不应出现候选数${candStr}`;
           break;
         case SOLUTION_METHODS.HIDDEN_PAIR_ROW:
-          boardWithHighlight = applyHintHighlight(board, result, "prompt");
+          boardWithHighlight = applyHintHighlight(board, result, "both");
           promptCandidates = [
             ...new Set(
               prompt.flatMap((p) => board[p.row]?.[p.col]?.draft ?? [])
@@ -846,7 +846,7 @@ const Sudoku: React.FC = () => {
           }行中，因为候选数${candStr}只出现在${posStr}这两个方格中，因此这两个方格不应出现其他候选数`;
           break;
         case SOLUTION_METHODS.HIDDEN_PAIR_COLUMN:
-          boardWithHighlight = applyHintHighlight(board, result, "prompt");
+          boardWithHighlight = applyHintHighlight(board, result, "both");
           promptCandidates = [
             ...new Set(
               prompt.flatMap((p) => board[p.row]?.[p.col]?.draft ?? [])
@@ -856,6 +856,7 @@ const Sudoku: React.FC = () => {
             (cand) => !target.includes(cand)
           );
           setPrompts(uniquePromptCandidates);
+          setPositions(target);
           candStr = [...new Set(prompts)].join(",");
           posStr = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
             prompt[1].row + 1
@@ -865,7 +866,7 @@ const Sudoku: React.FC = () => {
           }列中，因为候选数${candStr}只出现在${posStr}这两个方格中，因此这两个方格不应出现其他候选数`;
           break;
         case SOLUTION_METHODS.HIDDEN_PAIR_BOX:
-          boardWithHighlight = applyHintHighlight(board, result, "prompt");
+          boardWithHighlight = applyHintHighlight(board, result, "both");
           promptCandidates = [
             ...new Set(
               prompt.flatMap((p) => board[p.row]?.[p.col]?.draft ?? [])
@@ -875,6 +876,7 @@ const Sudoku: React.FC = () => {
             (cand) => !target.includes(cand)
           );
           setPrompts(uniquePromptCandidates);
+          setPositions(target);
           posStr = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
             prompt[1].row + 1
           }C${prompt[1].col + 1}`;
@@ -886,7 +888,7 @@ const Sudoku: React.FC = () => {
           }宫中，因为候选数${candStr}只出现在${posStr}这两个方格中，因此这两个方格不应出现其他候选数`;
           break;
         case SOLUTION_METHODS.HIDDEN_TRIPLE_ROW1:
-          boardWithHighlight = applyHintHighlight(board, result, "prompt");
+          boardWithHighlight = applyHintHighlight(board, result, "both");
           promptCandidates = [
             ...new Set(
               prompt.flatMap((p) => board[p.row]?.[p.col]?.draft ?? [])
@@ -896,6 +898,7 @@ const Sudoku: React.FC = () => {
             (cand) => !target.includes(cand)
           );
           setPrompts(uniquePromptCandidates);
+          setPositions(target);
           posStr = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
             prompt[1].row + 1
           }C${prompt[1].col + 1}、R${prompt[2].row + 1}C${prompt[2].col + 1}`;
@@ -905,7 +908,7 @@ const Sudoku: React.FC = () => {
           }行中，因为候选数${candStr}只出现在${posStr}这三个方格中，因此这三个方格不应出现其他候选数`;
           break;
         case SOLUTION_METHODS.HIDDEN_TRIPLE_COLUMN1:
-          boardWithHighlight = applyHintHighlight(board, result, "prompt");
+          boardWithHighlight = applyHintHighlight(board, result, "both");
           promptCandidates = [
             ...new Set(
               prompt.flatMap((p) => board[p.row]?.[p.col]?.draft ?? [])
@@ -915,6 +918,7 @@ const Sudoku: React.FC = () => {
             (cand) => !target.includes(cand)
           );
           setPrompts(uniquePromptCandidates);
+          setPositions(target);
           posStr = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
             prompt[1].row + 1
           }C${prompt[1].col + 1}、R${prompt[2].row + 1}C${prompt[2].col + 1}`;
@@ -924,7 +928,7 @@ const Sudoku: React.FC = () => {
           }列中，因为候选数${candStr}只出现在${posStr}这三个方格中，因此这三个方格不应出现其他候选数`;
           break;
         case SOLUTION_METHODS.HIDDEN_TRIPLE_BOX1:
-          boardWithHighlight = applyHintHighlight(board, result, "prompt");
+          boardWithHighlight = applyHintHighlight(board, result, "both");
           promptCandidates = [
             ...new Set(
               prompt.flatMap((p) => board[p.row]?.[p.col]?.draft ?? [])
@@ -945,7 +949,7 @@ const Sudoku: React.FC = () => {
           }宫中，因为候选数${candStr}只出现在${posStr}这三个方格中，因此这三个方格不应出现其他候选数`;
           break;
         case SOLUTION_METHODS.HIDDEN_TRIPLE_ROW2:
-          boardWithHighlight = applyHintHighlight(board, result, "prompt");
+          boardWithHighlight = applyHintHighlight(board, result, "both");
           promptCandidates = [
             ...new Set(
               prompt.flatMap((p) => board[p.row]?.[p.col]?.draft ?? [])
@@ -964,7 +968,7 @@ const Sudoku: React.FC = () => {
           }行中，因为候选数${candStr}只出现在${posStr}这三个方格中，因此这三个方格不应出现其他候选数`;
           break;
         case SOLUTION_METHODS.HIDDEN_TRIPLE_COLUMN2:
-          boardWithHighlight = applyHintHighlight(board, result, "prompt");
+          boardWithHighlight = applyHintHighlight(board, result, "both");
           promptCandidates = [
             ...new Set(
               prompt.flatMap((p) => board[p.row]?.[p.col]?.draft ?? [])
@@ -983,7 +987,7 @@ const Sudoku: React.FC = () => {
           }列中，因为候选数${candStr}只出现在${posStr}这三个方格中，因此这三个方格不应出现其他候选数`;
           break;
         case SOLUTION_METHODS.HIDDEN_TRIPLE_BOX2:
-          boardWithHighlight = applyHintHighlight(board, result, "prompt");
+          boardWithHighlight = applyHintHighlight(board, result, "both");
           promptCandidates = [
             ...new Set(
               prompt.flatMap((p) => board[p.row]?.[p.col]?.draft ?? [])
@@ -1004,7 +1008,7 @@ const Sudoku: React.FC = () => {
           }宫中，因为候选数${candStr}只出现在${posStr}这三个方格中，因此这三个方格不应出现其他候选数`;
           break;
         case SOLUTION_METHODS.NAKED_QUADRUPLE_ROW:
-          boardWithHighlight = applyHintHighlight(board, result, "prompt");
+          boardWithHighlight = applyHintHighlight(board, result, "both");
           posStr = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
             prompt[1].row + 1
           }C${prompt[1].col + 1}、R${prompt[2].row + 1}C${
@@ -1016,7 +1020,7 @@ const Sudoku: React.FC = () => {
           }行中，因为候选数${candStr}只出现在${posStr}这四个方格中，因此这四个方格不应出现其他候选数`;
           break;
         case SOLUTION_METHODS.NAKED_QUADRUPLE_COLUMN:
-          boardWithHighlight = applyHintHighlight(board, result, "prompt");
+          boardWithHighlight = applyHintHighlight(board, result, "both");
           posStr = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
             prompt[1].row + 1
           }C${prompt[1].col + 1}、R${prompt[2].row + 1}C${
@@ -1028,7 +1032,7 @@ const Sudoku: React.FC = () => {
           }列中，因为候选数${candStr}只出现在${posStr}这四个方格中，因此这四个方格不应出现其他候选数`;
           break;
         case SOLUTION_METHODS.NAKED_QUADRUPLE_BOX:
-          boardWithHighlight = applyHintHighlight(board, result, "prompt");
+          boardWithHighlight = applyHintHighlight(board, result, "both");
           posStr = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
             prompt[1].row + 1
           }C${prompt[1].col + 1}、R${prompt[2].row + 1}C${
@@ -1195,15 +1199,18 @@ const Sudoku: React.FC = () => {
           }
           boardWithHighlight = applyHintHighlight(board, result, "both");
           setPrompts(target);
+          setPositions(target);
           hintContent = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
             prompt[1].row + 1
           }C${prompt[1].col + 1}与R${prompt[2].row + 1}C${
             prompt[2].col + 1
-          }、R${prompt[3].row + 1}C${prompt[3].col + 1}分别构成两个强链，它们通过R${
-            prompt[1].row + 1
-          }C${prompt[1].col + 1}、R${prompt[3].row + 1}C${
+          }、R${prompt[3].row + 1}C${
             prompt[3].col + 1
-          }构成的弱链相连，假设R${prompt[0].row + 1}C${prompt[0].col + 1}为真
+          }分别构成两个强链，它们通过R${prompt[1].row + 1}C${
+            prompt[1].col + 1
+          }、R${prompt[3].row + 1}C${prompt[3].col + 1}构成的弱链相连，假设R${
+            prompt[0].row + 1
+          }C${prompt[0].col + 1}为真
           ，则R${position[0].row + 1}C${position[0].col + 1}为假，假设R${
             prompt[0].row + 1
           }C${prompt[0].col + 1}为假，则会导致R${prompt[3].row + 1}C${
@@ -1268,21 +1275,21 @@ const Sudoku: React.FC = () => {
               position[1].row + 1
             }C${position[1].col + 1}`;
           }
-          if (!isWeakLink && chainStructure === "3-2") {
+          if (!isWeakLink && chainStructure === "3-2-1") {
             hintContent = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
               prompt[1].row + 1
             }C${prompt[1].col + 1}两个方格的组合与R${prompt[2].row + 1}C${
               prompt[2].col + 1
             }、R${prompt[3].row + 1}C${prompt[3].col + 1}、R${
               prompt[4].row + 1
-            }C${prompt[4].col + 1}成强链，无论R${prompt[0].row + 1}C${
+            }C${prompt[4].col + 1}构成强链，无论R${prompt[0].row + 1}C${
               prompt[0].col + 1
             }、R${prompt[1].row + 1}C${prompt[1].col + 1}、R${
               prompt[4].row + 1
             }C${prompt[4].col + 1}谁为真，${posStr}内都不能出现候选数${
               target[0]
             }`;
-          } else if (isWeakLink && chainStructure === "3-2") {
+          } else if (isWeakLink && chainStructure === "3-2-1") {
             hintContent = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
               prompt[1].row + 1
             }C${prompt[1].col + 1}两个方格的组合与R${prompt[2].row + 1}C${
@@ -1290,6 +1297,78 @@ const Sudoku: React.FC = () => {
             }构成强链，R${prompt[3].row + 1}C${prompt[3].col + 1}、R${
               prompt[4].row + 1
             }C${prompt[4].col + 1}两个方格构成强链，这两条强链通过R${
+              prompt[2].row + 1
+            }C${prompt[2].col + 1}、R${prompt[3].row + 1}C${
+              prompt[3].col + 1
+            }构成的弱链相连，无论R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
+              prompt[1].row + 1
+            }C${prompt[1].col + 1}、R${prompt[4].row + 1}C${
+              prompt[4].col + 1
+            }谁为真，${posStr}内都不能出现候选数${target[0]}`;
+          } else if (isWeakLink && chainStructure === "3-2-2") {
+            hintContent = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
+              prompt[1].row + 1
+            }C${prompt[1].col + 1}两个方格的组合与R${prompt[2].row + 1}C${
+              prompt[2].col + 1
+            }构成强链，R${prompt[3].row + 1}C${prompt[3].col + 1}、R${
+              prompt[4].row + 1
+            }C${prompt[4].col + 1}两个方格构成强链，这两条强链通过R${
+              prompt[3].row + 1
+            }C${prompt[3].col + 1}与R${prompt[0].row + 1}C${
+              prompt[0].col + 1
+            }、R${prompt[1].row + 1}C${
+              prompt[1].col + 1
+            }两方格的整体构成的弱链相连，无论R${prompt[2].row + 1}C${
+              prompt[2].col + 1
+            }、R${prompt[4].row + 1}C${
+              prompt[4].col + 1
+            }谁为真，${posStr}内都不能出现候选数${target[0]}`;
+          } else if (!isWeakLink && chainStructure === "3-2-2") {
+            hintContent = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
+              prompt[1].row + 1
+            }C${prompt[1].col + 1}两个方格的组合与R${prompt[2].row + 1}C${
+              prompt[2].col + 1
+            }构成强链，R${prompt[3].row + 1}C${prompt[3].col + 1}、R${
+              prompt[4].row + 1
+            }C${prompt[4].col + 1}两个方格构成强链，这两条强链通过R${
+              prompt[3].row + 1
+            }C${prompt[3].col + 1}与R${prompt[0].row + 1}C${
+              prompt[0].col + 1
+            }、R${prompt[1].row + 1}C${
+              prompt[1].col + 1
+            }两方格的整体构成的强链相连，无论R${prompt[2].row + 1}C${
+              prompt[2].col + 1
+            }、R${prompt[4].row + 1}C${
+              prompt[4].col + 1
+            }谁为真，${posStr}内都不能出现候选数${target[0]}`;
+          } else if (!isWeakLink && chainStructure === "3-4-1") {
+            hintContent = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
+              prompt[1].row + 1
+            }C${prompt[1].col + 1}两个方格的组合与R${prompt[2].row + 1}C${
+              prompt[2].col + 1
+            }、R${prompt[3].row + 1}C${prompt[3].col + 1}、R${
+              prompt[4].row + 1
+            }C${prompt[4].col + 1}、R${prompt[5].row + 1}C${
+              prompt[5].col + 1
+            }、R${prompt[6].row + 1}C${prompt[6].col + 1}构成强链，无论R${
+              prompt[0].row + 1
+            }C${prompt[0].col + 1}、R${prompt[1].row + 1}C${
+              prompt[1].col + 1
+            }、R${prompt[6].row + 1}C${prompt[6].col + 1}谁为真，${posStr}内都不能出现候选数${
+              prompt[4].row + 1
+            }C${prompt[4].col + 1}谁为真，${posStr}内都不能出现候选数${
+              target[0]
+            }`;
+          } else if (isWeakLink && chainStructure === "3-4-1") {
+            hintContent = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
+              prompt[1].row + 1
+            }C${prompt[1].col + 1}两个方格的组合与R${prompt[2].row + 1}C${
+              prompt[2].col + 1
+            }构成强链，R${prompt[3].row + 1}C${prompt[3].col + 1}、R${
+              prompt[4].row + 1
+            }C${prompt[4].col + 1}、R${prompt[5].row + 1}C${
+              prompt[5].col + 1
+            }、R${prompt[6].row + 1}C${prompt[6].col + 1}四个方格构成强链，这两条强链通过R${
               prompt[2].row + 1
             }C${prompt[2].col + 1}、R${prompt[3].row + 1}C${
               prompt[3].col + 1
