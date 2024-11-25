@@ -170,6 +170,7 @@ export const hiddenSingle = (
   return null;
 };
 
+<<<<<<< HEAD
 export const hiddenSingle2 = (
   board: CellData[][],
   candidateMap: CandidateMap,
@@ -230,6 +231,8 @@ export const hiddenSingle2 = (
 
 };
 
+=======
+>>>>>>> 2ecc476b54afff2e648808df0e288034d6aba468
 // 区块摒除法
 export const blockElimination = (
   board: CellData[][],
