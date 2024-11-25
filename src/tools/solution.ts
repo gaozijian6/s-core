@@ -83,7 +83,7 @@ export const singleCandidate = (
 };
 
 // 隐藏单元法
-export const hiddenSingle2 = (
+export const hiddenSingle = (
   board: CellData[][],
   candidateMap: CandidateMap,
   graph: Graph
@@ -170,7 +170,7 @@ export const hiddenSingle2 = (
   return null;
 };
 
-export const hiddenSingle = (
+export const hiddenSingle2 = (
   board: CellData[][],
   candidateMap: CandidateMap,
   graph: Graph
