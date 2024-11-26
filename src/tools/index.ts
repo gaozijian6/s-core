@@ -117,14 +117,12 @@ export const solve2 = (standardBoard: CellData[][]): boolean => {
   return s(standardBoard);
 };
 
-export const solve3 = (board: CellData[][]) => {
-  const startTime = performance.now();
-  const solveFunctions = [hiddenSingle];
-  const getCounts = (board: CellData[][]) => {
+export const solve3 = (standardBoard: CellData[][]) => {
+  const getCounts = (standardBoard: CellData[][]) => {
     let counts = 0;
     for (let row = 0; row < 9; row++) {
       for (let col = 0; col < 9; col++) {
-        if (board[row][col].value !== null) {
+        if (standardBoard[row][col].value !== null) {
           counts++;
         }
       }
@@ -132,70 +130,85 @@ export const solve3 = (board: CellData[][]) => {
     return counts;
   };
 
-  let counts = getCounts(board);
-  const standardBoard = copyOfficialDraft(board);
+  let counts = getCounts(standardBoard);
 
-  firstWhile: while (true) {
-    for (let i = 0; i < solveFunctions.length; i++) {
-      const solveFunction = solveFunctions[i];
-      let result = solveFunction(standardBoard, {}, {});
+  while (true) {
+    let result = hiddenSingle(standardBoard, {}, {});
 
-      if (result) {
-        const { isFill, position, target } = result;
-        position.forEach(({ row, col }) => {
-          if (isFill) {
-            counts++;
-            if (counts === 81) {
-              return standardBoard;
-            }
-            standardBoard[row][col].value = target[0];
-            standardBoard[row][col].draft = [];
-
-            // 更新受影响的单元格
-            const affectedCells = updateRelatedCellsDraft(
-              standardBoard,
-              [{ row, col }],
-              target[0],
-              getCandidates
-            );
-
-            // 将受影响的单元格合并到 position 中
-            position.push(...affectedCells);
-          } else {
-            standardBoard[row][col].draft =
-              standardBoard[row][col].draft?.filter(
-                (num) => !target.includes(num)
-              ) ?? [];
+    if (result) {
+      const { isFill, position, target } = result;
+      const { row, col } = position[0];
+      position.forEach(({ row, col }) => {
+        if (isFill) {
+          counts++;
+          if (counts === 81) {
+            return 1;
           }
-        });
-        result = null;
-        continue firstWhile;
-      } else if (!result && i < solveFunctions.length - 1) {
-        continue;
-      } else {
-        break firstWhile;
+          standardBoard[row][col].value = target[0];
+          standardBoard[row][col].draft = [];
+
+          // 更新受影响的单元格
+          const affectedCells = updateRelatedCellsDraft(
+            standardBoard,
+            [{ row, col }],
+            target[0],
+            getCandidates
+          );
+
+          // 将受影响的单元格合并到 position 中
+          position.push(...affectedCells);
+        } else {
+          standardBoard[row][col].draft =
+            standardBoard[row][col].draft?.filter(
+              (num) => !target.includes(num)
+            ) ?? [];
+        }
+      });
+      if (isHaveVoidDraft(standardBoard, row, col)) {
+        return -1;
+      }
+      result = null;
+    } else {
+      break;
+    }
+  }
+
+  return 0;
+};
+
+export const solve4 = (board: CellData[][]) => {
+
+};
+
+export const isHaveVoidDraft = (board: CellData[][], row: number, col: number) => {
+  // 检查行
+  for (let i = 0; i < 9; i++) {
+    if (board[row][i].value === null && board[row][i].draft?.length === 0) {
+      return true;
+    }
+  }
+
+  // 检查列
+  for (let i = 0; i < 9; i++) {
+    if (board[i][col].value === null && board[i][col].draft?.length === 0) {
+      return true;
+    }
+  }
+
+  // 检查宫
+  const boxRow = Math.floor(row / 3) * 3;
+  const boxCol = Math.floor(col / 3) * 3;
+  for (let i = 0; i < 3; i++) {
+    for (let j = 0; j < 3; j++) {
+      const currentRow = boxRow + i;
+      const currentCol = boxCol + j;
+      if (board[currentRow][currentCol].value === null && board[currentRow][currentCol].draft?.length === 0) {
+        return true;
       }
     }
   }
-  const endTime = performance.now();
-  console.log(`solve3 耗时: ${endTime - startTime}ms`);
 
-  const board1 = deepCopyBoard(standardBoard);
-  const board2 = deepCopyBoard(standardBoard);
-  // const starttime1 = performance.now();
-  const solved1 = solve(board1);
-  // const endTime1 = performance.now();
-  // console.log(`solve 耗时: ${endTime1 - starttime1}ms,解:${solved1}`);
-
-  // const starttime2 = performance.now();
-  const solved2 = solve2(board2);
-  // const endTime2 = performance.now();
-  // console.log(`solve2 耗时: ${endTime2 - starttime2}ms,解:${solved2}`);
-
-  if (isSameBoard(board1, board2)) {
-    return standardBoard;
-  }
-  return null;
+  return false;
 };
 
 // 检测数独解的情况

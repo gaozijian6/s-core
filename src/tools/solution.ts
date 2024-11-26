@@ -170,69 +170,6 @@ export const hiddenSingle = (
   return null;
 };
 
-<<<<<<< HEAD
-export const hiddenSingle2 = (
-  board: CellData[][],
-  candidateMap: CandidateMap,
-  graph: Graph
-): Result | null => {
-  // 检查每一行
-  for (let row = 0; row < 9; row++) {
-    for (let num = 1; num <= 9; num++) {
-      const stats = candidateMap[num].row.get(row);
-      if (stats?.count === 1) {
-        const position = stats.positions[0];
-        return {
-          position: [position],
-          prompt: [position],
-          method: SOLUTION_METHODS.HIDDEN_SINGLE_ROW,
-          target: [num],
-          isFill: true,
-        };
-      }
-    }
-  }
-
-  // 检查每一列
-  for (let col = 0; col < 9; col++) {
-    for (let num = 1; num <= 9; num++) {
-      const stats = candidateMap[num].col.get(col);
-      if (stats?.count === 1) {
-        const position = stats.positions[0];
-        return {
-          position: [position],
-          prompt: [position],
-          method: SOLUTION_METHODS.HIDDEN_SINGLE_COLUMN,
-          target: [num],
-          isFill: true,
-        };
-      }
-    }
-  }
-
-  // 检查每一宫
-  for (let box = 0; box < 9; box++) {
-    for (let num = 1; num <= 9; num++) {
-      const stats = candidateMap[num].box.get(box);
-      if (stats?.count === 1) {
-        const position = stats.positions[0];
-        return {
-          position: [position],
-          prompt: [position],
-          method: SOLUTION_METHODS.HIDDEN_SINGLE_BOX,
-          target: [num],
-          isFill: true,
-        };
-      }
-    }
-  }
-
-  return null;
-
-};
-
-=======
->>>>>>> 2ecc476b54afff2e648808df0e288034d6aba468
 // 区块摒除法
 export const blockElimination = (
   board: CellData[][],
