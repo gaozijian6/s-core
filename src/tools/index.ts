@@ -1,19 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import {
-  blockElimination,
-  hiddenPair,
-  hiddenSingle,
-  hiddenTriple1,
-  hiddenTriple2,
-  nakedPair,
-  nakedTriple1,
-  nakedTriple2,
-  xWing,
-  xWingVarient,
-  xyWing,
-  xyzWing,
-  nakedQuadruple,
-} from "./solution";
+import { hiddenSingle } from "./solution";
 
 export interface Position {
   row: number;
@@ -117,12 +103,13 @@ export const solve2 = (standardBoard: CellData[][]): boolean => {
   return s(standardBoard);
 };
 
-export const solve3 = (standardBoard: CellData[][]) => {
-  const getCounts = (standardBoard: CellData[][]) => {
+export const solve3 = (board: CellData[][]) => {
+  const solveFunctions = [hiddenSingle];
+  const getCounts = (board: CellData[][]) => {
     let counts = 0;
     for (let row = 0; row < 9; row++) {
       for (let col = 0; col < 9; col++) {
-        if (standardBoard[row][col].value !== null) {
+        if (board[row][col].value !== null) {
           counts++;
         }
       }
@@ -130,57 +117,68 @@ export const solve3 = (standardBoard: CellData[][]) => {
     return counts;
   };
 
-  let counts = getCounts(standardBoard);
+  let counts = getCounts(board);
+  const standardBoard = copyOfficialDraft(board);
 
-  while (true) {
-    let result = hiddenSingle(standardBoard, {}, {});
+  firstWhile: while (true) {
+    for (let i = 0; i < solveFunctions.length; i++) {
+      const solveFunction = solveFunctions[i];
+      let result = solveFunction(standardBoard, {}, {});
 
-    if (result) {
-      const { isFill, position, target } = result;
-      const { row, col } = position[0];
-      position.forEach(({ row, col }) => {
-        if (isFill) {
-          counts++;
-          if (counts === 81) {
-            return 1;
+      if (result) {
+        const { isFill, position, target } = result;
+        position.forEach(({ row, col }) => {
+          if (isFill) {
+            counts++;
+            if (counts === 81) {
+              return standardBoard;
+            }
+            standardBoard[row][col].value = target[0];
+            standardBoard[row][col].draft = [];
+
+            // 更新受影响的单元格
+            const affectedCells = updateRelatedCellsDraft(
+              standardBoard,
+              [{ row, col }],
+              target[0],
+              getCandidates
+            );
+
+            // 将受影响的单元格合并到 position 中
+            position.push(...affectedCells);
+          } else {
+            standardBoard[row][col].draft =
+              standardBoard[row][col].draft?.filter(
+                (num) => !target.includes(num)
+              ) ?? [];
           }
-          standardBoard[row][col].value = target[0];
-          standardBoard[row][col].draft = [];
-
-          // 更新受影响的单元格
-          const affectedCells = updateRelatedCellsDraft(
-            standardBoard,
-            [{ row, col }],
-            target[0],
-            getCandidates
-          );
-
-          // 将受影响的单元格合并到 position 中
-          position.push(...affectedCells);
-        } else {
-          standardBoard[row][col].draft =
-            standardBoard[row][col].draft?.filter(
-              (num) => !target.includes(num)
-            ) ?? [];
-        }
-      });
-      if (isHaveVoidDraft(standardBoard, row, col)) {
-        return -1;
+        });
+        result = null;
+        continue firstWhile;
+      } else if (!result && i < solveFunctions.length - 1) {
+        continue;
+      } else {
+        break firstWhile;
       }
-      result = null;
-    } else {
-      break;
     }
   }
+  const board1 = deepCopyBoard(standardBoard);
+  const board2 = deepCopyBoard(standardBoard);
+  const solved1 = solve(board1);
+  const solved2 = solve2(board2);
 
-  return 0;
+  if (isSameBoard(board1, board2)) {
+    return standardBoard;
+  }
+  return null;
 };
 
-export const solve4 = (board: CellData[][]) => {
 
-};
-
-export const isHaveVoidDraft = (board: CellData[][], row: number, col: number) => {
+export const isHaveVoidDraft = (
+  board: CellData[][],
+  row: number,
+  col: number
+) => {
   // 检查行
   for (let i = 0; i < 9; i++) {
     if (board[row][i].value === null && board[row][i].draft?.length === 0) {
@@ -202,7 +200,10 @@ export const isHaveVoidDraft = (board: CellData[][], row: number, col: number) =
     for (let j = 0; j < 3; j++) {
       const currentRow = boxRow + i;
       const currentCol = boxCol + j;
-      if (board[currentRow][currentCol].value === null && board[currentRow][currentCol].draft?.length === 0) {
+      if (
+        board[currentRow][currentCol].value === null &&
+        board[currentRow][currentCol].draft?.length === 0
+      ) {
         return true;
       }
     }

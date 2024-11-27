@@ -400,7 +400,10 @@ const Sudoku: React.FC = () => {
   };
 
   const solveSudoku = () => {
+    const startTime = performance.now();
     const solvedBoard = solve3(deepCopyBoard(board));
+    const endTime = performance.now();
+    console.log(`solve3 耗时: ${endTime - startTime}ms`);
     if (solvedBoard && solve(solvedBoard)) {
       updateBoard(solvedBoard, "求解数独");
     }
