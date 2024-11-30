@@ -63,6 +63,8 @@ export const solve = (standardBoard: CellData[][]): boolean => {
           for (let num = 1; num <= 9; num++) {
             if (!standardBoard[row][col].draft.includes(num)) continue;
             if (isValid(board, row, col, num)) {
+              console.log(row, col, num);
+              
               board[row][col].value = num;
               if (s(board)) {
                 return true;
@@ -166,6 +168,8 @@ export const solve3 = (board: CellData[][]) => {
   const board2 = deepCopyBoard(standardBoard);
   const solved1 = solve(board1);
   const solved2 = solve2(board2);
+  console.log(board1);
+  console.log(board2);
 
   if (isSameBoard(board1, board2)) {
     return standardBoard;
