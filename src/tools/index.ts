@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { hiddenSingle } from "./solution";
+import { hiddenSingle, isUnitStrongLink } from "./solution";
 
 export interface Position {
   row: number;
