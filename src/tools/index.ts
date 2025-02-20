@@ -63,6 +63,8 @@ export const solve = (standardBoard: CellData[][]): boolean => {
           for (let num = 1; num <= 9; num++) {
             if (!standardBoard[row][col].draft.includes(num)) continue;
             if (isValid(board, row, col, num)) {
+              console.log(row, col, num);
+              
               board[row][col].value = num;
               if (s(board)) {
                 return true;
@@ -104,7 +106,6 @@ export const solve2 = (standardBoard: CellData[][]): boolean => {
 };
 
 export const solve3 = (board: CellData[][]) => {
-  const startTime = performance.now();
   const solveFunctions = [hiddenSingle];
   const getCounts = (board: CellData[][]) => {
     let counts = 0;
@@ -163,6 +164,7 @@ export const solve3 = (board: CellData[][]) => {
       }
     }
   }
+<<<<<<< HEAD
 
   const board1 = deepCopyBoard(standardBoard);
   const board2 = deepCopyBoard(standardBoard);
@@ -175,6 +177,14 @@ export const solve3 = (board: CellData[][]) => {
   const solved2 = solve2(board2);
   const endTime2 = performance.now();
   console.log(`solve2 耗时: ${endTime2 - starttime2}ms,解:${solved2}`);
+=======
+  const board1 = deepCopyBoard(standardBoard);
+  const board2 = deepCopyBoard(standardBoard);
+  const solved1 = solve(board1);
+  const solved2 = solve2(board2);
+  console.log(board1);
+  console.log(board2);
+>>>>>>> a72a851065df898cd2e2bc592b9d73c6f170c77b
 
   if (isSameBoard(board1, board2)) {
     const endTime = performance.now();
@@ -182,6 +192,45 @@ export const solve3 = (board: CellData[][]) => {
     return standardBoard;
   }
   return null;
+};
+
+
+export const isHaveVoidDraft = (
+  board: CellData[][],
+  row: number,
+  col: number
+) => {
+  // 检查行
+  for (let i = 0; i < 9; i++) {
+    if (board[row][i].value === null && board[row][i].draft?.length === 0) {
+      return true;
+    }
+  }
+
+  // 检查列
+  for (let i = 0; i < 9; i++) {
+    if (board[i][col].value === null && board[i][col].draft?.length === 0) {
+      return true;
+    }
+  }
+
+  // 检查宫
+  const boxRow = Math.floor(row / 3) * 3;
+  const boxCol = Math.floor(col / 3) * 3;
+  for (let i = 0; i < 3; i++) {
+    for (let j = 0; j < 3; j++) {
+      const currentRow = boxRow + i;
+      const currentCol = boxCol + j;
+      if (
+        board[currentRow][currentCol].value === null &&
+        board[currentRow][currentCol].draft?.length === 0
+      ) {
+        return true;
+      }
+    }
+  }
+
+  return false;
 };
 
 // 检测数独解的情况

@@ -352,7 +352,9 @@ const board =[
         {
             "value": null,
             "isGiven": false,
-            "draft": []
+            "draft": [
+                1
+            ]
         },
         {
             "value": null,
@@ -365,14 +367,16 @@ const board =[
             "draft": []
         },
         {
-            "value": 1,
+            "value": null,
             "isGiven": false,
             "draft": []
         },
         {
             "value": null,
             "isGiven": false,
-            "draft": []
+            "draft": [
+                1
+            ]
         }
     ],
     [
@@ -382,7 +386,7 @@ const board =[
             "draft": []
         },
         {
-            "value": 9,
+            "value": null,
             "isGiven": false,
             "draft": []
         },

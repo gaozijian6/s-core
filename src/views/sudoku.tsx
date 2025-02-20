@@ -41,6 +41,7 @@ import {
   getGraphNode,
   remotePair,
   combinationChain,
+  Loop
 } from "../tools/solution";
 import "./sudoku.less";
 import type { CellData, Position } from "../tools";
@@ -401,6 +402,7 @@ const Sudoku: React.FC = () => {
   };
 
   const solveSudoku = () => {
+    const startTime = performance.now();
     const solvedBoard = solve3(deepCopyBoard(board));
     const dlx = new DLX();
     const boardString = board.map((row) => row.map((cell) => cell.value ?? 0).join("")).join("");
@@ -533,27 +535,28 @@ const Sudoku: React.FC = () => {
 
   const handleHint = () => {
     const solveFunctions = [
-      singleCandidate,
-      hiddenSingle,
-      blockElimination,
-      nakedPair,
-      nakedTriple1,
-      nakedTriple2,
-      hiddenPair,
-      hiddenTriple1,
-      hiddenTriple2,
-      xWing,
-      xWingVarient,
-      xyWing,
-      xyzWing,
-      nakedQuadruple,
-      skyscraper,
-      skyscraper2_2,
-      remotePair,
-      combinationChain,
-      swordfish,
-      wxyzWing,
-      trialAndError,
+      // singleCandidate,
+      // hiddenSingle,
+      // blockElimination,
+      // nakedPair,
+      // nakedTriple1,
+      // nakedTriple2,
+      // hiddenPair,
+      // hiddenTriple1,
+      // hiddenTriple2,
+      // xWing,
+      // xWingVarient,
+      // xyWing,
+      // xyzWing,
+      // nakedQuadruple,
+      // skyscraper,
+      // skyscraper2_2,
+      // remotePair,
+      // combinationChain,
+      // swordfish,
+      // wxyzWing,
+      Loop,
+      // trialAndError,
     ];
     let result = null;
 
@@ -630,7 +633,7 @@ const Sudoku: React.FC = () => {
           break;
         case SOLUTION_METHODS.TRIAL_AND_ERROR:
           boardWithHighlight = applyHintHighlight(board, result, "prompt");
-          hintContent = `尝试向只有两个候选数的方格内填入${target[0]}，若后续无解，则说明填入${target[0]}是错误的，应填入另一个候选数`;
+          hintContent = `尝试向拥有最少候选数的方格内填入${target[0]}，若后续无解，说明填入${target[0]}是错误的，则尝试其他候选数`;
           break;
       }
     } else {
