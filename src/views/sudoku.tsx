@@ -47,6 +47,7 @@ import type { CellData, Position } from "../tools";
 import type { Result } from "../tools/solution";
 import { SOLUTION_METHODS } from "../constans";
 import mockBoard from "./mock";
+import DLX from "../tools/DLX";
 
 const Sudoku: React.FC = () => {
   const initialBoard = Array(9)
@@ -401,6 +402,9 @@ const Sudoku: React.FC = () => {
 
   const solveSudoku = () => {
     const solvedBoard = solve3(deepCopyBoard(board));
+    const dlx = new DLX();
+    const boardString = board.map((row) => row.map((cell) => cell.value ?? 0).join("")).join("");
+    // const solutions = dlx.solveSudoku(boardString);
     if (solvedBoard && solve(solvedBoard)) {
       updateBoard(solvedBoard, "求解数独");
     }
