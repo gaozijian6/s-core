@@ -164,7 +164,6 @@ export const solve3 = (board: CellData[][]) => {
       }
     }
   }
-<<<<<<< HEAD
 
   const board1 = deepCopyBoard(standardBoard);
   const board2 = deepCopyBoard(standardBoard);
@@ -177,14 +176,6 @@ export const solve3 = (board: CellData[][]) => {
   const solved2 = solve2(board2);
   const endTime2 = performance.now();
   console.log(`solve2 耗时: ${endTime2 - starttime2}ms,解:${solved2}`);
-=======
-  const board1 = deepCopyBoard(standardBoard);
-  const board2 = deepCopyBoard(standardBoard);
-  const solved1 = solve(board1);
-  const solved2 = solve2(board2);
-  console.log(board1);
-  console.log(board2);
->>>>>>> a72a851065df898cd2e2bc592b9d73c6f170c77b
 
   if (isSameBoard(board1, board2)) {
     const endTime = performance.now();
