@@ -220,19 +220,19 @@ class SudokuSolver {
   }
 }
 
-// 使用示例
-const solver = new SudokuSolver()
-const input = "800000000003600000070090200050007000000045700000100030001000068008500010090000400"
-const result = solver.solve(input)
+// // 使用示例
+// const solver = new SudokuSolver()
+// const input = "800000000003600000070090200050007000000045700000100030001000068008500010090000400"
+// const result = solver.solve(input)
 
-// 打印结果
-console.log("数独解答：")
-for (let i = 1; i <= 9; i++) {
-  let row = ""
-  for (let j = 1; j <= 9; j++) {
-    row += result[i][j] + " "
-  }
-  console.log(row)
-}
+// // 打印结果
+// console.log("数独解答：")
+// for (let i = 1; i <= 9; i++) {
+//   let row = ""
+//   for (let j = 1; j <= 9; j++) {
+//     row += result[i][j] + " "
+//   }
+//   console.log(row)
+// }
 
 export default DLX
