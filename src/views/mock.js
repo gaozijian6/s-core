@@ -1,4 +1,4 @@
-const board = [
+const board =[
     [
         {
             "value": 6,
@@ -255,7 +255,7 @@ const board = [
             "draft": []
         },
         {
-            "value": 1,
+            "value": null,
             "isGiven": false,
             "draft": []
         },
@@ -334,7 +334,7 @@ const board = [
             "draft": []
         },
         {
-            "value": 9,
+            "value": null,
             "isGiven": false,
             "draft": []
         },

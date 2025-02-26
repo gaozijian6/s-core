@@ -402,7 +402,7 @@ export const nakedPair = (
         const unitCells =
           (
             candidateMap[num][
-              unit.type as keyof (typeof candidateMap)[number]
+            unit.type as keyof (typeof candidateMap)[number]
             ] as Map<number, CandidateStats>
           )?.get?.(unit.value)?.positions ?? [];
         // 在同一单元中找到另一个具有相同候选数的方格
@@ -466,9 +466,9 @@ export const nakedPair = (
             };
             const method =
               SOLUTION_METHODS[
-                `NAKED_PAIR_${getMethodKey(
-                  unit.type
-                )}` as keyof typeof SOLUTION_METHODS
+              `NAKED_PAIR_${getMethodKey(
+                unit.type
+              )}` as keyof typeof SOLUTION_METHODS
               ];
             const target = [num1, num2];
 
@@ -525,8 +525,8 @@ const checkNakedTriple1 = (
         unitType === "row"
           ? [unit, i]
           : unitType === "col"
-          ? [i, unit]
-          : [
+            ? [i, unit]
+            : [
               Math.floor(unit / 3) * 3 + Math.floor(i / 3),
               (unit % 3) * 3 + (i % 3),
             ];
@@ -625,8 +625,8 @@ const checkNakedTriple1 = (
                   unitType === "row"
                     ? [unit, m]
                     : unitType === "col"
-                    ? [m, unit]
-                    : [
+                      ? [m, unit]
+                      : [
                         Math.floor(unit / 3) * 3 + Math.floor(m / 3),
                         (unit % 3) * 3 + (m % 3),
                       ];
@@ -656,9 +656,9 @@ const checkNakedTriple1 = (
 
                 const method =
                   SOLUTION_METHODS[
-                    `NAKED_TRIPLE_${getMethodKey(
-                      unitType
-                    )}` as keyof typeof SOLUTION_METHODS
+                  `NAKED_TRIPLE_${getMethodKey(
+                    unitType
+                  )}` as keyof typeof SOLUTION_METHODS
                   ];
 
                 return {
@@ -714,8 +714,8 @@ const checkNakedTriple2 = (
         unitType === "row"
           ? [unit, i]
           : unitType === "col"
-          ? [i, unit]
-          : [
+            ? [i, unit]
+            : [
               Math.floor(unit / 3) * 3 + Math.floor(i / 3),
               (unit % 3) * 3 + (i % 3),
             ];
@@ -750,8 +750,8 @@ const checkNakedTriple2 = (
                 unitType === "row"
                   ? [unit, m]
                   : unitType === "col"
-                  ? [m, unit]
-                  : [
+                    ? [m, unit]
+                    : [
                       Math.floor(unit / 3) * 3 + Math.floor(m / 3),
                       (unit % 3) * 3 + (m % 3),
                     ];
@@ -780,9 +780,9 @@ const checkNakedTriple2 = (
               };
               const method =
                 SOLUTION_METHODS[
-                  `NAKED_TRIPLE_${getMethodKey(
-                    unitType
-                  )}` as keyof typeof SOLUTION_METHODS
+                `NAKED_TRIPLE_${getMethodKey(
+                  unitType
+                )}` as keyof typeof SOLUTION_METHODS
                 ];
 
               return {
@@ -841,8 +841,8 @@ const checkNakedQuadruple = (
         unitType === "row"
           ? [unit, i]
           : unitType === "col"
-          ? [i, unit]
-          : [
+            ? [i, unit]
+            : [
               Math.floor(unit / 3) * 3 + Math.floor(i / 3),
               (unit % 3) * 3 + (i % 3),
             ];
@@ -906,8 +906,8 @@ const checkNakedQuadruple = (
                     unitType === "row"
                       ? [unit, m]
                       : unitType === "col"
-                      ? [m, unit]
-                      : [
+                        ? [m, unit]
+                        : [
                           Math.floor(unit / 3) * 3 + Math.floor(m / 3),
                           (unit % 3) * 3 + (m % 3),
                         ];
@@ -937,9 +937,9 @@ const checkNakedQuadruple = (
 
                   const method =
                     SOLUTION_METHODS[
-                      `NAKED_QUADRUPLE_${getMethodKey(
-                        unitType
-                      )}` as keyof typeof SOLUTION_METHODS
+                    `NAKED_QUADRUPLE_${getMethodKey(
+                      unitType
+                    )}` as keyof typeof SOLUTION_METHODS
                     ];
 
                   return {
@@ -1042,9 +1042,9 @@ const checkHiddenPair = (
                 prompt,
                 method:
                   SOLUTION_METHODS[
-                    `HIDDEN_PAIR_${getMethodKey(
-                      unitType
-                    )}` as keyof typeof SOLUTION_METHODS
+                  `HIDDEN_PAIR_${getMethodKey(
+                    unitType
+                  )}` as keyof typeof SOLUTION_METHODS
                   ],
                 target: [...new Set(targetNumbers)],
                 isFill: false,
@@ -1324,9 +1324,9 @@ const checkHiddenTriple2 = (
                   };
                   const method =
                     SOLUTION_METHODS[
-                      `HIDDEN_TRIPLE_${getMethodKey(
-                        unitType
-                      )}2` as keyof typeof SOLUTION_METHODS
+                    `HIDDEN_TRIPLE_${getMethodKey(
+                      unitType
+                    )}2` as keyof typeof SOLUTION_METHODS
                     ];
                   return {
                     position: positionsArray,
@@ -1561,9 +1561,9 @@ const checkXWingVarient = (
                 if (
                   positionsToExclude.length > 0 &&
                   Math.floor(groupD[0].row / 3) ===
-                    Math.floor(positionsToExclude[0].row / 3) &&
+                  Math.floor(positionsToExclude[0].row / 3) &&
                   Math.floor(groupD[0].col / 3) ===
-                    Math.floor(positionsToExclude[0].col / 3)
+                  Math.floor(positionsToExclude[0].col / 3)
                 ) {
                   return {
                     position: positionsToExclude,
@@ -2725,9 +2725,9 @@ export const isInSameBox = (
 ): boolean => {
   return (
     Math.floor((pos1 as Position).row / 3) ===
-      Math.floor((pos2 as Position).row / 3) &&
+    Math.floor((pos2 as Position).row / 3) &&
     Math.floor((pos1 as Position).col / 3) ===
-      Math.floor((pos2 as Position).col / 3)
+    Math.floor((pos2 as Position).col / 3)
   );
 };
 
@@ -4734,6 +4734,125 @@ export const XYChain = (
             }
           }
         }
+      }
+    }
+  }
+  return null;
+};
+
+export const getGraphNodesArray = (graphNode: GraphNode): GraphNode[] => {
+  const resultNodes: GraphNode[] = [];
+  const visited = new Set<string>();
+  const queue: GraphNode[] = [graphNode];
+
+  while (queue.length > 0) {
+    const currentNode = queue.shift();
+    if (!currentNode) continue;
+
+    const key = `${currentNode.row}-${currentNode.col}`;
+    if (visited.has(key)) continue;
+    visited.add(key);
+    resultNodes.push(currentNode);
+
+    for (const nextNode of currentNode.next) {
+      queue.push(nextNode);
+    }
+  }
+
+  return resultNodes;
+};
+
+export const Loop = (
+  board: CellData[][],
+  candidateMap: CandidateMap,
+  graph: Graph,
+): Result | null => {
+  for (const num in graph) {
+    const startNodesArray = graph[num];
+    if (startNodesArray.length < 2) continue;
+    for (let i = 0; i < startNodesArray.length; i++) {
+      const someNode = startNodesArray[i];
+      const graphNodesArray = getGraphNodesArray(someNode);
+      if (graphNodesArray.length < 3) continue;
+      for (const startNode of graphNodesArray) {
+        const endNodesArray = findGraphNodeByDistance(startNode, 2);
+        for (const endNode of endNodesArray) {
+          let endNode1: GraphNode | null = null;
+          let startNode1: GraphNode | null = null;
+          let j = 0;
+          for (j = 0; j < startNodesArray.length; j++) {
+            if (j === i) continue;
+            const startNodesArray1 = getGraphNodesArray(startNodesArray[j]);
+            for (const node of startNodesArray1) {
+              if (isWeakLink(board, { row: endNode.row, col: endNode.col }, { row: node.row, col: node.col }, Number(num), candidateMap)) {
+                endNode1 = node;
+              }
+            }
+          }
+          let k = 0;
+          for (k = 0; k < startNodesArray.length; k++) {
+            if (k === i || k === j) continue;
+            const startNodesArray1 = getGraphNodesArray(startNodesArray[k]);
+            for (const node of startNodesArray1) {
+              if (isWeakLink(board, { row: startNode.row, col: startNode.col }, { row: node.row, col: node.col }, Number(num), candidateMap)) {
+                startNode1 = node;
+              }
+            }
+          }
+          // 3-2
+          if (startNode1 && endNode1 && isUnitStrongLink(board, { row: startNode1.row, col: startNode1.col }, { row: endNode1.row, col: endNode1.col }, Number(num), candidateMap)) {
+            let rootNodeArray1 = findGraphNodeByDistance(startNode, 1);
+            let rootNodeArray2 = findGraphNodeByDistance(endNode, 1);
+            if (rootNodeArray1.length && rootNodeArray2.length) {
+              for (const rootNode1 of rootNodeArray1) {
+                for (const rootNode2 of rootNodeArray2) {
+                  if (rootNode1.row === rootNode2.row && rootNode1.col === rootNode2.col) {
+                    return {
+                      label: '3-2',
+                      position: [{ row: rootNode1.row, col: rootNode1.col }],
+                      prompt: [{ row: rootNode1.row, col: rootNode1.col }, { row: startNode.row, col: startNode.col }, { row: endNode.row, col: endNode.col }, { row: startNode1.row, col: startNode1.col }, { row: endNode1.row, col: endNode1.col }],
+                      method: SOLUTION_METHODS.LOOP,
+                      isFill: true,
+                      target: [Number(num)],
+                    };
+                  }
+                }
+              }
+            }
+          }
+          // 3-2-2
+          if (startNode1 && endNode1) {
+            const startNodes2Array = findGraphNodeByDistance(startNode1, 1);
+            const endNodes2Array = findGraphNodeByDistance(endNode1, 1);
+            if (startNodes2Array.length && endNodes2Array.length) {
+              for (const startNode2 of startNodes2Array) {
+                for (const endNode2 of endNodes2Array) {
+                  if (isWeakLink(board, { row: startNode2.row, col: startNode2.col }, { row: endNode2.row, col: endNode2.col }, Number(num), candidateMap)) {
+                    let rootNodeArray1 = findGraphNodeByDistance(startNode, 1);
+                    let rootNodeArray2 = findGraphNodeByDistance(endNode, 1);
+                    if (rootNodeArray1.length && rootNodeArray2.length) {
+                      for (const rootNode1 of rootNodeArray1) {
+                        for (const rootNode2 of rootNodeArray2) {
+                          if (rootNode1.row === rootNode2.row && rootNode1.col === rootNode2.col) {
+                            return {
+                              label: '3-2-2',
+                              position: [{ row: rootNode1.row, col: rootNode1.col }],
+                              prompt: [{ row: rootNode1.row, col: rootNode1.col }, { row: startNode.row, col: startNode.col }, { row: endNode.row, col: endNode.col }, { row: startNode1.row, col: startNode1.col }, { row: startNode2.row, col: startNode2.col }, { row: endNode1.row, col: endNode1.col }, { row: endNode2.row, col: endNode2.col }],
+                              method: SOLUTION_METHODS.LOOP,
+                              isFill: true,
+                              target: [Number(num)],
+                            };
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
+          }
+        };
       }
     }
   }
