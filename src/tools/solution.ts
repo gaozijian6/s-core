@@ -1,5 +1,4 @@
 import { SOLUTION_METHODS } from "../constans";
-import { areCellsInSameUnit, solve } from "./index";
 import type {
   CandidateMap,
   CandidateStats,
@@ -26,38 +25,53 @@ export interface Result {
   box?: number;
   isWeakLink?: boolean;
   chainStructure?: string;
+  label?: string;
 }
 
-// 检查候选数法
-export const checkCandidate = (
-  board: CellData[][],
-  candidateMap: CandidateMap,
-  graph: Graph,
-  answerBoard: CellData[][]
-): Result | null => {
+export interface DifferenceMap {
+  [key: string]: number[];
+}
+
+// 检查两个格子是否在同一宫或行或列
+export const areCellsInSameUnit = (cell1: Position, cell2: Position) => {
+  // 检查是否在同一行
+  const sameRow = cell1.row === cell2.row;
+
+  // 检查是否在同一列
+  const sameColumn = cell1.col === cell2.col;
+
+  // 检查是否在同一宫
+  const sameBox =
+    Math.floor(cell1.row / 3) === Math.floor(cell2.row / 3) &&
+    Math.floor(cell1.col / 3) === Math.floor(cell2.col / 3);
+
+  return sameRow || sameColumn || sameBox;
+};
+
+export const findDifferenceDraft = (
+  beforeBoard: CellData[][],
+  afterBoard: CellData[][]
+): DifferenceMap => {
+  const differenceMap: DifferenceMap = {};
   for (let row = 0; row < 9; row++) {
     for (let col = 0; col < 9; col++) {
-      const cell = board[row]?.[col];
-      const answerCell = answerBoard[row]?.[col];
-
-      if (cell?.value === null && answerCell?.value !== null) {
-        const missingCandidate = answerCell.value;
-        if (!cell.draft?.includes(missingCandidate)) {
-          return {
-            position: [{ row, col }],
-            prompt: [{ row, col }],
-            method: SOLUTION_METHODS.CHECK_CANDIDATE,
-            target: [missingCandidate],
-            isFill: false,
-          };
+      const beforeDraft = beforeBoard[row]?.[col]?.draft || [];
+      const afterDraft = afterBoard[row]?.[col]?.draft || [];
+      const newCandidates = afterDraft.filter(
+        (num) => !beforeDraft.includes(num)
+      );
+      afterDraft.forEach((num) => {
+        if (!beforeDraft.includes(num)) {
+          newCandidates.push(num);
         }
+      });
+      if (newCandidates.length > 0) {
+        differenceMap[`${row},${col}`] = newCandidates;
       }
     }
   }
-
-  return null;
+  return differenceMap;
 };
-
 // 唯一余数法
 export const singleCandidate = (
   board: CellData[][],
@@ -1638,7 +1652,7 @@ export const xyWing = (
           ) {
             continue;
           }
-          // 找到符合条的 XY-Wing
+          // 找到符合条件的 XY-Wing
           const targetNumber = commonCandidateBC as number;
           const affectedPositions: Position[] = [];
 
@@ -1666,7 +1680,7 @@ export const xyWing = (
             }
           }
 
-          if (affectedPositions.length === 1) {
+          if (affectedPositions.length > 0) {
             return {
               position: affectedPositions,
               prompt: [cellA, cellB, cellC],
@@ -1730,7 +1744,7 @@ export const xyWing = (
             }
           }
 
-          if (affectedPositions.length === 1) {
+          if (affectedPositions.length > 0) {
             return {
               position: affectedPositions,
               prompt: [cellB, cellA, cellC],
@@ -1794,7 +1808,7 @@ export const xyWing = (
             }
           }
 
-          if (affectedPositions.length === 1) {
+          if (affectedPositions.length > 0) {
             return {
               position: affectedPositions,
               prompt: [cellC, cellA, cellB],
@@ -1947,7 +1961,6 @@ export const isUnitStrongLink = (
   const isSameBox =
     Math.floor(position1.row / 3) === Math.floor(position2.row / 3) &&
     Math.floor(position1.col / 3) === Math.floor(position2.col / 3);
-
   if (!(isSameRow || isSameCol || isSameBox)) {
     return false;
   }
@@ -2199,230 +2212,6 @@ export const isStrongLink = (
   return false;
 };
 
-// 获取两个格子的共同区域
-const getCommonUnits = (
-  pos1: Position,
-  pos2: Position,
-  board: CellData[][]
-): Position[] => {
-  const units: Position[] = [];
-  const uniquePositions = new Set<string>();
-  const units1 = getUnits(pos1, board);
-  const units2 = getUnits(pos2, board);
-  for (const unit1 of units1) {
-    if (
-      units2.some((unit2) => unit2.row === unit1.row && unit2.col === unit1.col)
-    ) {
-      const key = `${unit1.row},${unit1.col}`;
-      if (!uniquePositions.has(key)) {
-        uniquePositions.add(key);
-        units.push(unit1);
-      }
-    }
-  }
-
-  return units;
-};
-
-// 获取一个格子所在的所有区域
-const getUnits = (pos: Position, board: CellData[][]): Position[] => {
-  const units: Position[] = [];
-  const uniquePositions = new Set<string>();
-
-  // 获取行单元
-  for (let col = 0; col < 9; col++) {
-    if (board[pos.row][col].value === null && col !== pos.col) {
-      const key = `${pos.row},${col}`;
-      if (!uniquePositions.has(key)) {
-        uniquePositions.add(key);
-        units.push({ row: pos.row, col });
-      }
-    }
-  }
-
-  // 获取列单元
-  for (let row = 0; row < 9; row++) {
-    if (board[row][pos.col].value === null && row !== pos.row) {
-      const key = `${row},${pos.col}`;
-      if (!uniquePositions.has(key)) {
-        uniquePositions.add(key);
-        units.push({ row, col: pos.col });
-      }
-    }
-  }
-
-  // 获取宫单元
-  const startRow = Math.floor(pos.row / 3) * 3;
-  const startCol = Math.floor(pos.col / 3) * 3;
-  for (let i = 0; i < 3; i++) {
-    for (let j = 0; j < 3; j++) {
-      if (
-        board[startRow + i][startCol + j].value === null &&
-        (startRow + i !== pos.row || startCol + j !== pos.col)
-      ) {
-        const key = `${startRow + i},${startCol + j}`;
-        if (!uniquePositions.has(key)) {
-          uniquePositions.add(key);
-          units.push({ row: startRow + i, col: startCol + j });
-        }
-      }
-    }
-  }
-
-  return units;
-};
-
-// 已知位置和候选数找到graph对应的节点
-export const findGraphNodeByPosition = (
-  position: Position,
-  num: number,
-  graph: Graph
-): GraphNode | null => {
-  const { row, col } = position;
-  const startNodes = graph[num] ?? [];
-
-  for (const startNode of startNodes) {
-    const queue: GraphNode[] = [startNode];
-    const visited = new Set<string>();
-
-    while (queue.length > 0) {
-      const node = queue.shift()!;
-      const key = `${node.row},${node.col}`;
-
-      if (visited.has(key)) continue;
-      visited.add(key);
-
-      if (node.row === row && node.col === col) {
-        return node;
-      }
-
-      queue.push(...node.next);
-    }
-  }
-
-  return null;
-};
-
-// 判断是否为弱链
-export const isWeakLink = (
-  board: CellData[][],
-  pos1: Position,
-  pos2: Position,
-  num: number,
-  candidateMap: CandidateMap
-) => {
-  if (isUnitStrongLink(board, pos1, pos2, num, candidateMap)) {
-    return false;
-  }
-  if (areCellsInSameUnit(pos1, pos2)) {
-    return true;
-  }
-  return false;
-};
-
-// skyscraper2(单节点弱链2-2)
-export const skyscraper2_2 = (
-  board: CellData[][],
-  candidateMap: CandidateMap,
-  graph: Graph
-): Result | null => {
-  for (const num of Object.keys(graph)) {
-    const graphArr = graph[Number(num)];
-    if (graphArr.length >= 2) {
-      const nodesArr: Position[][] = [];
-      for (const graphNode of graphArr) {
-        const queue: GraphNode[] = [graphNode];
-        const visited: Set<string> = new Set();
-        const nodes: Position[] = [];
-
-        while (queue.length > 0) {
-          const currentNode = queue.shift()!;
-          const key = `${currentNode.row},${currentNode.col}`;
-
-          if (visited.has(key)) {
-            continue;
-          }
-
-          visited.add(key);
-          nodes.push({
-            row: currentNode.row,
-            col: currentNode.col,
-          });
-
-          for (const nextNode of currentNode.next) {
-            queue.push(nextNode);
-          }
-        }
-
-        nodesArr.push(nodes);
-      }
-
-      for (let i = 0; i < nodesArr.length - 1; i++) {
-        for (let j = i + 1; j < nodesArr.length; j++) {
-          for (let k = 0; k < nodesArr[i].length; k++) {
-            for (let l = 0; l < nodesArr[j].length; l++) {
-              if (
-                isWeakLink(
-                  board,
-                  nodesArr[i][k],
-                  nodesArr[j][l],
-                  Number(num),
-                  candidateMap
-                )
-              ) {
-                const graphNode1 = findGraphNodeByPosition(
-                  nodesArr[i][k],
-                  Number(num),
-                  graph
-                );
-                const graphNode2 = findGraphNodeByPosition(
-                  nodesArr[j][l],
-                  Number(num),
-                  graph
-                );
-                if (!graphNode1 || !graphNode2) continue;
-                for (const graphNode1_1 of graphNode1.next) {
-                  for (const graphNode2_1 of graphNode2?.next ?? []) {
-                    const commonUnits = getCommonUnits(
-                      { row: graphNode1_1.row, col: graphNode1_1.col },
-                      { row: graphNode2_1.row, col: graphNode2_1.col },
-                      board
-                    );
-                    if (commonUnits.length) {
-                      const positions: Position[] = [];
-                      for (const unit of commonUnits) {
-                        const cell = board[unit.row]?.[unit.col];
-                        if (cell?.draft?.includes(Number(num))) {
-                          positions.push(unit);
-                        }
-                      }
-                      if (positions.length) {
-                        return {
-                          position: positions,
-                          prompt: [
-                            { row: graphNode1_1.row, col: graphNode1_1.col },
-                            nodesArr[i][k],
-                            { row: graphNode2_1.row, col: graphNode2_1.col },
-                            nodesArr[j][l],
-                          ],
-                          method: SOLUTION_METHODS.SKYSCRAPER2,
-                          target: [Number(num)],
-                          isFill: false,
-                        };
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-  return null;
-};
-
 export const getGraphNodesCounts = (graphNode: GraphNode): number => {
   const visited = new Set<string>();
   const queue: GraphNode[] = [graphNode];
@@ -2637,6 +2426,299 @@ export const remotePair = (
   return null;
 };
 
+// 检查强连接的奇偶性
+export const checkStrongLinkParity = (
+  position1: Position,
+  position2: Position,
+  num: number,
+  graph: Graph
+): 0 | 1 | 2 => {
+  const startNodes = graph[num] ?? [];
+
+  for (const startNode of startNodes) {
+    const queue: { node: GraphNode; depth: number }[] = [
+      { node: startNode, depth: 0 },
+    ];
+    const visited: Set<string> = new Set();
+
+    while (queue.length > 0) {
+      const { node: currentNode, depth } = queue.shift()!;
+      const key = `${currentNode.row},${currentNode.col}`;
+
+      if (visited.has(key)) {
+        continue;
+      }
+
+      visited.add(key);
+
+      if (
+        currentNode.row === position1.row &&
+        currentNode.col === position1.col
+      ) {
+        // 找到第一个位置，继续搜索第二个位置
+        const subQueue: { node: GraphNode; depth: number }[] = [
+          { node: currentNode, depth: 0 },
+        ];
+        const subVisited: Set<string> = new Set();
+
+        while (subQueue.length > 0) {
+          const { node: subNode, depth: subDepth } = subQueue.shift()!;
+          const subKey = `${subNode.row},${subNode.col}`;
+
+          if (subVisited.has(subKey)) {
+            continue;
+          }
+
+          subVisited.add(subKey);
+
+          if (subNode.row === position2.row && subNode.col === position2.col) {
+            // 找到第二个位置，判断奇偶性
+            return subDepth % 2 === 0 ? 2 : 1;
+          }
+
+          for (const nextNode of subNode.next) {
+            subQueue.push({ node: nextNode, depth: subDepth + 1 });
+          }
+        }
+      }
+
+      for (const nextNode of currentNode.next) {
+        queue.push({ node: nextNode, depth: depth + 1 });
+      }
+    }
+  }
+
+  return 0;
+};
+
+// 摩天楼
+export const skyscraper = (
+  board: CellData[][],
+  candidateMap: CandidateMap,
+  graph: Graph
+): Result | null => {
+  for (let num = 1; num <= 9; num++) {
+    const candidates = candidateMap[num]?.all ?? [];
+
+    for (let i = 0; i < candidates.length - 1; i++) {
+      for (let j = i + 1; j < candidates.length; j++) {
+        const pos1 = candidates[i];
+        const pos2 = candidates[j];
+
+        // 检查两个位置是否在同一区域
+        if (areCellsInSameUnit(pos1, pos2)) {
+          continue;
+        }
+
+        // 寻找一条包含四个节点的路径
+        const paths = findFourPath(pos1, pos2, num, graph);
+        for (const path of paths) {
+          if (path.length !== 4) {
+            continue;
+          }
+
+          // 找到共同影响的区域
+          let affectedPositions = findCommonAffectedPositions(
+            pos1,
+            pos2,
+            board,
+            num
+          );
+
+          // 排除与路径开头和结尾都为强连接的位置
+          affectedPositions = affectedPositions.filter((pos) => {
+            const isStrongLinkWithStart = isUnitStrongLink(
+              board,
+              pos,
+              path[0],
+              num,
+              candidateMap
+            );
+            const isStrongLinkWithEnd = isUnitStrongLink(
+              board,
+              pos,
+              path[3],
+              num,
+              candidateMap
+            );
+            return !(isStrongLinkWithStart && isStrongLinkWithEnd);
+          });
+
+          if (
+            affectedPositions.length > 0 &&
+            !affectedPositions.some((pos) =>
+              path.some(
+                (pathPos) => pathPos.row === pos.row && pathPos.col === pos.col
+              )
+            )
+          ) {
+            return {
+              position: affectedPositions,
+              prompt: path,
+              method: SOLUTION_METHODS.SKYSCRAPER,
+              target: [num],
+              isFill: false,
+            };
+          }
+        }
+      }
+    }
+  }
+
+  return null;
+};
+
+// 已知位置和候选数找到graph对应的节点
+export const findGraphNodeByPosition = (
+  position: Position,
+  num: number,
+  graph: Graph
+): GraphNode | null => {
+  const { row, col } = position;
+  const startNodes = graph[num] ?? [];
+
+  for (const startNode of startNodes) {
+    const queue: GraphNode[] = [startNode];
+    const visited = new Set<string>();
+
+    while (queue.length > 0) {
+      const node = queue.shift()!;
+      const key = `${node.row},${node.col}`;
+
+      if (visited.has(key)) continue;
+      visited.add(key);
+
+      if (node.row === row && node.col === col) {
+        return node;
+      }
+
+      queue.push(...node.next);
+    }
+  }
+
+  return null;
+};
+
+// 判断是否为弱链
+export const isWeakLink = (
+  board: CellData[][],
+  pos1: Position,
+  pos2: Position,
+  num: number,
+  candidateMap: CandidateMap
+) => {
+  if (isUnitStrongLink(board, pos1, pos2, num, candidateMap)) {
+    return false;
+  }
+  if (areCellsInSameUnit(pos1, pos2)) {
+    return true;
+  }
+  return false;
+};
+
+// skyscraper2(单节点弱链2-2)
+export const skyscraper2 = (
+  board: CellData[][],
+  candidateMap: CandidateMap,
+  graph: Graph
+): Result | null => {
+  for (const num of Object.keys(graph)) {
+    const graphArr = graph[Number(num)];
+    if (graphArr.length >= 2) {
+      const nodesArr: Position[][] = [];
+      for (const graphNode of graphArr) {
+        const queue: GraphNode[] = [graphNode];
+        const visited: Set<string> = new Set();
+        const nodes: Position[] = [];
+
+        while (queue.length > 0) {
+          const currentNode = queue.shift()!;
+          const key = `${currentNode.row},${currentNode.col}`;
+
+          if (visited.has(key)) {
+            continue;
+          }
+
+          visited.add(key);
+          nodes.push({
+            row: currentNode.row,
+            col: currentNode.col,
+          });
+
+          for (const nextNode of currentNode.next) {
+            queue.push(nextNode);
+          }
+        }
+
+        nodesArr.push(nodes);
+      }
+
+      for (let i = 0; i < nodesArr.length - 1; i++) {
+        for (let j = i + 1; j < nodesArr.length; j++) {
+          for (let k = 0; k < nodesArr[i].length; k++) {
+            for (let l = 0; l < nodesArr[j].length; l++) {
+              if (
+                isWeakLink(
+                  board,
+                  nodesArr[i][k],
+                  nodesArr[j][l],
+                  Number(num),
+                  candidateMap
+                )
+              ) {
+                const graphNode1 = findGraphNodeByPosition(
+                  nodesArr[i][k],
+                  Number(num),
+                  graph
+                );
+                const graphNode2 = findGraphNodeByPosition(
+                  nodesArr[j][l],
+                  Number(num),
+                  graph
+                );
+                if (!graphNode1 || !graphNode2) continue;
+                for (const graphNode1_1 of graphNode1.next) {
+                  for (const graphNode2_1 of graphNode2?.next ?? []) {
+                    const commonUnits = getCommonUnits(
+                      { row: graphNode1_1.row, col: graphNode1_1.col },
+                      { row: graphNode2_1.row, col: graphNode2_1.col },
+                      board
+                    );
+                    if (commonUnits.length) {
+                      const positions: Position[] = [];
+                      for (const unit of commonUnits) {
+                        const cell = board[unit.row]?.[unit.col];
+                        if (cell?.draft?.includes(Number(num))) {
+                          positions.push(unit);
+                        }
+                      }
+                      if (positions.length) {
+                        return {
+                          position: positions,
+                          prompt: [
+                            { row: graphNode1_1.row, col: graphNode1_1.col },
+                            nodesArr[i][k],
+                            nodesArr[j][l],
+                            { row: graphNode2_1.row, col: graphNode2_1.col },
+                          ],
+                          method: SOLUTION_METHODS.SKYSCRAPER2,
+                          target: [Number(num)],
+                          isFill: false,
+                        };
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  return null;
+};
+
 export const isInSameBox = (
   pos1: Position | GraphNode,
   pos2: Position | GraphNode
@@ -2678,50 +2760,6 @@ export const findGraphNodeByDistance = (
   dfs(graphNode, 0);
 
   return resultNodes;
-};
-
-// 已知两个强关联的格子，寻找A到B为4个格子的所有路径
-export const findFourPath = (
-  pos1: Position,
-  pos2: Position,
-  num: number,
-  graph: Graph
-): Position[][] => {
-  const startNode = findGraphNodeByPosition(pos1, num, graph);
-  if (!startNode) {
-    return [];
-  }
-
-  const visited: Set<string> = new Set();
-  const path: Position[] = [];
-  const allPaths: Position[][] = [];
-
-  const dfs = (node: GraphNode) => {
-    const key = `${node.row},${node.col}`;
-
-    if (visited.has(key)) {
-      return;
-    }
-
-    visited.add(key);
-    path.push({ row: node.row, col: node.col });
-
-    if (path.length === 4 && node.row === pos2.row && node.col === pos2.col) {
-      allPaths.push([...path]);
-    }
-
-    if (path.length < 4) {
-      for (const nextNode of node.next) {
-        dfs(nextNode);
-      }
-    }
-
-    visited.delete(key);
-    path.pop();
-  };
-
-  dfs(startNode);
-  return allPaths;
 };
 
 // 组合链,2-2、4
@@ -2789,7 +2827,7 @@ export const combinationChain = (
               }
               // 寻找距离D为3的强连接
               const graphNodes = findGraphNodeByDistance(graphNodeD, 3);
-              for (const graphNodeG of graphNodes) {
+              for (const graphNodeG of graphNodes ?? []) {
                 const paths = findFourPath(D, graphNodeG, num, graph);
                 for (const path of paths) {
                   if (
@@ -2840,7 +2878,7 @@ export const combinationChain = (
                     board[graphNodeE.row]?.[C.col]?.draft?.includes(num)
                   ) {
                     return {
-                      position: [{ row: C.row, col: graphNodeE.col }],
+                      position: [{ row: graphNodeE.row, col: C.col }],
                       prompt: [
                         A,
                         B,
@@ -3001,148 +3039,6 @@ export const combinationChain = (
   return null;
 };
 
-// 检查强连接的奇偶性
-export const checkStrongLinkParity = (
-  position1: Position,
-  position2: Position,
-  num: number,
-  graph: Graph
-): 0 | 1 | 2 => {
-  const startNodes = graph[num] ?? [];
-
-  for (const startNode of startNodes) {
-    const queue: { node: GraphNode; depth: number }[] = [
-      { node: startNode, depth: 0 },
-    ];
-    const visited: Set<string> = new Set();
-
-    while (queue.length > 0) {
-      const { node: currentNode, depth } = queue.shift()!;
-      const key = `${currentNode.row},${currentNode.col}`;
-
-      if (visited.has(key)) {
-        continue;
-      }
-
-      visited.add(key);
-
-      if (
-        currentNode.row === position1.row &&
-        currentNode.col === position1.col
-      ) {
-        // 找到第一个位置，继续搜索第二个位置
-        const subQueue: { node: GraphNode; depth: number }[] = [
-          { node: currentNode, depth: 0 },
-        ];
-        const subVisited: Set<string> = new Set();
-
-        while (subQueue.length > 0) {
-          const { node: subNode, depth: subDepth } = subQueue.shift()!;
-          const subKey = `${subNode.row},${subNode.col}`;
-
-          if (subVisited.has(subKey)) {
-            continue;
-          }
-
-          subVisited.add(subKey);
-
-          if (subNode.row === position2.row && subNode.col === position2.col) {
-            // 找到第二个位置，判断奇偶性
-            return subDepth % 2 === 0 ? 2 : 1;
-          }
-
-          for (const nextNode of subNode.next) {
-            subQueue.push({ node: nextNode, depth: subDepth + 1 });
-          }
-        }
-      }
-
-      for (const nextNode of currentNode.next) {
-        queue.push({ node: nextNode, depth: depth + 1 });
-      }
-    }
-  }
-
-  return 0;
-};
-
-// 摩天楼
-export const skyscraper = (
-  board: CellData[][],
-  candidateMap: CandidateMap,
-  graph: Graph
-): Result | null => {
-  for (let num = 1; num <= 9; num++) {
-    const candidates = candidateMap[num]?.all ?? [];
-
-    for (let i = 0; i < candidates.length - 1; i++) {
-      for (let j = i + 1; j < candidates.length; j++) {
-        const pos1 = candidates[i];
-        const pos2 = candidates[j];
-
-        // 检查两个位置是否在同一区域
-        if (areCellsInSameUnit(pos1, pos2)) {
-          continue;
-        }
-
-        // 寻找一条包含四个节点的路径
-        const paths = findFourPath(pos1, pos2, num, graph);
-        for (const path of paths) {
-          if (path.length !== 4) {
-            continue;
-          }
-
-          // 找到共同影响的区域
-          let affectedPositions = findCommonAffectedPositions(
-            pos1,
-            pos2,
-            board,
-            num
-          );
-
-          // 排除与路径开头和结尾都为强连接的位置
-          affectedPositions = affectedPositions.filter((pos) => {
-            const isStrongLinkWithStart = isUnitStrongLink(
-              board,
-              pos,
-              path[0],
-              num,
-              candidateMap
-            );
-            const isStrongLinkWithEnd = isUnitStrongLink(
-              board,
-              pos,
-              path[3],
-              num,
-              candidateMap
-            );
-            return !(isStrongLinkWithStart && isStrongLinkWithEnd);
-          });
-
-          if (
-            affectedPositions.length > 0 &&
-            !affectedPositions.some((pos) =>
-              path.some(
-                (pathPos) => pathPos.row === pos.row && pathPos.col === pos.col
-              )
-            )
-          ) {
-            return {
-              position: affectedPositions,
-              prompt: path,
-              method: SOLUTION_METHODS.SKYSCRAPER,
-              target: [num],
-              isFill: false,
-            };
-          }
-        }
-      }
-    }
-  }
-
-  return null;
-};
-
 // 找到两个位置共同影响的区域
 const findCommonAffectedPositions = (
   pos1: Position,
@@ -3174,6 +3070,50 @@ const findCommonAffectedPositions = (
   }
 
   return affectedPositions;
+};
+
+// 已知两个强关联的格子，寻找A到B为4个格子的所有路径
+export const findFourPath = (
+  pos1: Position,
+  pos2: Position,
+  num: number,
+  graph: Graph
+): Position[][] => {
+  const startNode = findGraphNodeByPosition(pos1, num, graph);
+  if (!startNode) {
+    return [];
+  }
+
+  const visited: Set<string> = new Set();
+  const path: Position[] = [];
+  const allPaths: Position[][] = [];
+
+  const dfs = (node: GraphNode) => {
+    const key = `${node.row},${node.col}`;
+
+    if (visited.has(key)) {
+      return;
+    }
+
+    visited.add(key);
+    path.push({ row: node.row, col: node.col });
+
+    if (path.length === 4 && node.row === pos2.row && node.col === pos2.col) {
+      allPaths.push([...path]);
+    }
+
+    if (path.length < 4) {
+      for (const nextNode of node.next) {
+        dfs(nextNode);
+      }
+    }
+
+    visited.delete(key);
+    path.pop();
+  };
+
+  dfs(startNode);
+  return allPaths;
 };
 
 // 三阶鱼
@@ -3288,6 +3228,79 @@ const checkSwordfish = (
   return null;
 };
 
+// 获取两个格子的共同区域
+const getCommonUnits = (
+  pos1: Position,
+  pos2: Position,
+  board: CellData[][]
+): Position[] => {
+  const units: Position[] = [];
+  const uniquePositions = new Set<string>();
+  const units1 = getUnits(pos1, board);
+  const units2 = getUnits(pos2, board);
+  for (const unit1 of units1) {
+    if (
+      units2.some((unit2) => unit2.row === unit1.row && unit2.col === unit1.col)
+    ) {
+      const key = `${unit1.row},${unit1.col}`;
+      if (!uniquePositions.has(key)) {
+        uniquePositions.add(key);
+        units.push(unit1);
+      }
+    }
+  }
+
+  return units;
+};
+
+// 获取一个格子所在的所有区域
+const getUnits = (pos: Position, board: CellData[][]): Position[] => {
+  const units: Position[] = [];
+  const uniquePositions = new Set<string>();
+
+  // 获取行单元
+  for (let col = 0; col < 9; col++) {
+    if (board[pos.row][col].value === null && col !== pos.col) {
+      const key = `${pos.row},${col}`;
+      if (!uniquePositions.has(key)) {
+        uniquePositions.add(key);
+        units.push({ row: pos.row, col });
+      }
+    }
+  }
+
+  // 获取列单元
+  for (let row = 0; row < 9; row++) {
+    if (board[row][pos.col].value === null && row !== pos.row) {
+      const key = `${row},${pos.col}`;
+      if (!uniquePositions.has(key)) {
+        uniquePositions.add(key);
+        units.push({ row, col: pos.col });
+      }
+    }
+  }
+
+  // 获取宫单元
+  const startRow = Math.floor(pos.row / 3) * 3;
+  const startCol = Math.floor(pos.col / 3) * 3;
+  for (let i = 0; i < 3; i++) {
+    for (let j = 0; j < 3; j++) {
+      if (
+        board[startRow + i][startCol + j].value === null &&
+        (startRow + i !== pos.row || startCol + j !== pos.col)
+      ) {
+        const key = `${startRow + i},${startCol + j}`;
+        if (!uniquePositions.has(key)) {
+          uniquePositions.add(key);
+          units.push({ row: startRow + i, col: startCol + j });
+        }
+      }
+    }
+  }
+
+  return units;
+};
+
 // wxyz-wing
 export const wxyzWing = (
   board: CellData[][],
@@ -3351,11 +3364,11 @@ export const wxyzWing = (
                 continue;
               if (!draft.includes(b1) || !draft.includes(b2)) continue;
               const commonUnits2 = getCommonUnits(unit2, unit, board);
-              let commonCandidate = null;
+              let commonCandidate: number | null = null;
               if (cellB.draft.includes(b1) && cellC.draft.includes(b1)) {
-                commonCandidate = b1;
+                commonCandidate = b1 as number;
               } else if (cellB.draft.includes(b2) && cellC.draft.includes(b2)) {
-                commonCandidate = b2;
+                commonCandidate = b2 as number;
               }
 
               const position: Position[] = [];
@@ -3406,25 +3419,1320 @@ export const wxyzWing = (
 };
 
 // 试数法
-export const trialAndError = (
+export const trialAndErrorDIY = (
   board: CellData[][],
   candidateMap: CandidateMap,
   graph: Graph
 ): Result | null => {
-  const newBoard = board.map((row) => row.map((cell) => ({ ...cell })));
-  if (solve(newBoard)) {
+  let minLength = 10;
+  let minPosition: Position | null = null;
+  let minValue: number | null = null;
+
+  for (let row = 0; row < 9; row++) {
+    for (let col = 0; col < 9; col++) {
+      const cell = board[row][col];
+      if (cell.value === null && cell.draft?.length) {
+        if (cell.draft.length < minLength) {
+          minLength = cell.draft.length;
+          minPosition = { row, col };
+          minValue = board[row][col].draft[0];
+        }
+      }
+    }
+  }
+
+  if (minPosition && minValue) {
+    return {
+      position: [minPosition],
+      prompt: [minPosition],
+      method: SOLUTION_METHODS.TRIAL_AND_ERROR,
+      target: [minValue],
+      isFill: true,
+    };
+  }
+  return null;
+};
+
+export const trialAndError = (
+  board: CellData[][],
+  candidateMap: CandidateMap,
+  graph: Graph,
+  answerBoard?: CellData[][]
+): Result | null => {
+  console.log("trialAndError");
+  if (!answerBoard) return null;
+  let minLength = 10;
+  let minPosition: Position | null = null;
+  let minValue: number | null = null;
+
+  for (let row = 0; row < 9; row++) {
+    for (let col = 0; col < 9; col++) {
+      const cell = board[row][col];
+      if (cell.value === null && cell.draft?.length) {
+        if (cell.draft.length < minLength) {
+          minLength = cell.draft.length;
+          minPosition = { row, col };
+          minValue = answerBoard[row][col].value;
+        }
+      }
+    }
+  }
+
+  if (minPosition && minValue) {
+    return {
+      position: [minPosition],
+      prompt: [minPosition],
+      method: SOLUTION_METHODS.TRIAL_AND_ERROR,
+      target: [minValue],
+      isFill: true,
+    };
+  }
+  return null;
+};
+
+// 将图节点转换为数组返回
+export const getGraphNodesArray = (
+  graphNode: GraphNode | null
+): GraphNode[] => {
+  if (!graphNode) return [];
+  const resultNodes: GraphNode[] = [];
+  const visited = new Set<string>();
+  const queue: GraphNode[] = [graphNode];
+
+  while (queue.length > 0) {
+    const currentNode = queue.shift();
+    if (!currentNode) continue;
+
+    const key = `${currentNode.row}-${currentNode.col}`;
+    if (visited.has(key)) continue;
+    visited.add(key);
+    resultNodes.push(currentNode);
+
+    for (const nextNode of currentNode.next) {
+      queue.push(nextNode);
+    }
+  }
+
+  return resultNodes;
+};
+
+export const Loop = (
+  board: CellData[][],
+  candidateMap: CandidateMap,
+  graph: Graph
+): Result | null => {
+  for (const num in graph) {
+    const startNodesArray = graph[num];
+    if (startNodesArray.length < 2) continue;
+    for (let i = 0; i < startNodesArray.length; i++) {
+      const someNode = startNodesArray[i];
+      const graphNodesArray = getGraphNodesArray(someNode);
+      if (graphNodesArray.length < 3) continue;
+      for (const startNode of graphNodesArray) {
+        const endNodesArray = findGraphNodeByDistance(startNode, 2);
+        for (const endNode of endNodesArray) {
+          let endNode1: GraphNode | null = null;
+          let startNode1: GraphNode | null = null;
+          let j = 0;
+          for (j = 0; j < startNodesArray.length; j++) {
+            if (j === i) continue;
+            const startNodesArray1 = getGraphNodesArray(startNodesArray[j]);
+            for (const node of startNodesArray1) {
+              if (
+                isWeakLink(
+                  board,
+                  { row: endNode.row, col: endNode.col },
+                  { row: node.row, col: node.col },
+                  Number(num),
+                  candidateMap
+                )
+              ) {
+                endNode1 = node;
+              }
+            }
+          }
+          let k = 0;
+          for (k = 0; k < startNodesArray.length; k++) {
+            if (k === i || k === j) continue;
+            const startNodesArray1 = getGraphNodesArray(startNodesArray[k]);
+            for (const node of startNodesArray1) {
+              if (
+                isWeakLink(
+                  board,
+                  { row: startNode.row, col: startNode.col },
+                  { row: node.row, col: node.col },
+                  Number(num),
+                  candidateMap
+                )
+              ) {
+                startNode1 = node;
+              }
+            }
+          }
+          if (
+            startNode1 &&
+            endNode1 &&
+            startNode1.row === endNode1.row &&
+            startNode1.col === endNode1.col
+          ) {
+            continue;
+          }
+          // 3-2
+          if (
+            startNode1 &&
+            endNode1 &&
+            isUnitStrongLink(
+              board,
+              { row: startNode1.row, col: startNode1.col },
+              { row: endNode1.row, col: endNode1.col },
+              Number(num),
+              candidateMap
+            )
+          ) {
+            let rootNodeArray1 = findGraphNodeByDistance(startNode, 1);
+            let rootNodeArray2 = findGraphNodeByDistance(endNode, 1);
+            if (rootNodeArray1.length && rootNodeArray2.length) {
+              for (const rootNode1 of rootNodeArray1) {
+                for (const rootNode2 of rootNodeArray2) {
+                  if (
+                    rootNode1.row === rootNode2.row &&
+                    rootNode1.col === rootNode2.col
+                  ) {
+                    return {
+                      label: "3-2",
+                      position: [{ row: rootNode1.row, col: rootNode1.col }],
+                      prompt: [
+                        { row: rootNode1.row, col: rootNode1.col },
+                        { row: startNode.row, col: startNode.col },
+                        { row: endNode.row, col: endNode.col },
+                        { row: startNode1.row, col: startNode1.col },
+                        { row: endNode1.row, col: endNode1.col },
+                      ],
+                      method: SOLUTION_METHODS.LOOP,
+                      isFill: true,
+                      target: [Number(num)],
+                    };
+                  }
+                }
+              }
+            }
+          }
+          // 3-2-2 & 3-4
+          if (startNode1 && endNode1) {
+            const startNodes2Array = findGraphNodeByDistance(startNode1, 1);
+            const endNodes2Array = findGraphNodeByDistance(endNode1, 1);
+            if (startNodes2Array.length && endNodes2Array.length) {
+              for (const startNode2 of startNodes2Array) {
+                if (
+                  startNode2.row === startNode1.row &&
+                  startNode2.col === startNode1.col
+                ) {
+                  continue;
+                }
+                for (const endNode2 of endNodes2Array) {
+                  if (
+                    endNode2.row === endNode1.row &&
+                    endNode2.col === endNode1.col
+                  ) {
+                    continue;
+                  }
+                  if (
+                    endNode2.row === startNode2.row &&
+                    endNode2.col === startNode2.col
+                  ) {
+                    continue;
+                  }
+                  // 3-2-2
+                  if (
+                    isWeakLink(
+                      board,
+                      { row: startNode2.row, col: startNode2.col },
+                      { row: endNode2.row, col: endNode2.col },
+                      Number(num),
+                      candidateMap
+                    )
+                  ) {
+                    let rootNodeArray1 = findGraphNodeByDistance(startNode, 1);
+                    let rootNodeArray2 = findGraphNodeByDistance(endNode, 1);
+                    if (rootNodeArray1.length && rootNodeArray2.length) {
+                      for (const rootNode1 of rootNodeArray1) {
+                        for (const rootNode2 of rootNodeArray2) {
+                          if (
+                            rootNode1.row === rootNode2.row &&
+                            rootNode1.col === rootNode2.col
+                          ) {
+                            return {
+                              label: "3-2-2",
+                              position: [
+                                { row: rootNode1.row, col: rootNode1.col },
+                              ],
+                              prompt: [
+                                { row: rootNode1.row, col: rootNode1.col },
+                                { row: startNode.row, col: startNode.col },
+                                { row: endNode.row, col: endNode.col },
+                                { row: startNode1.row, col: startNode1.col },
+                                { row: startNode2.row, col: startNode2.col },
+                                { row: endNode1.row, col: endNode1.col },
+                                { row: endNode2.row, col: endNode2.col },
+                              ],
+                              method: SOLUTION_METHODS.LOOP,
+                              isFill: true,
+                              target: [Number(num)],
+                            };
+                          }
+                        }
+                      }
+                    }
+                  }
+                  // 3-4
+                  if (
+                    isUnitStrongLink(
+                      board,
+                      { row: startNode2.row, col: startNode2.col },
+                      { row: endNode2.row, col: endNode2.col },
+                      Number(num),
+                      candidateMap
+                    )
+                  ) {
+                    let rootNodeArray1 = findGraphNodeByDistance(startNode, 1);
+                    let rootNodeArray2 = findGraphNodeByDistance(endNode, 1);
+                    if (rootNodeArray1.length && rootNodeArray2.length) {
+                      for (const rootNode1 of rootNodeArray1) {
+                        for (const rootNode2 of rootNodeArray2) {
+                          if (
+                            rootNode1.row === rootNode2.row &&
+                            rootNode1.col === rootNode2.col
+                          ) {
+                            return {
+                              label: "3-4",
+                              position: [
+                                { row: rootNode1.row, col: rootNode1.col },
+                              ],
+                              prompt: [
+                                { row: rootNode1.row, col: rootNode1.col },
+                                { row: startNode.row, col: startNode.col },
+                                { row: endNode.row, col: endNode.col },
+                                { row: startNode1.row, col: startNode1.col },
+                                { row: startNode2.row, col: startNode2.col },
+                                { row: endNode1.row, col: endNode1.col },
+                                { row: endNode2.row, col: endNode2.col },
+                              ],
+                              method: SOLUTION_METHODS.LOOP,
+                              isFill: true,
+                              target: [Number(num)],
+                            };
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  return null;
+};
+
+export const getEmptyCellsInRow = (
+  row: number,
+  board: CellData[][]
+): Position[] => {
+  const emptyCells: Position[] = [];
+  for (let col = 0; col < 9; col++) {
+    if (board[row][col].draft.length) {
+      emptyCells.push({ row, col });
+    }
+  }
+  return emptyCells;
+};
+
+export const getEmptyCellsInCol = (
+  col: number,
+  board: CellData[][]
+): Position[] => {
+  const emptyCells: Position[] = [];
+  for (let row = 0; row < 9; row++) {
+    if (board[row][col].draft.length) {
+      emptyCells.push({ row, col });
+    }
+  }
+  return emptyCells;
+};
+
+export const getEmptyCellsInBox = (
+  row: number,
+  col: number,
+  board: CellData[][]
+): Position[] => {
+  const emptyCells: Position[] = [];
+  const startRow = Math.floor(row / 3) * 3;
+  const startCol = Math.floor(col / 3) * 3;
+  for (let r = startRow; r < startRow + 3; r++) {
+    for (let c = startCol; c < startCol + 3; c++) {
+      if (board[r][c].draft.length) {
+        emptyCells.push({ row: r, col: c });
+      }
+    }
+  }
+  return emptyCells;
+};
+
+// Unique Rectangle
+export const uniqueRectangle = (
+  board: CellData[][],
+  candidateMap: CandidateMap,
+  graph: Graph
+): Result | null => {
+  for (let num = 1; num <= 9; num++) {
+    // 标准型
     for (let row = 0; row < 9; row++) {
-      for (let col = 0; col < 9; col++) {
-        const cell = board[row][col];
-        if (cell.value === null && cell.draft?.length === 2) {
-          const correctValue = newBoard[row][col].value;
-          return {
-            position: [{ row, col }],
-            prompt: [{ row, col }],
-            method: SOLUTION_METHODS.TRIAL_AND_ERROR,
-            target: [correctValue as number],
-            isFill: true,
-          };
+      if (candidateMap[num].row.get(row)?.count === 2) {
+        const cell1 = candidateMap[num].row.get(row)?.positions[0];
+        const cell2 = candidateMap[num].row.get(row)?.positions[1];
+        if (
+          cell1 &&
+          cell2 &&
+          JSON.stringify(cell1.candidates) ===
+            JSON.stringify(cell2.candidates) &&
+          cell1.candidates.length === 2
+        ) {
+          let col1 = cell1.col;
+          let col2 = cell2.col;
+          let [a, b] = [cell1.candidates[0], cell1.candidates[1]];
+          if (
+            candidateMap[num].col.get(col1)?.count === 2 ||
+            candidateMap[num].col.get(col2)?.count === 2
+          ) {
+            let cell3: Candidate | undefined;
+            let cell4: Candidate | undefined;
+            if (candidateMap[num].col.get(col1)?.count === 2) {
+              if (
+                candidateMap[num].col.get(col1)?.positions[0].row === cell1.row
+              ) {
+                cell3 = candidateMap[num].col.get(col1)?.positions[1];
+              } else {
+                cell3 = candidateMap[num].col.get(col1)?.positions[0];
+              }
+              if (
+                candidateMap[num].col.get(col2)?.positions[0].row === cell2.row
+              ) {
+                cell4 = candidateMap[num].col.get(col2)?.positions[1];
+              } else {
+                cell4 = candidateMap[num].col.get(col2)?.positions[0];
+              }
+            } else {
+              if (
+                candidateMap[num].col.get(col1)?.positions[0].row === cell1.row
+              ) {
+                cell4 = candidateMap[num].col.get(col1)?.positions[1];
+              } else {
+                cell4 = candidateMap[num].col.get(col1)?.positions[0];
+              }
+              if (
+                candidateMap[num].col.get(col2)?.positions[0].row === cell2.row
+              ) {
+                cell3 = candidateMap[num].col.get(col2)?.positions[1];
+              } else {
+                cell3 = candidateMap[num].col.get(col2)?.positions[0];
+              }
+            }
+
+            if (cell3?.row !== cell4?.row) continue;
+            if (cell3 && cell4) {
+              if (
+                JSON.stringify(cell3.candidates) ===
+                  JSON.stringify(cell1.candidates) &&
+                (cell4.candidates.includes(a) || cell4.candidates.includes(b))
+              ) {
+                return {
+                  isFill: false,
+                  position: [{ row: cell4.row, col: cell4.col }],
+                  prompt: [
+                    { row: cell1.row, col: cell1.col },
+                    { row: cell2.row, col: cell2.col },
+                    { row: cell3.row, col: cell3.col },
+                  ],
+                  method: SOLUTION_METHODS.UNIQUE_RECTANGLE,
+                  target: [a, b],
+                  label: "ab-ab-ab-abc",
+                };
+              }
+            }
+          }
+        }
+      }
+    }
+    // ab-ab-abc-abc行
+    for (let row = 0; row < 9; row++) {
+      if (candidateMap[num].row.get(row)?.count === 2) {
+        const cell1 = candidateMap[num].row.get(row)?.positions[0];
+        const cell2 = candidateMap[num].row.get(row)?.positions[1];
+        if (
+          cell1 &&
+          cell2 &&
+          JSON.stringify(cell1.candidates) ===
+            JSON.stringify(cell2.candidates) &&
+          cell1.candidates.length === 2
+        ) {
+          let col1 = cell1.col;
+          let col2 = cell2.col;
+          let [a, b] = [cell1.candidates[0], cell1.candidates[1]];
+          let cell3: Candidate | undefined;
+          let cell4: Candidate | undefined;
+          for (let row2 = 0; row2 < 9; row2++) {
+            if (row2 === row) continue;
+            if (
+              board[row2][col1].draft.length === 3 &&
+              JSON.stringify(board[row2][col1].draft) ===
+                JSON.stringify(board[row2][col2].draft) &&
+              board[row2][col1].draft.includes(a) &&
+              board[row2][col2].draft.includes(b)
+            ) {
+              cell3 = {
+                row: row2,
+                col: col1,
+                candidates: board[row2][col1].draft,
+              };
+              cell4 = {
+                row: row2,
+                col: col2,
+                candidates: board[row2][col2].draft,
+              };
+              const c = board[row2][col1].draft.find(
+                (item) => item !== a && item !== b
+              );
+              if (!c) continue;
+              const affectedCells = findCommonAffectedPositions(
+                { row: cell3.row, col: cell3.col },
+                { row: cell4.row, col: cell4.col },
+                board,
+                c
+              );
+              const deleteCells: Position[] = [];
+              for (const cell of affectedCells) {
+                if (board[cell.row][cell.col].draft.includes(c)) {
+                  deleteCells.push(cell);
+                }
+              }
+              if (deleteCells.length) {
+                return {
+                  isFill: false,
+                  position: deleteCells,
+                  prompt: [
+                    { row: cell1.row, col: cell1.col },
+                    { row: cell2.row, col: cell2.col },
+                    { row: cell3.row, col: cell3.col },
+                    { row: cell4.row, col: cell4.col },
+                  ],
+                  method: SOLUTION_METHODS.UNIQUE_RECTANGLE,
+                  target: [c],
+                  label: "ab-ab-abc-abc",
+                };
+              }
+            }
+          }
+        }
+      }
+    }
+    // ab-ab-abc-abc列
+    for (let col = 0; col < 9; col++) {
+      if (candidateMap[num].col.get(col)?.count === 2) {
+        const cell1 = candidateMap[num].col.get(col)?.positions[0];
+        const cell2 = candidateMap[num].col.get(col)?.positions[1];
+        if (
+          cell1 &&
+          cell2 &&
+          JSON.stringify(cell1.candidates) ===
+            JSON.stringify(cell2.candidates) &&
+          cell1.candidates.length === 2
+        ) {
+          let row1 = cell1.row;
+          let row2 = cell2.row;
+          let [a, b] = [cell1.candidates[0], cell1.candidates[1]];
+          let cell3: Candidate | undefined;
+          let cell4: Candidate | undefined;
+          for (let col2 = 0; col2 < 9; col2++) {
+            if (col2 === col) continue;
+            if (
+              board[row1][col2].draft.length === 3 &&
+              JSON.stringify(board[row1][col2].draft) ===
+                JSON.stringify(board[row2][col2].draft) &&
+              board[row1][col2].draft.includes(a) &&
+              board[row2][col2].draft.includes(b)
+            ) {
+              cell3 = {
+                row: row1,
+                col: col2,
+                candidates: board[row1][col2].draft,
+              };
+              cell4 = {
+                row: row2,
+                col: col2,
+                candidates: board[row2][col2].draft,
+              };
+              const c = board[row1][col2].draft.find(
+                (item) => item !== a && item !== b
+              );
+              if (!c) continue;
+              const affectedCells = findCommonAffectedPositions(
+                { row: cell3.row, col: cell3.col },
+                { row: cell4.row, col: cell4.col },
+                board,
+                c
+              );
+              const deleteCells: Position[] = [];
+              for (const cell of affectedCells) {
+                if (board[cell.row][cell.col].draft.includes(c)) {
+                  deleteCells.push(cell);
+                }
+              }
+              if (deleteCells.length) {
+                return {
+                  isFill: false,
+                  position: deleteCells,
+                  prompt: [
+                    { row: cell1.row, col: cell1.col },
+                    { row: cell2.row, col: cell2.col },
+                    { row: cell3.row, col: cell3.col },
+                    { row: cell4.row, col: cell4.col },
+                  ],
+                  method: SOLUTION_METHODS.UNIQUE_RECTANGLE,
+                  target: [c],
+                  label: "ab-ab-abc-abc",
+                };
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // ab-ab-abc-abcd行
+    for (let row = 0; row < 9; row++) {
+      if (candidateMap[num].row.get(row)?.count === 2) {
+        const cell1 = candidateMap[num].row.get(row)?.positions[0];
+        const cell2 = candidateMap[num].row.get(row)?.positions[1];
+
+        if (
+          cell1 &&
+          cell2 &&
+          JSON.stringify(cell1.candidates) ===
+            JSON.stringify(cell2.candidates) &&
+          cell1.candidates.length === 2
+        ) {
+          let col1 = cell1.col;
+          let col2 = cell2.col;
+          let [a, b] = [cell1.candidates[0], cell1.candidates[1]];
+          let cell3: Candidate | undefined;
+          let cell4: Candidate | undefined;
+          for (let row2 = 0; row2 < 9; row2++) {
+            if (row2 === row) continue;
+
+            if (
+              board[row2][col1].draft.length === 3 &&
+              board[row2][col1].draft.includes(a) &&
+              board[row2][col1].draft.includes(b)
+            ) {
+              cell3 = {
+                row: row2,
+                col: col1,
+                candidates: board[row2][col1].draft,
+              };
+            } else if (
+              board[row2][col2].draft.length === 3 &&
+              board[row2][col2].draft.includes(a) &&
+              board[row2][col2].draft.includes(b)
+            ) {
+              cell3 = {
+                row: row2,
+                col: col2,
+                candidates: board[row2][col2].draft,
+              };
+            }
+            if (
+              board[row2][col1].draft.length === 4 &&
+              board[row2][col1].draft.includes(a) &&
+              board[row2][col1].draft.includes(b)
+            ) {
+              cell4 = {
+                row: row2,
+                col: col1,
+                candidates: board[row2][col1].draft,
+              };
+            } else if (
+              board[row2][col2].draft.length === 4 &&
+              board[row2][col2].draft.includes(a) &&
+              board[row2][col2].draft.includes(b)
+            ) {
+              cell4 = {
+                row: row2,
+                col: col2,
+                candidates: board[row2][col2].draft,
+              };
+            }
+            if (cell3 && cell4) {
+              const remainingCandidates1 = cell4.candidates.filter(
+                (item) => item !== a && item !== b
+              );
+              const remainingCandidates2 = cell3.candidates.filter(
+                (item) => item !== a && item !== b
+              );
+              if (
+                remainingCandidates1.length === 2 &&
+                remainingCandidates1.includes(remainingCandidates2[0])
+              ) {
+                const [c, d] = remainingCandidates1;
+                const affectedCells_Row = getEmptyCellsInRow(cell3.row, board);
+                const affectedCells_Col = getEmptyCellsInCol(cell3.col, board);
+                const affectedCells_Box = getEmptyCellsInBox(
+                  cell3.row,
+                  cell3.col,
+                  board
+                );
+                let deleteCells: Position[] = [];
+                let cell5: Candidate | undefined;
+                for (const cell of affectedCells_Row) {
+                  if (
+                    (cell.row === cell3.row && cell.col === cell3.col) ||
+                    (cell.row === cell4.row && cell.col === cell4.col)
+                  )
+                    continue;
+                  if (
+                    board[cell.row][cell.col].draft.includes(c) &&
+                    board[cell.row][cell.col].draft.includes(d) &&
+                    board[cell.row][cell.col].draft.length === 2
+                  ) {
+                    cell5 = {
+                      row: cell.row,
+                      col: cell.col,
+                      candidates: board[cell.row][cell.col].draft,
+                    };
+                  }
+                  if (
+                    board[cell.row][cell.col].draft.length >= 3 &&
+                    (board[cell.row][cell.col].draft.includes(c) ||
+                      board[cell.row][cell.col].draft.includes(d))
+                  ) {
+                    deleteCells.push(cell);
+                  }
+                }
+                if (deleteCells.length && cell5) {
+                  return {
+                    isFill: false,
+                    position: deleteCells,
+                    prompt: [
+                      { row: cell1.row, col: cell1.col },
+                      { row: cell2.row, col: cell2.col },
+                      { row: cell3.row, col: cell3.col },
+                      { row: cell4.row, col: cell4.col },
+                      { row: cell5.row, col: cell5.col },
+                    ],
+                    method: SOLUTION_METHODS.UNIQUE_RECTANGLE,
+                    target: [c, d],
+                    label: "ab-ab-abc-abcd",
+                  };
+                }
+                deleteCells = [];
+                cell5 = undefined;
+                for (const cell of affectedCells_Col) {
+                  if (
+                    (cell.row === cell3.row && cell.col === cell3.col) ||
+                    (cell.row === cell4.row && cell.col === cell4.col)
+                  )
+                    continue;
+                  if (
+                    board[cell.row][cell.col].draft.includes(c) &&
+                    board[cell.row][cell.col].draft.includes(d) &&
+                    board[cell.row][cell.col].draft.length === 2
+                  ) {
+                    cell5 = {
+                      row: cell.row,
+                      col: cell.col,
+                      candidates: board[cell.row][cell.col].draft,
+                    };
+                  }
+                  if (
+                    board[cell.row][cell.col].draft.length >= 3 &&
+                    (board[cell.row][cell.col].draft.includes(c) ||
+                      board[cell.row][cell.col].draft.includes(d))
+                  ) {
+                    deleteCells.push(cell);
+                  }
+                }
+                if (deleteCells.length && cell5) {
+                  return {
+                    isFill: false,
+                    position: deleteCells,
+                    prompt: [
+                      { row: cell1.row, col: cell1.col },
+                      { row: cell2.row, col: cell2.col },
+                      { row: cell3.row, col: cell3.col },
+                      { row: cell4.row, col: cell4.col },
+                      { row: cell5.row, col: cell5.col },
+                    ],
+                    method: SOLUTION_METHODS.UNIQUE_RECTANGLE,
+                    target: [c, d],
+                    label: "ab-ab-abc-abcd",
+                  };
+                }
+                deleteCells = [];
+                cell5 = undefined;
+                for (const cell of affectedCells_Box) {
+                  if (
+                    (cell.row === cell3.row && cell.col === cell3.col) ||
+                    (cell.row === cell4.row && cell.col === cell4.col)
+                  )
+                    continue;
+                  if (
+                    board[cell.row][cell.col].draft.includes(c) &&
+                    board[cell.row][cell.col].draft.includes(d) &&
+                    board[cell.row][cell.col].draft.length === 2
+                  ) {
+                    cell5 = {
+                      row: cell.row,
+                      col: cell.col,
+                      candidates: board[cell.row][cell.col].draft,
+                    };
+                  }
+                  if (
+                    board[cell.row][cell.col].draft.length >= 3 &&
+                    (board[cell.row][cell.col].draft.includes(c) ||
+                      board[cell.row][cell.col].draft.includes(d))
+                  ) {
+                    deleteCells.push(cell);
+                  }
+                }
+                if (deleteCells.length && cell5) {
+                  return {
+                    isFill: false,
+                    position: deleteCells,
+                    prompt: [
+                      { row: cell1.row, col: cell1.col },
+                      { row: cell2.row, col: cell2.col },
+                      { row: cell3.row, col: cell3.col },
+                      { row: cell4.row, col: cell4.col },
+                      { row: cell5.row, col: cell5.col },
+                    ],
+                    method: SOLUTION_METHODS.UNIQUE_RECTANGLE,
+                    target: [c, d],
+                    label: "ab-ab-abc-abcd",
+                  };
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    // ab-ab-abc-abcd列
+    for (let col = 0; col < 9; col++) {
+      if (candidateMap[num].col.get(col)?.count === 2) {
+        const cell1 = candidateMap[num].col.get(col)?.positions[0];
+        const cell2 = candidateMap[num].col.get(col)?.positions[1];
+
+        if (
+          cell1 &&
+          cell2 &&
+          JSON.stringify(cell1.candidates) ===
+            JSON.stringify(cell2.candidates) &&
+          cell1.candidates.length === 2
+        ) {
+          let row1 = cell1.row;
+          let row2 = cell2.row;
+          let [a, b] = [cell1.candidates[0], cell1.candidates[1]];
+          let cell3: Candidate | undefined;
+          let cell4: Candidate | undefined;
+          for (let col2 = 0; col2 < 9; col2++) {
+            if (col2 === col) continue;
+
+            if (
+              board[row1][col2].draft.length === 3 &&
+              board[row1][col2].draft.includes(a) &&
+              board[row1][col2].draft.includes(b)
+            ) {
+              cell3 = {
+                row: row1,
+                col: col2,
+                candidates: board[row1][col2].draft,
+              };
+            } else if (
+              board[row2][col2].draft.length === 3 &&
+              board[row2][col2].draft.includes(a) &&
+              board[row2][col2].draft.includes(b)
+            ) {
+              cell3 = {
+                row: row2,
+                col: col2,
+                candidates: board[row2][col2].draft,
+              };
+            }
+            if (
+              board[row1][col2].draft.length === 4 &&
+              board[row1][col2].draft.includes(a) &&
+              board[row1][col2].draft.includes(b)
+            ) {
+              cell4 = {
+                row: row1,
+                col: col2,
+                candidates: board[row1][col2].draft,
+              };
+            } else if (
+              board[row2][col2].draft.length === 4 &&
+              board[row2][col2].draft.includes(a) &&
+              board[row2][col2].draft.includes(b)
+            ) {
+              cell4 = {
+                row: row2,
+                col: col2,
+                candidates: board[row2][col2].draft,
+              };
+            }
+            if (cell3 && cell4) {
+              const remainingCandidates1 = cell4.candidates.filter(
+                (item) => item !== a && item !== b
+              );
+              const remainingCandidates2 = cell3.candidates.filter(
+                (item) => item !== a && item !== b
+              );
+              if (
+                remainingCandidates1.length === 2 &&
+                remainingCandidates1.includes(remainingCandidates2[0])
+              ) {
+                const [c, d] = remainingCandidates1;
+                const affectedCells_Row = getEmptyCellsInRow(cell3.row, board);
+                const affectedCells_Col = getEmptyCellsInCol(cell3.col, board);
+                const affectedCells_Box = getEmptyCellsInBox(
+                  cell3.row,
+                  cell3.col,
+                  board
+                );
+                let deleteCells: Position[] = [];
+                let cell5: Candidate | undefined;
+                for (const cell of affectedCells_Row) {
+                  if (
+                    (cell.row === cell3.row && cell.col === cell3.col) ||
+                    (cell.row === cell4.row && cell.col === cell4.col)
+                  )
+                    continue;
+                  if (
+                    board[cell.row][cell.col].draft.includes(c) &&
+                    board[cell.row][cell.col].draft.includes(d) &&
+                    board[cell.row][cell.col].draft.length === 2
+                  ) {
+                    cell5 = {
+                      row: cell.row,
+                      col: cell.col,
+                      candidates: board[cell.row][cell.col].draft,
+                    };
+                  }
+                  if (
+                    board[cell.row][cell.col].draft.length >= 3 &&
+                    (board[cell.row][cell.col].draft.includes(c) ||
+                      board[cell.row][cell.col].draft.includes(d))
+                  ) {
+                    deleteCells.push(cell);
+                  }
+                }
+                if (deleteCells.length && cell5) {
+                  return {
+                    isFill: false,
+                    position: deleteCells,
+                    prompt: [
+                      { row: cell1.row, col: cell1.col },
+                      { row: cell2.row, col: cell2.col },
+                      { row: cell3.row, col: cell3.col },
+                      { row: cell4.row, col: cell4.col },
+                      { row: cell5.row, col: cell5.col },
+                    ],
+                    method: SOLUTION_METHODS.UNIQUE_RECTANGLE,
+                    target: [c, d],
+                    label: "ab-ab-abc-abcd",
+                  };
+                }
+                deleteCells = [];
+                cell5 = undefined;
+                for (const cell of affectedCells_Col) {
+                  if (
+                    (cell.row === cell3.row && cell.col === cell3.col) ||
+                    (cell.row === cell4.row && cell.col === cell4.col)
+                  )
+                    continue;
+                  if (
+                    board[cell.row][cell.col].draft.includes(c) &&
+                    board[cell.row][cell.col].draft.includes(d) &&
+                    board[cell.row][cell.col].draft.length === 2
+                  ) {
+                    cell5 = {
+                      row: cell.row,
+                      col: cell.col,
+                      candidates: board[cell.row][cell.col].draft,
+                    };
+                  }
+                  if (
+                    board[cell.row][cell.col].draft.length >= 3 &&
+                    (board[cell.row][cell.col].draft.includes(c) ||
+                      board[cell.row][cell.col].draft.includes(d))
+                  ) {
+                    deleteCells.push(cell);
+                  }
+                }
+                if (deleteCells.length && cell5) {
+                  return {
+                    isFill: false,
+                    position: deleteCells,
+                    prompt: [
+                      { row: cell1.row, col: cell1.col },
+                      { row: cell2.row, col: cell2.col },
+                      { row: cell3.row, col: cell3.col },
+                      { row: cell4.row, col: cell4.col },
+                      { row: cell5.row, col: cell5.col },
+                    ],
+                    method: SOLUTION_METHODS.UNIQUE_RECTANGLE,
+                    target: [c, d],
+                    label: "ab-ab-abc-abcd",
+                  };
+                }
+                deleteCells = [];
+                cell5 = undefined;
+                for (const cell of affectedCells_Box) {
+                  if (
+                    (cell.row === cell3.row && cell.col === cell3.col) ||
+                    (cell.row === cell4.row && cell.col === cell4.col)
+                  )
+                    continue;
+                  if (
+                    board[cell.row][cell.col].draft.includes(c) &&
+                    board[cell.row][cell.col].draft.includes(d) &&
+                    board[cell.row][cell.col].draft.length === 2
+                  ) {
+                    cell5 = {
+                      row: cell.row,
+                      col: cell.col,
+                      candidates: board[cell.row][cell.col].draft,
+                    };
+                  }
+                  if (
+                    board[cell.row][cell.col].draft.length >= 3 &&
+                    (board[cell.row][cell.col].draft.includes(c) ||
+                      board[cell.row][cell.col].draft.includes(d))
+                  ) {
+                    deleteCells.push(cell);
+                  }
+                }
+                if (deleteCells.length && cell5) {
+                  return {
+                    isFill: false,
+                    position: deleteCells,
+                    prompt: [
+                      { row: cell1.row, col: cell1.col },
+                      { row: cell2.row, col: cell2.col },
+                      { row: cell3.row, col: cell3.col },
+                      { row: cell4.row, col: cell4.col },
+                      { row: cell5.row, col: cell5.col },
+                    ],
+                    method: SOLUTION_METHODS.UNIQUE_RECTANGLE,
+                    target: [c, d],
+                    label: "ab-ab-abc-abcd",
+                  };
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  return null;
+};
+
+// 双全值坟墓
+export const BinaryUniversalGrave = (
+  board: CellData[][],
+  candidateMap: CandidateMap,
+  graph: Graph
+): Result | null => {
+  let target: number[] = [];
+  let position: Position[] = [];
+  let prompt: Position[] = [];
+  for (let row = 0; row < 9; row++) {
+    for (let col = 0; col < 9; col++) {
+      const cell = board[row][col];
+      if (cell.draft.length === 2) {
+        const [a, b] = cell.draft;
+        const rowCount1 = candidateMap[a].row.get(row)?.count || 0;
+        const colCount1 = candidateMap[a].col.get(col)?.count || 0;
+        const boxCount1 =
+          candidateMap[a].box.get(Math.floor(row / 3) * 3 + Math.floor(col / 3))
+            ?.count || 0;
+        const rowCount2 = candidateMap[b].row.get(row)?.count || 0;
+        const colCount2 = candidateMap[b].col.get(col)?.count || 0;
+        const boxCount2 =
+          candidateMap[b].box.get(Math.floor(row / 3) * 3 + Math.floor(col / 3))
+            ?.count || 0;
+        if (
+          rowCount1 === 2 &&
+          colCount1 === 2 &&
+          boxCount1 === 2 &&
+          rowCount2 === 2 &&
+          colCount2 === 2 &&
+          boxCount2 === 2
+        ) {
+          continue;
+        } else if (
+          rowCount1 === 2 &&
+          colCount1 === 2 &&
+          boxCount1 === 2 &&
+          (rowCount2 === 3 || colCount2 === 3 || boxCount2 === 3)
+        ) {
+          if (!target.includes(b)) {
+            target.push(b);
+          }
+        } else if (
+          rowCount2 === 2 &&
+          colCount2 === 2 &&
+          boxCount2 === 2 &&
+          (rowCount1 === 3 || colCount1 === 3 || boxCount1 === 3)
+        ) {
+          if (!target.includes(a)) {
+            target.push(a);
+          }
+        }
+      } else if (cell.draft.length === 3) {
+        prompt.push({ row, col });
+        if (prompt.length === 2) {
+          return null;
+        }
+      } else if (cell.draft.length >= 4) {
+        return null;
+      }
+    }
+  }
+  if (prompt.length === 1 && target.length === 1) {
+    return {
+      isFill: true,
+      position: [{ row: prompt[0].row, col: prompt[0].col }],
+      prompt,
+      method: SOLUTION_METHODS.BINARY_UNIVERSAL_GRAVE,
+      target: target,
+    };
+  }
+  return null;
+};
+
+// 给定坐标，获取影响区
+const getAffectedCells = (
+  position: Position,
+  num: number,
+  candidateMap: CandidateMap
+): Position[] => {
+  let affectedCells: Position[] = [];
+  for (const pos of candidateMap[num].row.get(position.row)?.positions || []) {
+    if (pos.row === position.row && pos.col === position.col) continue;
+    const isHas = affectedCells.some(
+      (item) => item.row === pos.row && item.col === pos.col
+    );
+    if (!isHas) {
+      affectedCells.push(pos);
+    }
+  }
+  for (const pos of candidateMap[num].col.get(position.col)?.positions || []) {
+    if (pos.row === position.row && pos.col === position.col) continue;
+    const isHas = affectedCells.some(
+      (item) => item.row === pos.row && item.col === pos.col
+    );
+    if (!isHas) {
+      affectedCells.push(pos);
+    }
+  }
+  for (const pos of candidateMap[num].box.get(
+    Math.floor(position.row / 3) * 3 + Math.floor(position.col / 3)
+  )?.positions || []) {
+    if (pos.row === position.row && pos.col === position.col) continue;
+    const isHas = affectedCells.some(
+      (item) => item.row === pos.row && item.col === pos.col
+    );
+    if (!isHas) {
+      affectedCells.push(pos);
+    }
+  }
+  affectedCells = affectedCells.map((item) => ({
+    row: item.row,
+    col: item.col,
+  }));
+  return affectedCells;
+};
+
+export const XYChain = (
+  board: CellData[][],
+  candidateMap: CandidateMap,
+  graph: Graph
+): Result | null => {
+  for (let row = 0; row < 9; row++) {
+    for (let col = 0; col < 9; col++) {
+      const cell1 = board[row][col];
+      // 找a的连接
+      if (cell1.draft.length === 2) {
+        const [a, b] = cell1.draft;
+        const affectedCells_a = getAffectedCells({ row, col }, a, candidateMap);
+        for (const pos2 of affectedCells_a) {
+          const cell2 = board[pos2.row][pos2.col];
+          if (
+            cell2.draft.length === 2 &&
+            cell2.draft.includes(a) &&
+            !cell2.draft.includes(b)
+          ) {
+            const c = cell2.draft[0] === a ? cell2.draft[1] : cell2.draft[0];
+            const affectedCells_c = getAffectedCells(pos2, c, candidateMap);
+            for (const pos3 of affectedCells_c) {
+              const cell3 = board[pos3.row][pos3.col];
+              if (
+                cell3.draft.length === 2 &&
+                cell3.draft.includes(c) &&
+                !cell3.draft.includes(a)
+              ) {
+                const d =
+                  cell3.draft[0] === c ? cell3.draft[1] : cell3.draft[0];
+                const affectedCells_d = getAffectedCells(pos3, d, candidateMap);
+                for (const pos4 of affectedCells_d) {
+                  const cell4 = board[pos4.row][pos4.col];
+                  if (
+                    cell4.draft.length === 2 &&
+                    cell4.draft.includes(d) &&
+                    !cell4.draft.includes(c)
+                  ) {
+                    const e =
+                      cell4.draft[0] === d ? cell4.draft[1] : cell4.draft[0];
+                    if (b === e) {
+                      const commonAffectedCells = getCommonUnits(
+                        { row, col },
+                        { row: pos4.row, col: pos4.col },
+                        board
+                      );
+                      const positions: Position[] = [];
+                      for (const pos5 of commonAffectedCells) {
+                        if (board[pos5.row][pos5.col].draft.includes(b)) {
+                          positions.push(pos5);
+                        }
+                      }
+                      if (positions.length && a !== d) {
+                        const prompt = [
+                          { row, col },
+                          { row: pos2.row, col: pos2.col },
+                          { row: pos3.row, col: pos3.col },
+                          { row: pos4.row, col: pos4.col },
+                        ];
+                        const isOverlap = positions.some((pos) =>
+                          prompt.some(
+                            (p) => p.row === pos.row && p.col === pos.col
+                          )
+                        );
+
+                        // 如果有重复，则跳过当前情况
+                        if (isOverlap) {
+                          continue;
+                        }
+                        console.log(1);
+                        return {
+                          isFill: false,
+                          position: positions,
+                          prompt,
+                          method: SOLUTION_METHODS.XY_CHAIN,
+                          target: [b, a, c, d],
+                        };
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
+      // 找b的连接
+      if (cell1.draft.length === 2) {
+        const [a, b] = cell1.draft;
+        const affectedCells_b = getAffectedCells({ row, col }, b, candidateMap);
+
+        for (const pos2 of affectedCells_b) {
+          const cell2 = board[pos2.row][pos2.col];
+          if (
+            cell2.draft.length === 2 &&
+            cell2.draft.includes(b) &&
+            !cell2.draft.includes(a)
+          ) {
+            const c = cell2.draft[0] === b ? cell2.draft[1] : cell2.draft[0];
+
+            const affectedCells_c = getAffectedCells(pos2, c, candidateMap);
+            for (const pos3 of affectedCells_c) {
+              const cell3 = board[pos3.row][pos3.col];
+              if (
+                cell3.draft.length === 2 &&
+                cell3.draft.includes(c) &&
+                !cell3.draft.includes(b)
+              ) {
+                const d =
+                  cell3.draft[0] === c ? cell3.draft[1] : cell3.draft[0];
+
+                const affectedCells_d = getAffectedCells(pos3, d, candidateMap);
+                for (const pos4 of affectedCells_d) {
+                  const cell4 = board[pos4.row][pos4.col];
+                  if (
+                    cell4.draft.length === 2 &&
+                    cell4.draft.includes(d) &&
+                    !cell4.draft.includes(c)
+                  ) {
+                    const e =
+                      cell4.draft[0] === d ? cell4.draft[1] : cell4.draft[0];
+
+                    if (a === e) {
+  
+                      const commonAffectedCells = getCommonUnits(
+                        { row, col },
+                        { row: pos4.row, col: pos4.col },
+                        board
+                      );
+                      const positions: Position[] = [];
+                      for (const pos5 of commonAffectedCells) {
+                        if (board[pos5.row][pos5.col].draft.includes(a)) {
+                          positions.push(pos5);
+                        }
+                      }
+                      if (positions.length && b !== d) {
+                        const prompt = [
+                          { row, col },
+                          { row: pos2.row, col: pos2.col },
+                          { row: pos3.row, col: pos3.col },
+                          { row: pos4.row, col: pos4.col },
+                        ];
+                        const isOverlap = positions.some((pos) =>
+                          prompt.some(
+                            (p) => p.row === pos.row && p.col === pos.col
+                          )
+                        );
+
+                        // 如果有重复，则跳过当前情况
+                        if (isOverlap) {
+                          continue;
+                        }
+                        return {
+                          isFill: false,
+                          position: positions,
+                          prompt,
+                          method: SOLUTION_METHODS.XY_CHAIN,
+                          target: [a, b, c, d],
+                        };
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
       }
     }

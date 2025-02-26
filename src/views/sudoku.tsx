@@ -27,7 +27,7 @@ import {
   findStrongLink,
   checkStrongLinkParity,
   skyscraper,
-  skyscraper2_2,
+  skyscraper2,
   hiddenTriple1,
   nakedTriple1,
   nakedTriple2,
@@ -41,6 +41,7 @@ import {
   getGraphNode,
   remotePair,
   combinationChain,
+  XYChain,
 } from "../tools/solution";
 import "./sudoku.less";
 import type { CellData, Position } from "../tools";
@@ -529,26 +530,27 @@ const Sudoku: React.FC = () => {
 
   const handleHint = () => {
     const solveFunctions = [
-      singleCandidate,
-      hiddenSingle,
-      blockElimination,
-      nakedPair,
-      nakedTriple1,
-      nakedTriple2,
-      hiddenPair,
-      hiddenTriple1,
-      hiddenTriple2,
-      xWing,
-      xWingVarient,
-      xyWing,
-      xyzWing,
-      nakedQuadruple,
-      skyscraper,
-      skyscraper2_2,
-      remotePair,
-      combinationChain,
-      swordfish,
-      wxyzWing,
+      // singleCandidate,
+      // hiddenSingle,
+      // blockElimination,
+      // nakedPair,
+      // nakedTriple1,
+      // nakedTriple2,
+      // hiddenPair,
+      // hiddenTriple1,
+      // hiddenTriple2,
+      // xWing,
+      // xWingVarient,
+      // xyWing,
+      // xyzWing,
+      // nakedQuadruple,
+      // skyscraper,
+      // skyscraper2,
+      // remotePair,
+      // combinationChain,
+      // swordfish,
+      // wxyzWing,
+      XYChain,
       trialAndError,
     ];
     let result = null;
@@ -1506,6 +1508,11 @@ const Sudoku: React.FC = () => {
               position[1].col + 1
             }内都不能出现候选数${target[0]}`;
           }
+          break;
+        case SOLUTION_METHODS.XY_CHAIN:
+          boardWithHighlight = applyHintHighlight(board, result, "both");
+          setPositions(target);
+          setPrompts(target);
           break;
       }
     }

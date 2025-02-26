@@ -45,6 +45,9 @@ export const SOLUTION_METHODS = {
   SWORDFISH_WITH_FIN_ROW: "三阶鱼带鳍(行)",
   SWORDFISH_WITH_FIN_COLUMN: "三阶鱼带鳍(列)",
   TRIAL_AND_ERROR: "试数法",
+  UNIQUE_RECTANGLE: "唯一矩形",
+  XY_CHAIN: "XY-Chain",
+  BINARY_UNIVERSAL_GRAVE: "双全值坟墓",
 };
 
 export const STRONG_LINK_TYPE = {
