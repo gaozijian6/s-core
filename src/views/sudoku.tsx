@@ -34,7 +34,6 @@ import {
   hiddenTriple2,
   nakedQuadruple,
   swordfish,
-  wxyzWing,
   trialAndError,
   isUnitStrongLink,
   getGraphNodePaths,
@@ -121,7 +120,6 @@ const Sudoku: React.FC = () => {
     );
 
     newBoard = deepCopyBoard(mockBoard);
-
 
     updateBoard(newBoard, "生成新棋盘");
 
@@ -407,7 +405,9 @@ const Sudoku: React.FC = () => {
     const startTime = performance.now();
     const solvedBoard = solve3(deepCopyBoard(board));
     const dlx = new DLX();
-    const boardString = board.map((row) => row.map((cell) => cell.value ?? 0).join("")).join("");
+    const boardString = board
+      .map((row) => row.map((cell) => cell.value ?? 0).join(""))
+      .join("");
     // const solutions = dlx.solveSudoku(boardString);
     if (solvedBoard && solve(solvedBoard)) {
       updateBoard(solvedBoard, "求解数独");
@@ -556,7 +556,6 @@ const Sudoku: React.FC = () => {
       Loop,
       uniqueRectangle,
       xyzWing,
-      wxyzWing,
       BinaryUniversalGrave,
       nakedQuadruple,
       XYChain,
@@ -638,6 +637,11 @@ const Sudoku: React.FC = () => {
         case SOLUTION_METHODS.TRIAL_AND_ERROR:
           boardWithHighlight = applyHintHighlight(board, result, "prompt");
           hintContent = `尝试向拥有最少候选数的方格内填入${target[0]}，若后续无解，说明填入${target[0]}是错误的，则尝试其他候选数`;
+          break;
+        case SOLUTION_METHODS.BINARY_UNIVERSAL_GRAVE:
+          boardWithHighlight = applyHintHighlight(board, result, "both");
+          setPositions(target);
+          setPrompts(target);
           break;
       }
     } else {
@@ -1365,11 +1369,11 @@ const Sudoku: React.FC = () => {
               prompt[0].row + 1
             }C${prompt[0].col + 1}、R${prompt[1].row + 1}C${
               prompt[1].col + 1
-            }、R${prompt[6].row + 1}C${prompt[6].col + 1}谁为真，${posStr}内都不能出现候选数${
-              prompt[4].row + 1
-            }C${prompt[4].col + 1}谁为真，${posStr}内都不能出现候选数${
-              target[0]
-            }`;
+            }、R${prompt[6].row + 1}C${
+              prompt[6].col + 1
+            }谁为真，${posStr}内都不能出现候选数${prompt[4].row + 1}C${
+              prompt[4].col + 1
+            }谁为真，${posStr}内都不能出现候选数${target[0]}`;
           } else if (isWeakLink && chainStructure === "3-4-1") {
             hintContent = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
               prompt[1].row + 1
@@ -1379,13 +1383,15 @@ const Sudoku: React.FC = () => {
               prompt[4].row + 1
             }C${prompt[4].col + 1}、R${prompt[5].row + 1}C${
               prompt[5].col + 1
-            }、R${prompt[6].row + 1}C${prompt[6].col + 1}四个方格构成强链，这两条强链通过R${
-              prompt[2].row + 1
-            }C${prompt[2].col + 1}、R${prompt[3].row + 1}C${
-              prompt[3].col + 1
-            }构成的弱链相连，无论R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
-              prompt[1].row + 1
-            }C${prompt[1].col + 1}、R${prompt[4].row + 1}C${
+            }、R${prompt[6].row + 1}C${
+              prompt[6].col + 1
+            }四个方格构成强链，这两条强链通过R${prompt[2].row + 1}C${
+              prompt[2].col + 1
+            }、R${prompt[3].row + 1}C${prompt[3].col + 1}构成的弱链相连，无论R${
+              prompt[0].row + 1
+            }C${prompt[0].col + 1}、R${prompt[1].row + 1}C${
+              prompt[1].col + 1
+            }、R${prompt[4].row + 1}C${
               prompt[4].col + 1
             }谁为真，${posStr}内都不能出现候选数${target[0]}`;
           }
@@ -1518,6 +1524,7 @@ const Sudoku: React.FC = () => {
             }内都不能出现候选数${target[0]}`;
           }
           break;
+
         case SOLUTION_METHODS.XY_CHAIN:
           boardWithHighlight = applyHintHighlight(board, result, "both");
           setPositions(target);

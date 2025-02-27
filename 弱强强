@@ -1,4 +1,4 @@
-const board =[
+[
     [
         {
             "value": 9,
@@ -558,4 +558,3 @@ const board =[
         }
     ]
 ]
-export default board;
