@@ -4718,7 +4718,8 @@ export const XYChain = (
                           position: positions,
                           prompt,
                           method: SOLUTION_METHODS.XY_CHAIN,
-                          target: [b, a, c, d],
+                          // target: [b, a, c, d],
+                          target: [b],
                         };
                       }
                     }
@@ -4795,12 +4796,15 @@ export const XYChain = (
                         if (isOverlap) {
                           continue;
                         }
+                        console.log(2);
+
                         return {
                           isFill: false,
                           position: positions,
                           prompt,
                           method: SOLUTION_METHODS.XY_CHAIN,
-                          target: [a, b, c, d],
+                          // target: [a, b, c, d],
+                          target: [a],
                         };
                       }
                     }
@@ -4811,6 +4815,8 @@ export const XYChain = (
           }
         }
       }
+      // 弱强双双
+      
       // 弱强强强双
       if (cell1.draft.length === 2) {
         const [a, b] = cell1.draft;
@@ -4818,63 +4824,101 @@ export const XYChain = (
         for (const pos2 of affectedCells_a) {
           const cell2 = board[pos2.row][pos2.col];
           if (cell2.draft.includes(a)) {
-            const node2 = getGraphNode(pos2,a, graph);
-            const node3Array = findGraphNodeByDistance(node2,1)
-              for(const node3 of node3Array){
-                const cell3 = board[node3.row][node3.col];
-                for(const c of cell3.draft){
-                  if(c === a)continue;
-                  const pos3 = {row:node3.row,col:node3.col}
-                  const node3_other = getGraphNode(pos3,c,graph)
-                  if(node3_other){
-                    const node4Array = findGraphNodeByDistance(node3_other,1)
-                    for(const node4 of node4Array){
-                      const cell4 = board[node4.row][node4.col];
-                      for(const d of cell4.draft){
-                        if(d === c)continue;
-                        const pos4 = {row:node4.row,col:node4.col}
-                        const node4_other = getGraphNode(pos4,d,graph)
-                        if(node4_other){
-                          const node5Array = findGraphNodeByDistance(node4_other,1)
-                          for(const node5 of node5Array){
-                            const cell5 = board[node5.row][node5.col];
-                            const pos5 = {row:node5.row,col:node5.col}
-                            const affectedCells_d = getAffectedCells(pos5,d,candidateMap)
-                            for(const pos6 of affectedCells_d){
-                              const cell6 = board[pos6.row][pos6.col];
-                              if(cell6.draft.includes(b) && cell6.draft.includes(b) && cell6.draft.length===2){
-                                const prompt = [
-                                  {row,col},
-                                  {row:pos2.row,col:pos2.col},
-                                  {row:pos3.row,col:pos3.col},
-                                  {row:pos4.row,col:pos4.col},
-                                  {row:pos5.row,col:pos5.col},
-                                  {row:pos6.row,col:pos6.col},
-                                ]
-                                const commonAffectedCells=getCommonUnits({row,col},{row:pos6.row,col:pos6.col},board)
-                                const positions:Position[]=[]
-                                for(const pos7 of commonAffectedCells){
-                                  if(board[pos7.row][pos7.col].draft.includes(b)){
-                                    positions.push(pos7)
-                                  }
-                                }
-                                const isOverlap = positions.some((pos) =>
-                                  prompt.some(
-                                    (p) => p.row === pos.row && p.col === pos.col
-                                  )
+            const node2 = getGraphNode(pos2, a, graph);
+            const node3Array = findGraphNodeByDistance(node2, 1);
+            for (const node3 of node3Array) {
+              const cell3 = board[node3.row][node3.col];
+              for (const c of cell3.draft) {
+                if (c === a) continue;
+                const pos3 = { row: node3.row, col: node3.col };
+                const node3_other = getGraphNode(pos3, c, graph);
+                if (node3_other) {
+                  const node4Array = findGraphNodeByDistance(node3_other, 1);
+                  for (const node4 of node4Array) {
+                    const cell4 = board[node4.row][node4.col];
+                    for (const d of cell4.draft) {
+                      if (d === c) continue;
+                      const pos4 = { row: node4.row, col: node4.col };
+                      const node4_other = getGraphNode(pos4, d, graph);
+                      if (node4_other) {
+                        const node5Array = findGraphNodeByDistance(
+                          node4_other,
+                          1
+                        );
+                        for (const node5 of node5Array) {
+                          const cell5 = board[node5.row][node5.col];
+                          const pos5 = { row: node5.row, col: node5.col };
+                          const affectedCells_d = getAffectedCells(
+                            pos5,
+                            d,
+                            candidateMap
+                          );
+                          for (const pos6 of affectedCells_d) {
+                            const cell6 = board[pos6.row][pos6.col];
+                            if (
+                              cell6.draft.includes(b) &&
+                              cell6.draft.includes(b) &&
+                              cell6.draft.length === 2
+                            ) {
+                              const prompt = [
+                                { row, col },
+                                { row: pos2.row, col: pos2.col },
+                                { row: pos3.row, col: pos3.col },
+                                { row: pos4.row, col: pos4.col },
+                                { row: pos5.row, col: pos5.col },
+                                { row: pos6.row, col: pos6.col },
+                              ];
+                              // 检查pos5和pos6是否与前四个元素位置相同
+                              const isPos5Duplicate = prompt
+                                .slice(0, 4)
+                                .some(
+                                  (p) =>
+                                    p.row === pos5.row && p.col === pos5.col
                                 );
-                                if(isOverlap)continue;
-                                if(a===c||b===c||c===d||a===d)continue;
-                                return {
-                                  isFill:false,
-                                  position:positions,
-                                  prompt,
-                                  method:SOLUTION_METHODS.XY_CHAIN,
-                                  target:[b,a,c,d],
+                              if (isPos5Duplicate) continue;
+
+                              const isPos6Duplicate = prompt
+                                .slice(0, 4)
+                                .some(
+                                  (p) =>
+                                    p.row === pos6.row && p.col === pos6.col
+                                );
+                              if (isPos6Duplicate) continue;
+                              const commonAffectedCells = getCommonUnits(
+                                { row, col },
+                                { row: pos6.row, col: pos6.col },
+                                board
+                              );
+                              const positions: Position[] = [];
+                              for (const pos7 of commonAffectedCells) {
+                                if (
+                                  board[pos7.row][pos7.col].draft.includes(b)
+                                ) {
+                                  positions.push(pos7);
                                 }
                               }
+                              if (!positions.length) continue;
+                              const isOverlap = positions.some((pos) =>
+                                prompt.some(
+                                  (p) => p.row === pos.row && p.col === pos.col
+                                )
+                              );
+                              if (isOverlap) continue;
+                              // if (a === c || b === c || c === d || a === d)
+                              //   continue;
+                              console.log(3);
+
+                              return {
+                                isFill: false,
+                                position: positions,
+                                prompt,
+                                method: SOLUTION_METHODS.XY_CHAIN,
+                                // target:[b,a,c,d],
+                                target: [b],
+                              };
                             }
                           }
+                        }
                       }
                     }
                   }
@@ -4890,63 +4934,100 @@ export const XYChain = (
         for (const pos2 of affectedCells_b) {
           const cell2 = board[pos2.row][pos2.col];
           if (cell2.draft.includes(b)) {
-            const node2 = getGraphNode(pos2,b, graph);
-            const node3Array = findGraphNodeByDistance(node2,1)
-              for(const node3 of node3Array){
-                const cell3 = board[node3.row][node3.col];
-                for(const c of cell3.draft){
-                  if(c === b)continue;
-                  const pos3 = {row:node3.row,col:node3.col}
-                  const node3_other = getGraphNode(pos3,c,graph)
-                  if(node3_other){
-                    const node4Array = findGraphNodeByDistance(node3_other,1)
-                    for(const node4 of node4Array){
-                      const cell4 = board[node4.row][node4.col];
-                      for(const d of cell4.draft){
-                        if(d === c)continue;
-                        const pos4 = {row:node4.row,col:node4.col}
-                        const node4_other = getGraphNode(pos4,d,graph)
-                        if(node4_other){
-                          const node5Array = findGraphNodeByDistance(node4_other,1)
-                          for(const node5 of node5Array){
-                            const cell5 = board[node5.row][node5.col];
-                            const pos5 = {row:node5.row,col:node5.col}
-                            const affectedCells_d = getAffectedCells(pos5,d,candidateMap)
-                            for(const pos6 of affectedCells_d){
-                              const cell6 = board[pos6.row][pos6.col];
-                              if(cell6.draft.includes(b) && cell6.draft.includes(b) && cell6.draft.length===2){
-                                const prompt = [
-                                  {row,col},
-                                  {row:pos2.row,col:pos2.col},
-                                  {row:pos3.row,col:pos3.col},
-                                  {row:pos4.row,col:pos4.col},
-                                  {row:pos5.row,col:pos5.col},
-                                  {row:pos6.row,col:pos6.col},
-                                ]
-                                const commonAffectedCells=getCommonUnits({row,col},{row:pos6.row,col:pos6.col},board)
-                                const positions:Position[]=[]
-                                for(const pos7 of commonAffectedCells){
-                                  if(board[pos7.row][pos7.col].draft.includes(b)){
-                                    positions.push(pos7)
-                                  }
-                                }
-                                const isOverlap = positions.some((pos) =>
-                                  prompt.some(
-                                    (p) => p.row === pos.row && p.col === pos.col
-                                  )
+            const node2 = getGraphNode(pos2, b, graph);
+            const node3Array = findGraphNodeByDistance(node2, 1);
+            for (const node3 of node3Array) {
+              const cell3 = board[node3.row][node3.col];
+              for (const c of cell3.draft) {
+                if (c === b) continue;
+                const pos3 = { row: node3.row, col: node3.col };
+                const node3_other = getGraphNode(pos3, c, graph);
+                if (node3_other) {
+                  const node4Array = findGraphNodeByDistance(node3_other, 1);
+                  for (const node4 of node4Array) {
+                    const cell4 = board[node4.row][node4.col];
+                    for (const d of cell4.draft) {
+                      if (d === c) continue;
+                      const pos4 = { row: node4.row, col: node4.col };
+                      const node4_other = getGraphNode(pos4, d, graph);
+                      if (node4_other) {
+                        const node5Array = findGraphNodeByDistance(
+                          node4_other,
+                          1
+                        );
+                        for (const node5 of node5Array) {
+                          const cell5 = board[node5.row][node5.col];
+                          const pos5 = { row: node5.row, col: node5.col };
+                          const affectedCells_d = getAffectedCells(
+                            pos5,
+                            d,
+                            candidateMap
+                          );
+                          for (const pos6 of affectedCells_d) {
+                            const cell6 = board[pos6.row][pos6.col];
+                            if (
+                              cell6.draft.includes(a) &&
+                              cell6.draft.includes(a) &&
+                              cell6.draft.length === 2
+                            ) {
+                              const prompt = [
+                                { row, col },
+                                { row: pos2.row, col: pos2.col },
+                                { row: pos3.row, col: pos3.col },
+                                { row: pos4.row, col: pos4.col },
+                                { row: pos5.row, col: pos5.col },
+                                { row: pos6.row, col: pos6.col },
+                              ];
+                              // 检查pos5和pos6是否与前四个元素位置相同
+                              const isPos5Duplicate = prompt
+                                .slice(0, 4)
+                                .some(
+                                  (p) =>
+                                    p.row === pos5.row && p.col === pos5.col
                                 );
-                                if(isOverlap)continue;
-                                if(a===c||b===c||c===d||a===d)continue;
-                                return {
-                                  isFill:false,
-                                  position:positions,
-                                  prompt,
-                                  method:SOLUTION_METHODS.XY_CHAIN,
-                                  target:[a,b,c,d],
+                              if (isPos5Duplicate) continue;
+
+                              const isPos6Duplicate = prompt
+                                .slice(0, 4)
+                                .some(
+                                  (p) =>
+                                    p.row === pos6.row && p.col === pos6.col
+                                );
+                              if (isPos6Duplicate) continue;
+                              const commonAffectedCells = getCommonUnits(
+                                { row, col },
+                                { row: pos6.row, col: pos6.col },
+                                board
+                              );
+                              const positions: Position[] = [];
+                              for (const pos7 of commonAffectedCells) {
+                                if (
+                                  board[pos7.row][pos7.col].draft.includes(a)
+                                ) {
+                                  positions.push(pos7);
                                 }
                               }
+                              if (!positions.length) continue;
+                              const isOverlap = positions.some((pos) =>
+                                prompt.some(
+                                  (p) => p.row === pos.row && p.col === pos.col
+                                )
+                              );
+                              if (isOverlap) continue;
+                              // if (a === c || b === c || c === d || a === d)
+                              //   continue;
+                              console.log(4);
+                              return {
+                                isFill: false,
+                                position: positions,
+                                prompt,
+                                method: SOLUTION_METHODS.XY_CHAIN,
+                                // target:[a,b,c,d],
+                                target: [a],
+                              };
                             }
                           }
+                        }
                       }
                     }
                   }

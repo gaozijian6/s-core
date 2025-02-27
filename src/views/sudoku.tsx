@@ -39,7 +39,6 @@ import {
   isUnitStrongLink,
   getGraphNodePaths,
   getGraphNode,
-  remotePair,
   combinationChain,
   XYChain,
   Loop,
@@ -121,7 +120,7 @@ const Sudoku: React.FC = () => {
       }))
     );
 
-    // newBoard = deepCopyBoard(mockBoard);
+    newBoard = deepCopyBoard(mockBoard);
 
 
     updateBoard(newBoard, "生成新棋盘");
@@ -552,8 +551,6 @@ const Sudoku: React.FC = () => {
       xyWing,
       skyscraper,
       skyscraper2,
-      // XYChain,
-      remotePair,
       combinationChain,
       swordfish,
       Loop,
@@ -562,6 +559,7 @@ const Sudoku: React.FC = () => {
       wxyzWing,
       BinaryUniversalGrave,
       nakedQuadruple,
+      XYChain,
       trialAndError,
     ];
     let result = null;

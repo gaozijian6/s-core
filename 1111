@@ -1,4 +1,4 @@
-const board =[
+[
     [
         {
             "value": null,
@@ -22,19 +22,24 @@ const board =[
             "value": null,
             "isGiven": false,
             "draft": [
+                1,
                 4,
                 5
             ]
         },
         {
-            "value": 1,
+            "value": null,
             "isGiven": false,
-            "draft": []
+            "draft": [
+                1,
+                8
+            ]
         },
         {
             "value": null,
             "isGiven": false,
             "draft": [
+                1,
                 5,
                 8
             ]
@@ -61,7 +66,8 @@ const board =[
             "isGiven": false,
             "draft": [
                 4,
-                7
+                7,
+                8
             ]
         },
         {
@@ -99,6 +105,7 @@ const board =[
             "draft": [
                 2,
                 6,
+                8,
                 9
             ]
         },
@@ -120,7 +127,8 @@ const board =[
             "isGiven": false,
             "draft": [
                 2,
-                4
+                4,
+                8
             ]
         }
     ],
@@ -144,6 +152,7 @@ const board =[
             "isGiven": false,
             "draft": [
                 5,
+                6,
                 8
             ]
         },
@@ -270,9 +279,14 @@ const board =[
             ]
         },
         {
-            "value": 1,
+            "value": null,
             "isGiven": false,
-            "draft": []
+            "draft": [
+                1,
+                5,
+                6,
+                8
+            ]
         },
         {
             "value": 3,
@@ -283,6 +297,7 @@ const board =[
             "value": null,
             "isGiven": false,
             "draft": [
+                1,
                 2,
                 6
             ]
@@ -306,7 +321,8 @@ const board =[
             "isGiven": false,
             "draft": [
                 2,
-                5
+                5,
+                8
             ]
         },
         {
@@ -337,15 +353,20 @@ const board =[
             "value": null,
             "isGiven": false,
             "draft": [
+                1,
                 4,
                 5,
+                6,
                 8
             ]
         },
         {
-            "value": 1,
+            "value": null,
             "isGiven": false,
-            "draft": []
+            "draft": [
+                1,
+                6
+            ]
         },
         {
             "value": 9,
@@ -457,6 +478,7 @@ const board =[
             "value": null,
             "isGiven": false,
             "draft": [
+                1,
                 7,
                 9
             ]
@@ -467,9 +489,13 @@ const board =[
             "draft": []
         },
         {
-            "value": 1,
+            "value": null,
             "isGiven": false,
-            "draft": []
+            "draft": [
+                1,
+                8,
+                9
+            ]
         },
         {
             "value": null,
@@ -552,9 +578,9 @@ const board =[
             "isGiven": false,
             "draft": [
                 5,
+                8,
                 9
             ]
         }
     ]
 ]
-export default board;
