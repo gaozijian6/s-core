@@ -121,7 +121,7 @@ const Sudoku: React.FC = () => {
       }))
     );
 
-    newBoard = deepCopyBoard(mockBoard);
+    // newBoard = deepCopyBoard(mockBoard);
 
 
     updateBoard(newBoard, "生成新棋盘");
@@ -550,18 +550,18 @@ const Sudoku: React.FC = () => {
       xWing,
       xWingVarient,
       xyWing,
-      xyzWing,
-      nakedQuadruple,
       skyscraper,
       skyscraper2,
+      // XYChain,
       remotePair,
       combinationChain,
       swordfish,
       Loop,
       uniqueRectangle,
-      BinaryUniversalGrave,
+      xyzWing,
       wxyzWing,
-      XYChain,
+      BinaryUniversalGrave,
+      nakedQuadruple,
       trialAndError,
     ];
     let result = null;

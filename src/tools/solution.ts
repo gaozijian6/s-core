@@ -402,7 +402,7 @@ export const nakedPair = (
         const unitCells =
           (
             candidateMap[num][
-            unit.type as keyof (typeof candidateMap)[number]
+              unit.type as keyof (typeof candidateMap)[number]
             ] as Map<number, CandidateStats>
           )?.get?.(unit.value)?.positions ?? [];
         // 在同一单元中找到另一个具有相同候选数的方格
@@ -466,9 +466,9 @@ export const nakedPair = (
             };
             const method =
               SOLUTION_METHODS[
-              `NAKED_PAIR_${getMethodKey(
-                unit.type
-              )}` as keyof typeof SOLUTION_METHODS
+                `NAKED_PAIR_${getMethodKey(
+                  unit.type
+                )}` as keyof typeof SOLUTION_METHODS
               ];
             const target = [num1, num2];
 
@@ -525,8 +525,8 @@ const checkNakedTriple1 = (
         unitType === "row"
           ? [unit, i]
           : unitType === "col"
-            ? [i, unit]
-            : [
+          ? [i, unit]
+          : [
               Math.floor(unit / 3) * 3 + Math.floor(i / 3),
               (unit % 3) * 3 + (i % 3),
             ];
@@ -625,8 +625,8 @@ const checkNakedTriple1 = (
                   unitType === "row"
                     ? [unit, m]
                     : unitType === "col"
-                      ? [m, unit]
-                      : [
+                    ? [m, unit]
+                    : [
                         Math.floor(unit / 3) * 3 + Math.floor(m / 3),
                         (unit % 3) * 3 + (m % 3),
                       ];
@@ -656,9 +656,9 @@ const checkNakedTriple1 = (
 
                 const method =
                   SOLUTION_METHODS[
-                  `NAKED_TRIPLE_${getMethodKey(
-                    unitType
-                  )}` as keyof typeof SOLUTION_METHODS
+                    `NAKED_TRIPLE_${getMethodKey(
+                      unitType
+                    )}` as keyof typeof SOLUTION_METHODS
                   ];
 
                 return {
@@ -714,8 +714,8 @@ const checkNakedTriple2 = (
         unitType === "row"
           ? [unit, i]
           : unitType === "col"
-            ? [i, unit]
-            : [
+          ? [i, unit]
+          : [
               Math.floor(unit / 3) * 3 + Math.floor(i / 3),
               (unit % 3) * 3 + (i % 3),
             ];
@@ -750,8 +750,8 @@ const checkNakedTriple2 = (
                 unitType === "row"
                   ? [unit, m]
                   : unitType === "col"
-                    ? [m, unit]
-                    : [
+                  ? [m, unit]
+                  : [
                       Math.floor(unit / 3) * 3 + Math.floor(m / 3),
                       (unit % 3) * 3 + (m % 3),
                     ];
@@ -780,9 +780,9 @@ const checkNakedTriple2 = (
               };
               const method =
                 SOLUTION_METHODS[
-                `NAKED_TRIPLE_${getMethodKey(
-                  unitType
-                )}` as keyof typeof SOLUTION_METHODS
+                  `NAKED_TRIPLE_${getMethodKey(
+                    unitType
+                  )}` as keyof typeof SOLUTION_METHODS
                 ];
 
               return {
@@ -841,8 +841,8 @@ const checkNakedQuadruple = (
         unitType === "row"
           ? [unit, i]
           : unitType === "col"
-            ? [i, unit]
-            : [
+          ? [i, unit]
+          : [
               Math.floor(unit / 3) * 3 + Math.floor(i / 3),
               (unit % 3) * 3 + (i % 3),
             ];
@@ -906,8 +906,8 @@ const checkNakedQuadruple = (
                     unitType === "row"
                       ? [unit, m]
                       : unitType === "col"
-                        ? [m, unit]
-                        : [
+                      ? [m, unit]
+                      : [
                           Math.floor(unit / 3) * 3 + Math.floor(m / 3),
                           (unit % 3) * 3 + (m % 3),
                         ];
@@ -937,9 +937,9 @@ const checkNakedQuadruple = (
 
                   const method =
                     SOLUTION_METHODS[
-                    `NAKED_QUADRUPLE_${getMethodKey(
-                      unitType
-                    )}` as keyof typeof SOLUTION_METHODS
+                      `NAKED_QUADRUPLE_${getMethodKey(
+                        unitType
+                      )}` as keyof typeof SOLUTION_METHODS
                     ];
 
                   return {
@@ -1042,9 +1042,9 @@ const checkHiddenPair = (
                 prompt,
                 method:
                   SOLUTION_METHODS[
-                  `HIDDEN_PAIR_${getMethodKey(
-                    unitType
-                  )}` as keyof typeof SOLUTION_METHODS
+                    `HIDDEN_PAIR_${getMethodKey(
+                      unitType
+                    )}` as keyof typeof SOLUTION_METHODS
                   ],
                 target: [...new Set(targetNumbers)],
                 isFill: false,
@@ -1324,9 +1324,9 @@ const checkHiddenTriple2 = (
                   };
                   const method =
                     SOLUTION_METHODS[
-                    `HIDDEN_TRIPLE_${getMethodKey(
-                      unitType
-                    )}2` as keyof typeof SOLUTION_METHODS
+                      `HIDDEN_TRIPLE_${getMethodKey(
+                        unitType
+                      )}2` as keyof typeof SOLUTION_METHODS
                     ];
                   return {
                     position: positionsArray,
@@ -1561,9 +1561,9 @@ const checkXWingVarient = (
                 if (
                   positionsToExclude.length > 0 &&
                   Math.floor(groupD[0].row / 3) ===
-                  Math.floor(positionsToExclude[0].row / 3) &&
+                    Math.floor(positionsToExclude[0].row / 3) &&
                   Math.floor(groupD[0].col / 3) ===
-                  Math.floor(positionsToExclude[0].col / 3)
+                    Math.floor(positionsToExclude[0].col / 3)
                 ) {
                   return {
                     position: positionsToExclude,
@@ -2725,9 +2725,9 @@ export const isInSameBox = (
 ): boolean => {
   return (
     Math.floor((pos1 as Position).row / 3) ===
-    Math.floor((pos2 as Position).row / 3) &&
+      Math.floor((pos2 as Position).row / 3) &&
     Math.floor((pos1 as Position).col / 3) ===
-    Math.floor((pos2 as Position).col / 3)
+      Math.floor((pos2 as Position).col / 3)
   );
 };
 
@@ -2840,27 +2840,57 @@ export const combinationChain = (
                   ) {
                     continue;
                   }
+                  let position: Position[] = [];
                   if (
+                    Math.floor(A.row / 3) !== Math.floor(graphNodeG.row / 3) &&
                     board[A.row]?.[graphNodeG.col].value === null &&
                     board[A.row]?.[graphNodeG.col]?.draft?.includes(num) &&
                     graphNodeG.col !== A.col &&
                     graphNodeG.col !== B.col
                   ) {
-                    if ([A, B, C, ...path].some(p => p.row === graphNodeG.row && p.col === A.col)) {
-                      continue;
+                    position.push({ row: A.row, col: graphNodeG.col });
+                  } else if (
+                    Math.floor(A.row / 3) === Math.floor(graphNodeG.row / 3)
+                  ) {
+                    for (let col = 0; col < 9; col++) {
+                      if (
+                        Math.floor(col / 3) ===
+                          Math.floor(graphNodeG.col / 3) &&
+                        board[A.row]?.[col].value === null &&
+                        board[A.row]?.[col]?.draft?.includes(num) &&
+                        col !== A.col &&
+                        col !== B.col
+                      ) {
+                        position.push({ row: A.row, col });
+                      }
                     }
-                    console.log(1);
-                    
-                    return {
-                      position: [{ row: A.row, col: graphNodeG.col }],
-                      prompt: [A, B, C, ...path],
-                      method: SOLUTION_METHODS.COMBINATION_CHAIN,
-                      target: [num],
-                      isFill: false,
-                      isWeakLink: isWeakLink(board, C, D, num, candidateMap),
-                      chainStructure: "3-4-1",
-                    };
                   }
+
+                  // 检查position中的元素是否与prompt中的元素位置相同，如果相同则剔除
+                  const promptPositions = [A, B, C, ...path];
+                  position = position.filter(
+                    (pos) =>
+                      !promptPositions.some(
+                        (promptPos) =>
+                          promptPos.row === pos.row && promptPos.col === pos.col
+                      )
+                  );
+
+                  // 如果position为空，则不返回结果
+                  if (position.length === 0) {
+                    continue;
+                  }
+                  console.log(1);
+
+                  return {
+                    position,
+                    prompt: [A, B, C, ...path],
+                    method: SOLUTION_METHODS.COMBINATION_CHAIN,
+                    target: [num],
+                    isFill: false,
+                    isWeakLink: isWeakLink(board, C, D, num, candidateMap),
+                    chainStructure: "3-4-1",
+                  };
                 }
               }
             }
@@ -2976,27 +3006,63 @@ export const combinationChain = (
                     ) {
                       continue;
                     }
+                    // 检查列的情况
+                    let position: Position[] = [];
                     if (
+                      Math.floor(A.col / 3) !==
+                        Math.floor(graphNodeG.col / 3) &&
                       board[graphNodeG.row]?.[A.col].value === null &&
                       board[graphNodeG.row]?.[A.col]?.draft?.includes(num) &&
                       graphNodeG.row !== A.row &&
                       graphNodeG.row !== B.row
                     ) {
-                      if ([A, B, C, ...path].some(p => p.row === graphNodeG.row && p.col === A.col)) {
-                        continue;
+                      console.log(111);
+
+                      position.push({ row: graphNodeG.row, col: A.col });
+                    } else if (
+                      Math.floor(A.col / 3) === Math.floor(graphNodeG.col / 3)
+                    ) {
+                      console.log(222);
+                      for (let row = 0; row < 9; row++) {
+                        if (
+                          Math.floor(row / 3) ===
+                            Math.floor(graphNodeG.row / 3) &&
+                          board[row]?.[A.col].value === null &&
+                          board[row]?.[A.col]?.draft?.includes(num) &&
+                          row !== A.row &&
+                          row !== B.row
+                        ) {
+                          position.push({ row, col: A.col });
+                        }
                       }
-                      console.log('2');
-                      
-                      return {
-                        position: [{ row: graphNodeG.row, col: A.col }],
-                        prompt: [A, B, C, ...path],
-                        method: SOLUTION_METHODS.COMBINATION_CHAIN,
-                        target: [num],
-                        isFill: false,
-                        isWeakLink: isWeakLink(board, C, D, num, candidateMap),
-                        chainStructure: "3-4-1",
-                      };
                     }
+
+                    // 检查position中的元素是否与prompt中的元素位置相同，如果相同则剔除
+                    const promptPositions = [A, B, C, ...path];
+                    position = position.filter(
+                      (pos) =>
+                        !promptPositions.some(
+                          (promptPos) =>
+                            promptPos.row === pos.row &&
+                            promptPos.col === pos.col
+                        )
+                    );
+
+                    // 如果position为空，则不返回结果
+                    if (position.length === 0) {
+                      continue;
+                    }
+                    console.log("graphNodeG", graphNodeG);
+
+                    return {
+                      position,
+                      prompt: [A, B, C, ...path],
+                      method: SOLUTION_METHODS.COMBINATION_CHAIN,
+                      target: [num],
+                      isFill: false,
+                      isWeakLink: isWeakLink(board, C, D, num, candidateMap),
+                      chainStructure: "3-4-1",
+                    };
                   }
                 }
               }
@@ -4584,6 +4650,7 @@ export const XYChain = (
   for (let row = 0; row < 9; row++) {
     for (let col = 0; col < 9; col++) {
       const cell1 = board[row][col];
+      // 双双双双
       // 找a的连接
       if (cell1.draft.length === 2) {
         const [a, b] = cell1.draft;
@@ -4700,7 +4767,6 @@ export const XYChain = (
                       cell4.draft[0] === d ? cell4.draft[1] : cell4.draft[0];
 
                     if (a === e) {
-  
                       const commonAffectedCells = getCommonUnits(
                         { row, col },
                         { row: pos4.row, col: pos4.col },
@@ -4745,8 +4811,152 @@ export const XYChain = (
           }
         }
       }
+      // 弱强强强双
+      if (cell1.draft.length === 2) {
+        const [a, b] = cell1.draft;
+        const affectedCells_a = getAffectedCells({ row, col }, a, candidateMap);
+        for (const pos2 of affectedCells_a) {
+          const cell2 = board[pos2.row][pos2.col];
+          if (cell2.draft.includes(a)) {
+            const node2 = getGraphNode(pos2,a, graph);
+            const node3Array = findGraphNodeByDistance(node2,1)
+              for(const node3 of node3Array){
+                const cell3 = board[node3.row][node3.col];
+                for(const c of cell3.draft){
+                  if(c === a)continue;
+                  const pos3 = {row:node3.row,col:node3.col}
+                  const node3_other = getGraphNode(pos3,c,graph)
+                  if(node3_other){
+                    const node4Array = findGraphNodeByDistance(node3_other,1)
+                    for(const node4 of node4Array){
+                      const cell4 = board[node4.row][node4.col];
+                      for(const d of cell4.draft){
+                        if(d === c)continue;
+                        const pos4 = {row:node4.row,col:node4.col}
+                        const node4_other = getGraphNode(pos4,d,graph)
+                        if(node4_other){
+                          const node5Array = findGraphNodeByDistance(node4_other,1)
+                          for(const node5 of node5Array){
+                            const cell5 = board[node5.row][node5.col];
+                            const pos5 = {row:node5.row,col:node5.col}
+                            const affectedCells_d = getAffectedCells(pos5,d,candidateMap)
+                            for(const pos6 of affectedCells_d){
+                              const cell6 = board[pos6.row][pos6.col];
+                              if(cell6.draft.includes(b) && cell6.draft.includes(b) && cell6.draft.length===2){
+                                const prompt = [
+                                  {row,col},
+                                  {row:pos2.row,col:pos2.col},
+                                  {row:pos3.row,col:pos3.col},
+                                  {row:pos4.row,col:pos4.col},
+                                  {row:pos5.row,col:pos5.col},
+                                  {row:pos6.row,col:pos6.col},
+                                ]
+                                const commonAffectedCells=getCommonUnits({row,col},{row:pos6.row,col:pos6.col},board)
+                                const positions:Position[]=[]
+                                for(const pos7 of commonAffectedCells){
+                                  if(board[pos7.row][pos7.col].draft.includes(b)){
+                                    positions.push(pos7)
+                                  }
+                                }
+                                const isOverlap = positions.some((pos) =>
+                                  prompt.some(
+                                    (p) => p.row === pos.row && p.col === pos.col
+                                  )
+                                );
+                                if(isOverlap)continue;
+                                if(a===c||b===c||c===d||a===d)continue;
+                                return {
+                                  isFill:false,
+                                  position:positions,
+                                  prompt,
+                                  method:SOLUTION_METHODS.XY_CHAIN,
+                                  target:[b,a,c,d],
+                                }
+                              }
+                            }
+                          }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      if (cell1.draft.length === 2) {
+        const [a, b] = cell1.draft;
+        const affectedCells_b = getAffectedCells({ row, col }, b, candidateMap);
+        for (const pos2 of affectedCells_b) {
+          const cell2 = board[pos2.row][pos2.col];
+          if (cell2.draft.includes(b)) {
+            const node2 = getGraphNode(pos2,b, graph);
+            const node3Array = findGraphNodeByDistance(node2,1)
+              for(const node3 of node3Array){
+                const cell3 = board[node3.row][node3.col];
+                for(const c of cell3.draft){
+                  if(c === b)continue;
+                  const pos3 = {row:node3.row,col:node3.col}
+                  const node3_other = getGraphNode(pos3,c,graph)
+                  if(node3_other){
+                    const node4Array = findGraphNodeByDistance(node3_other,1)
+                    for(const node4 of node4Array){
+                      const cell4 = board[node4.row][node4.col];
+                      for(const d of cell4.draft){
+                        if(d === c)continue;
+                        const pos4 = {row:node4.row,col:node4.col}
+                        const node4_other = getGraphNode(pos4,d,graph)
+                        if(node4_other){
+                          const node5Array = findGraphNodeByDistance(node4_other,1)
+                          for(const node5 of node5Array){
+                            const cell5 = board[node5.row][node5.col];
+                            const pos5 = {row:node5.row,col:node5.col}
+                            const affectedCells_d = getAffectedCells(pos5,d,candidateMap)
+                            for(const pos6 of affectedCells_d){
+                              const cell6 = board[pos6.row][pos6.col];
+                              if(cell6.draft.includes(b) && cell6.draft.includes(b) && cell6.draft.length===2){
+                                const prompt = [
+                                  {row,col},
+                                  {row:pos2.row,col:pos2.col},
+                                  {row:pos3.row,col:pos3.col},
+                                  {row:pos4.row,col:pos4.col},
+                                  {row:pos5.row,col:pos5.col},
+                                  {row:pos6.row,col:pos6.col},
+                                ]
+                                const commonAffectedCells=getCommonUnits({row,col},{row:pos6.row,col:pos6.col},board)
+                                const positions:Position[]=[]
+                                for(const pos7 of commonAffectedCells){
+                                  if(board[pos7.row][pos7.col].draft.includes(b)){
+                                    positions.push(pos7)
+                                  }
+                                }
+                                const isOverlap = positions.some((pos) =>
+                                  prompt.some(
+                                    (p) => p.row === pos.row && p.col === pos.col
+                                  )
+                                );
+                                if(isOverlap)continue;
+                                if(a===c||b===c||c===d||a===d)continue;
+                                return {
+                                  isFill:false,
+                                  position:positions,
+                                  prompt,
+                                  method:SOLUTION_METHODS.XY_CHAIN,
+                                  target:[a,b,c,d],
+                                }
+                              }
+                            }
+                          }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   }
   return null;
 };
-
