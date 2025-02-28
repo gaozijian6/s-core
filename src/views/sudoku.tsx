@@ -120,7 +120,7 @@ const Sudoku: React.FC = () => {
       }))
     );
 
-    newBoard = deepCopyBoard(mockBoard);
+    // newBoard = deepCopyBoard(mockBoard);
 
 
     updateBoard(newBoard, "生成新棋盘");
