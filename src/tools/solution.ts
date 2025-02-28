@@ -4757,7 +4757,9 @@ export const XYChain = (
                                 (p) => p.row === pos.row && p.col === pos.col
                               )
                             );
-                            if (!isOverlap) {
+                            if (!isOverlap && e !== b) {
+                              console.log(a,c,d,e,b);
+                              
                               return {
                                 isFill: false,
                                 position: positions,
@@ -4894,7 +4896,7 @@ export const XYChain = (
                                 (p) => p.row === pos.row && p.col === pos.col
                               )
                             );
-                            if (!isOverlap) {
+                            if (!isOverlap && e !== b) {
                               return {
                                 isFill: false,
                                 position: positions,
@@ -5070,13 +5072,13 @@ export const XYChain = (
                   const node4Array = findGraphNodeByDistance(node3_other, 1);
                   for (const node4 of node4Array) {
                     const cell4 = board[node4.row][node4.col];
-                    if(cell4.draft.length === 2){
+                    if(true){
                       const d = cell4.draft[0] === c ? cell4.draft[1] : cell4.draft[0];
                       const pos4 = { row: node4.row, col: node4.col };
                       const affectedCells_d = getAffectedCells(pos4, d, candidateMap);
                       for(const pos5 of affectedCells_d){
                         const cell5 = board[pos5.row][pos5.col];
-                        if(cell5.draft.length===2 && cell5.draft.includes(b) && cell5.draft.includes(d)){
+                        if(cell5.draft.length===2 && cell5.draft.includes(b) && cell5.draft.includes(c)){
                           const prompt = [
                             { row, col },
                             { row: pos2.row, col: pos2.col },
@@ -5089,15 +5091,23 @@ export const XYChain = (
                             { row: pos5.row, col: pos5.col },
                             board
                           );
-                          const isOverlap = commonAffectedCells.some((pos) =>
+                          const positions: Position[] = [];
+                          for(const pos6 of commonAffectedCells){
+                            if(board[pos6.row][pos6.col].draft.includes(b)){
+                              positions.push(pos6);
+                            }
+                          }
+                          const isOverlap = positions.some((pos) =>
                             prompt.some(
                               (p) => p.row === pos.row && p.col === pos.col
                             )
                           );
-                          if(!isOverlap && commonAffectedCells.length){
+                          if(!isOverlap && positions.length){
+                            console.log(1);
+                            
                             return {
                               isFill: false,
-                              position: commonAffectedCells,
+                              position: positions,
                               prompt,
                               method: SOLUTION_METHODS.XY_CHAIN,
                               target: [b],
@@ -5476,13 +5486,13 @@ export const XYChain = (
                   const node4Array = findGraphNodeByDistance(node3_other, 1);
                   for (const node4 of node4Array) {
                     const cell4 = board[node4.row][node4.col];
-                    if(cell4.draft.length === 2){
+                    if(true){
                       const d = cell4.draft[0] === c ? cell4.draft[1] : cell4.draft[0];
                       const pos4 = { row: node4.row, col: node4.col };
                       const affectedCells_d = getAffectedCells(pos4, d, candidateMap);
                       for(const pos5 of affectedCells_d){
                         const cell5 = board[pos5.row][pos5.col];
-                        if(cell5.draft.length===2 && cell5.draft.includes(a) && cell5.draft.includes(d)){
+                        if(cell5.draft.length===2 && cell5.draft.includes(a) && cell5.draft.includes(c)){
                           const prompt = [
                             { row, col },
                             { row: pos2.row, col: pos2.col },
@@ -5495,15 +5505,23 @@ export const XYChain = (
                             { row: pos5.row, col: pos5.col },
                             board
                           );
-                          const isOverlap = commonAffectedCells.some((pos) =>
+                          const positions: Position[] = [];
+                          for(const pos6 of commonAffectedCells){
+                            if(board[pos6.row][pos6.col].draft.includes(a)){
+                              positions.push(pos6);
+                            }
+                          }
+                          const isOverlap = positions.some((pos) =>
                             prompt.some(
                               (p) => p.row === pos.row && p.col === pos.col
                             )
                           );
-                          if(!isOverlap && commonAffectedCells.length){
+                          if(!isOverlap &&  positions.length){
+                            console.log(2);
+                            
                             return {
                               isFill: false,
-                              position: commonAffectedCells,
+                              position: positions,
                               prompt,
                               method: SOLUTION_METHODS.XY_CHAIN,
                               target: [a],

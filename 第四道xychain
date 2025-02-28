@@ -1,26 +1,11 @@
-const board =[
+[
     [
-        {
-            "value": 8,
-            "isGiven": false,
-            "draft": []
-        },
-        {
-            "value": 1,
-            "isGiven": false,
-            "draft": []
-        },
-        {
-            "value": 4,
-            "isGiven": false,
-            "draft": []
-        },
         {
             "value": null,
             "isGiven": false,
             "draft": [
-                5,
-                6
+                4,
+                5
             ]
         },
         {
@@ -29,42 +14,7 @@ const board =[
             "draft": []
         },
         {
-            "value": null,
-            "isGiven": false,
-            "draft": [
-                5,
-                6
-            ]
-        },
-        {
-            "value": 7,
-            "isGiven": false,
-            "draft": []
-        },
-        {
             "value": 3,
-            "isGiven": false,
-            "draft": []
-        },
-        {
-            "value": 2,
-            "isGiven": false,
-            "draft": []
-        }
-    ],
-    [
-        {
-            "value": 6,
-            "isGiven": false,
-            "draft": []
-        },
-        {
-            "value": 7,
-            "isGiven": false,
-            "draft": []
-        },
-        {
-            "value": 2,
             "isGiven": false,
             "draft": []
         },
@@ -74,46 +24,12 @@ const board =[
             "draft": []
         },
         {
-            "value": 3,
+            "value": null,
             "isGiven": false,
-            "draft": []
-        },
-        {
-            "value": 4,
-            "isGiven": false,
-            "draft": []
-        },
-        {
-            "value": 5,
-            "isGiven": false,
-            "draft": []
-        },
-        {
-            "value": 9,
-            "isGiven": false,
-            "draft": []
-        },
-        {
-            "value": 1,
-            "isGiven": false,
-            "draft": []
-        }
-    ],
-    [
-        {
-            "value": 9,
-            "isGiven": false,
-            "draft": []
-        },
-        {
-            "value": 5,
-            "isGiven": false,
-            "draft": []
-        },
-        {
-            "value": 3,
-            "isGiven": false,
-            "draft": []
+            "draft": [
+                2,
+                4
+            ]
         },
         {
             "value": 7,
@@ -122,58 +38,6 @@ const board =[
         },
         {
             "value": 1,
-            "isGiven": false,
-            "draft": []
-        },
-        {
-            "value": 2,
-            "isGiven": false,
-            "draft": []
-        },
-        {
-            "value": null,
-            "isGiven": false,
-            "draft": [
-                4,
-                6
-            ]
-        },
-        {
-            "value": null,
-            "isGiven": false,
-            "draft": [
-                4,
-                6,
-                8
-            ]
-        },
-        {
-            "value": null,
-            "isGiven": false,
-            "draft": [
-                6,
-                8
-            ]
-        }
-    ],
-    [
-        {
-            "value": 7,
-            "isGiven": false,
-            "draft": []
-        },
-        {
-            "value": 9,
-            "isGiven": false,
-            "draft": []
-        },
-        {
-            "value": 5,
-            "isGiven": false,
-            "draft": []
-        },
-        {
-            "value": 3,
             "isGiven": false,
             "draft": []
         },
@@ -183,34 +47,22 @@ const board =[
             "draft": []
         },
         {
-            "value": 8,
+            "value": null,
             "isGiven": false,
-            "draft": []
-        },
-        {
-            "value": 1,
-            "isGiven": false,
-            "draft": []
-        },
+            "draft": [
+                2,
+                5
+            ]
+        }
+    ],
+    [
         {
             "value": 2,
             "isGiven": false,
             "draft": []
         },
         {
-            "value": 4,
-            "isGiven": false,
-            "draft": []
-        }
-    ],
-    [
-        {
-            "value": 4,
-            "isGiven": false,
-            "draft": []
-        },
-        {
-            "value": 3,
+            "value": 8,
             "isGiven": false,
             "draft": []
         },
@@ -220,27 +72,7 @@ const board =[
             "draft": []
         },
         {
-            "value": 2,
-            "isGiven": false,
-            "draft": []
-        },
-        {
             "value": 5,
-            "isGiven": false,
-            "draft": []
-        },
-        {
-            "value": 1,
-            "isGiven": false,
-            "draft": []
-        },
-        {
-            "value": 8,
-            "isGiven": false,
-            "draft": []
-        },
-        {
-            "value": 7,
             "isGiven": false,
             "draft": []
         },
@@ -248,47 +80,16 @@ const board =[
             "value": 9,
             "isGiven": false,
             "draft": []
-        }
-    ],
-    [
+        },
         {
             "value": 1,
             "isGiven": false,
             "draft": []
         },
         {
-            "value": 2,
+            "value": 4,
             "isGiven": false,
             "draft": []
-        },
-        {
-            "value": 8,
-            "isGiven": false,
-            "draft": []
-        },
-        {
-            "value": null,
-            "isGiven": false,
-            "draft": [
-                4,
-                9
-            ]
-        },
-        {
-            "value": null,
-            "isGiven": false,
-            "draft": [
-                4,
-                7
-            ]
-        },
-        {
-            "value": null,
-            "isGiven": false,
-            "draft": [
-                7,
-                9
-            ]
         },
         {
             "value": 3,
@@ -296,79 +97,18 @@ const board =[
             "draft": []
         },
         {
-            "value": null,
+            "value": 7,
             "isGiven": false,
-            "draft": [
-                5,
-                6
-            ]
-        },
-        {
-            "value": null,
-            "isGiven": false,
-            "draft": [
-                5,
-                6
-            ]
+            "draft": []
         }
     ],
     [
         {
-            "value": 2,
-            "isGiven": false,
-            "draft": []
-        },
-        {
-            "value": null,
-            "isGiven": false,
-            "draft": [
-                6,
-                8
-            ]
-        },
-        {
             "value": null,
             "isGiven": false,
             "draft": [
                 1,
-                9
-            ]
-        },
-        {
-            "value": null,
-            "isGiven": false,
-            "draft": [
-                1,
-                5,
-                9
-            ]
-        },
-        {
-            "value": null,
-            "isGiven": false,
-            "draft": [
                 4,
-                8
-            ]
-        },
-        {
-            "value": 3,
-            "isGiven": false,
-            "draft": []
-        },
-        {
-            "value": null,
-            "isGiven": false,
-            "draft": [
-                4,
-                6
-            ]
-        },
-        {
-            "value": null,
-            "isGiven": false,
-            "draft": [
-                1,
                 5
             ]
         },
@@ -376,24 +116,62 @@ const board =[
             "value": 7,
             "isGiven": false,
             "draft": []
+        },
+        {
+            "value": null,
+            "isGiven": false,
+            "draft": [
+                1,
+                4
+            ]
+        },
+        {
+            "value": 6,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": null,
+            "isGiven": false,
+            "draft": [
+                2,
+                3,
+                4
+            ]
+        },
+        {
+            "value": null,
+            "isGiven": false,
+            "draft": [
+                3,
+                4
+            ]
+        },
+        {
+            "value": 8,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": 9,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": null,
+            "isGiven": false,
+            "draft": [
+                2,
+                5
+            ]
         }
     ],
     [
         {
-            "value": 3,
-            "isGiven": false,
-            "draft": []
-        },
-        {
-            "value": 4,
-            "isGiven": false,
-            "draft": []
-        },
-        {
             "value": null,
             "isGiven": false,
             "draft": [
-                1,
+                4,
                 7,
                 9
             ]
@@ -403,27 +181,15 @@ const board =[
             "isGiven": false,
             "draft": [
                 1,
-                5,
-                6,
-                9
+                3
             ]
         },
         {
             "value": null,
             "isGiven": false,
             "draft": [
-                7,
-                8
-            ]
-        },
-        {
-            "value": null,
-            "isGiven": false,
-            "draft": [
-                5,
-                6,
-                7,
-                9
+                4,
+                7
             ]
         },
         {
@@ -435,23 +201,10 @@ const board =[
             "value": null,
             "isGiven": false,
             "draft": [
-                1,
-                5,
-                6,
-                8
+                3,
+                7
             ]
         },
-        {
-            "value": null,
-            "isGiven": false,
-            "draft": [
-                5,
-                6,
-                8
-            ]
-        }
-    ],
-    [
         {
             "value": 5,
             "isGiven": false,
@@ -462,25 +215,141 @@ const board =[
             "isGiven": false,
             "draft": [
                 6,
+                9
+            ]
+        },
+        {
+            "value": 8,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": null,
+            "isGiven": false,
+            "draft": [
+                1,
+                6,
+                9
+            ]
+        }
+    ],
+    [
+        {
+            "value": null,
+            "isGiven": false,
+            "draft": [
+                8,
+                9
+            ]
+        },
+        {
+            "value": null,
+            "isGiven": false,
+            "draft": [
+                1,
+                3
+            ]
+        },
+        {
+            "value": 5,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": 4,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": 6,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": null,
+            "isGiven": false,
+            "draft": [
+                3,
                 8
             ]
         },
         {
-            "value": null,
+            "value": 2,
             "isGiven": false,
-            "draft": [
-                1,
-                7
-            ]
+            "draft": []
+        },
+        {
+            "value": 7,
+            "isGiven": false,
+            "draft": []
         },
         {
             "value": null,
             "isGiven": false,
             "draft": [
                 1,
-                4,
-                6
+                9
             ]
+        }
+    ],
+    [
+        {
+            "value": null,
+            "isGiven": false,
+            "draft": [
+                7,
+                8
+            ]
+        },
+        {
+            "value": 6,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": 2,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": 1,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": null,
+            "isGiven": false,
+            "draft": [
+                7,
+                8
+            ]
+        },
+        {
+            "value": 9,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": 5,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": 4,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": 3,
+            "isGiven": false,
+            "draft": []
+        }
+    ],
+    [
+        {
+            "value": 3,
+            "isGiven": false,
+            "draft": []
         },
         {
             "value": 2,
@@ -491,7 +360,7 @@ const board =[
             "value": null,
             "isGiven": false,
             "draft": [
-                6,
+                1,
                 7
             ]
         },
@@ -506,15 +375,143 @@ const board =[
             "draft": [
                 1,
                 4,
-                6,
                 8
             ]
+        },
+        {
+            "value": null,
+            "isGiven": false,
+            "draft": [
+                4,
+                8
+            ]
+        },
+        {
+            "value": null,
+            "isGiven": false,
+            "draft": [
+                6,
+                7
+            ]
+        },
+        {
+            "value": 5,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": null,
+            "isGiven": false,
+            "draft": [
+                4,
+                6
+            ]
+        }
+    ],
+    [
+        {
+            "value": null,
+            "isGiven": false,
+            "draft": [
+                1,
+                7
+            ]
+        },
+        {
+            "value": 5,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": 8,
+            "isGiven": false,
+            "draft": []
         },
         {
             "value": 3,
             "isGiven": false,
             "draft": []
+        },
+        {
+            "value": null,
+            "isGiven": false,
+            "draft": [
+                1,
+                4
+            ]
+        },
+        {
+            "value": 6,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": null,
+            "isGiven": false,
+            "draft": [
+                7,
+                9
+            ]
+        },
+        {
+            "value": 2,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": null,
+            "isGiven": false,
+            "draft": [
+                4,
+                9
+            ]
+        }
+    ],
+    [
+        {
+            "value": 6,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": 4,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": 9,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": 7,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": 5,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": 2,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": 3,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": 1,
+            "isGiven": false,
+            "draft": []
+        },
+        {
+            "value": 8,
+            "isGiven": false,
+            "draft": []
         }
     ]
 ]
-export default board;
