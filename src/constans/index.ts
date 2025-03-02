@@ -48,6 +48,7 @@ export const SOLUTION_METHODS = {
   UNIQUE_RECTANGLE: "唯一矩形",
   XY_CHAIN: "XY-Chain",
   BINARY_UNIVERSAL_GRAVE: "双全值坟墓",
+  LOOP: "环",
 };
 
 export const STRONG_LINK_TYPE = {

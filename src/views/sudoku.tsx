@@ -13,6 +13,7 @@ import {
   useSudokuBoard,
   deepCopyBoard,
   copyOfficialDraft,
+  createGraph,
 } from "../tools";
 import {
   hiddenSingle,
@@ -34,7 +35,7 @@ import {
   hiddenTriple2,
   nakedQuadruple,
   swordfish,
-  trialAndError,
+  trialAndErrorDIY,
   isUnitStrongLink,
   getGraphNodePaths,
   getGraphNode,
@@ -45,11 +46,13 @@ import {
   BinaryUniversalGrave,
 } from "../tools/solution";
 import "./sudoku.less";
-import type { CellData, Position } from "../tools";
+import type { CandidateMap, CandidateStats, CellData, Position } from "../tools";
 import type { Result } from "../tools/solution";
 import { SOLUTION_METHODS } from "../constans";
 import mockBoard from "./mock";
 import DLX from "../tools/DLX";
+import extreme from "./extreme";
+import hard from "./hard";
 
 const Sudoku: React.FC = () => {
   const initialBoard = Array(9)
@@ -94,6 +97,259 @@ const Sudoku: React.FC = () => {
   const [positions, setPositions] = useState<number[]>([]);
   const [inputValue, setInputValue] = useState<string>("");
 
+  const convertToBoard = (index: number): CellData[][] => {
+    const board = extreme[index].puzzle;
+    const result: CellData[][] = [];
+    for (let i = 0; i < 9; i++) {
+      const row: CellData[] = [];
+      for (let j = 0; j < 9; j++) {
+        const value = parseInt(board[i * 9 + j]) || null;
+        row.push({
+          value,
+          isGiven: value !== null,
+          draft: [],
+        });
+      }
+      result.push(row);
+    }
+    return result;
+  };
+
+  const updateCandidateMap = (newBoard: CellData[][]) => {
+    const newCandidateMap: CandidateMap = {};
+    for (let num = 1; num <= 9; num++) {
+      newCandidateMap[num] = {
+        row: new Map(),
+        col: new Map(),
+        box: new Map(),
+        all: [],
+      };
+    }
+
+    newBoard.forEach((row, rowIndex) => {
+      row.forEach((cell, colIndex) => {
+        if (cell.value === null) {
+          const boxIndex =
+            Math.floor(rowIndex / 3) * 3 + Math.floor(colIndex / 3);
+          const candidate: Candidate = {
+            row: rowIndex,
+            col: colIndex,
+            candidates: cell.draft,
+          };
+
+          cell.draft.forEach((num) => {
+            const updateStats = (
+              map: Map<number, CandidateStats>,
+              index: number
+            ) => {
+              const stats = map.get(index) ?? { count: 0, positions: [] };
+              stats.count++;
+              stats.positions.push(candidate);
+              map.set(index, stats);
+            };
+
+            updateStats(newCandidateMap[num].row, rowIndex);
+            updateStats(newCandidateMap[num].col, colIndex);
+            updateStats(newCandidateMap[num].box, boxIndex);
+            newCandidateMap[num].all.push(candidate);
+          });
+        }
+      });
+    });
+    let graph = createGraph(newBoard, newCandidateMap);
+    let candidateMap = newCandidateMap;
+    return { candidateMap, graph };
+  };
+
+  const testExtreme = () => {
+    const solveFunctions = [
+      singleCandidate,
+      hiddenSingle,
+      blockElimination,
+      nakedPair,
+      nakedTriple1,
+      nakedTriple2,
+      hiddenPair,
+      hiddenTriple1,
+      hiddenTriple2,
+      xWing,
+      xWingVarient,
+      xyWing,
+      skyscraper,
+      skyscraper2,
+      combinationChain,
+      swordfish,
+      Loop,
+      uniqueRectangle,
+      xyzWing,
+      BinaryUniversalGrave,
+      nakedQuadruple,
+      XYChain,
+    ];
+
+    const mapArray = [];
+    const failureMap = new Map();
+    const xyChainMap = new Map();
+    const xyChainMap1 = new Map();
+    const xyChainMap2 = new Map();
+    const xyChainMap3 = new Map();
+    const xyChainMap4 = new Map();
+    const xyChainMap5 = new Map();
+    const xyChainMap6 = new Map();
+    const xyChainMap7 = new Map();  
+    const xyChainMap8 = new Map();
+    const xyChainMap9 = new Map();
+    const xyChainMap10 = new Map();
+    const uniqueRectangleMap1 = new Map();
+    const uniqueRectangleMap2 = new Map();
+    const uniqueRectangleMap3 = new Map();
+    const binaryUniversalGraveMap = new Map();
+    const loopMap = new Map();
+    for (let i = 0; i < extreme.length; i++) {
+      if (i % 100 === 0) {
+        console.log(`正在处理第${i}个数独...`);
+      }
+      
+      const map = new Map();
+      let board2 = convertToBoard(i);
+      board2 = copyOfficialDraft(board2);
+      let counts = board2.reduce(
+        (acc, row) => acc + row.filter((cell) => cell.value !== null).length,
+        0
+      );
+      let { candidateMap, graph } = updateCandidateMap(board2);
+      let result: Result | null = null;
+      while (true) {
+        let j = 0;
+        for (j = 0; j < solveFunctions.length; j++) {
+          result = solveFunctions[j](board2, candidateMap, graph);
+          if (result === null) {
+            continue;
+          } else {
+            break;
+          }
+        }
+        if (j === solveFunctions.length && !result && counts !== 81) {
+          failureMap.set(i, false);
+          break;
+        }
+        if (result) {
+          map.set(result.method, (map.get(result.method) || 0) + 1);
+
+          const { position, target, isFill } = result;
+          if (isFill) {
+            counts++;
+          }
+          switch (result.method) {
+            case SOLUTION_METHODS.XY_CHAIN:
+              xyChainMap.set(i, true);
+              switch (result.label) {
+                case "双双双":
+                  xyChainMap1.set(i, true);
+                  break;
+                case "弱强双":
+                  xyChainMap2.set(i, true);
+                  break;
+                case "弱强强":
+                  xyChainMap3.set(i, true);
+                  break;
+                case "双双双双":
+                  xyChainMap4.set(i, true);
+                  break;
+                case "弱强强强":
+                  xyChainMap5.set(i, true);
+                  break;
+                case "弱强强双":
+                  xyChainMap6.set(i, true);
+                  break;
+                case "弱强强强强":
+                  xyChainMap7.set(i, true);
+                  break;
+                case "弱强强强双":
+                  xyChainMap8.set(i, true);
+                  break;
+                case "弱强双双":
+                  xyChainMap9.set(i, true);
+                  break;
+                case "双双强强":
+                  xyChainMap10.set(i, true);
+                  break;
+              }
+              break;
+            case SOLUTION_METHODS.UNIQUE_RECTANGLE:
+              switch(result.label){
+                case "ab-ab-ab-abc":
+                  uniqueRectangleMap1.set(i, true);
+                  break;
+                case "ab-ab-abc-abc":
+                  uniqueRectangleMap2.set(i, true);
+                  break;
+                case "abc-ab-abc-abcd":
+                  uniqueRectangleMap3.set(i, true);
+                  break;
+              }
+              break;
+            case SOLUTION_METHODS.BINARY_UNIVERSAL_GRAVE:
+              binaryUniversalGraveMap.set(i, true);
+              break;
+            case SOLUTION_METHODS.LOOP:
+              loopMap.set(i, true);
+              break;
+          }
+          const newBoard = deepCopyBoard(board2);
+
+          position.forEach(({ row, col }) => {
+            if (isFill) {
+              newBoard[row][col].value = target[0];
+              newBoard[row][col].draft = [];
+
+              // 更新受影响的单元格
+              const affectedCells = updateRelatedCellsDraft(
+                newBoard,
+                [{ row, col }],
+                target[0],
+                getCandidates
+              );
+
+              // 将受影响的单元格合并到 position 中
+              position.push(...affectedCells);
+            } else {
+              newBoard[row][col].draft =
+                newBoard[row][col].draft?.filter(
+                  (num) => !target.includes(num)
+                ) ?? [];
+            }
+          });
+          board2 = newBoard;
+          ({ candidateMap, graph } = updateCandidateMap(board2));
+          continue;
+        }
+        if (counts === 81) {
+          break;
+        }
+      }
+      mapArray.push(map);
+    }
+    console.log("mapArray", mapArray);
+    console.log("failureMap", failureMap);
+    console.log("xyChainMap", xyChainMap);
+    console.log("xyChainMap1 双双双", xyChainMap1);
+    console.log("xyChainMap2 弱强双", xyChainMap2);
+    console.log("xyChainMap3 弱强强", xyChainMap3);
+    console.log("xyChainMap4 双双双双", xyChainMap4);
+    console.log("xyChainMap5 弱强强强", xyChainMap5);
+    console.log("xyChainMap6 弱强强双", xyChainMap6);
+    console.log("xyChainMap7 弱强强强强", xyChainMap7);
+    console.log("xyChainMap8 弱强强强双", xyChainMap8);
+    console.log("xyChainMap9 弱强双双", xyChainMap9);
+    console.log("xyChainMap10 双双强强", xyChainMap10);
+    console.log("uniqueRectangleMap1", uniqueRectangleMap1);
+    console.log("uniqueRectangleMap2", uniqueRectangleMap2);
+    console.log("uniqueRectangleMap3", uniqueRectangleMap3);
+    console.log("binaryUniversalGraveMap", binaryUniversalGraveMap);
+    console.log("loopMap", loopMap);
+  };
+
   const generateBoard = () => {
     const initialBoard = Array(9)
       .fill(null)
@@ -119,9 +375,10 @@ const Sudoku: React.FC = () => {
       }))
     );
 
-    // newBoard = deepCopyBoard(mockBoard);
+    newBoard = deepCopyBoard(mockBoard);
 
-    updateBoard(newBoard, "生成新棋盘");
+    // updateBoard(newBoard, "生成新棋盘");
+    updateBoard(convertToBoard(41), "生成新棋盘");
 
     // 生成解决方案
     const solvedBoard = newBoard.map((row) => row.map((cell) => ({ ...cell })));
@@ -559,7 +816,7 @@ const Sudoku: React.FC = () => {
       BinaryUniversalGrave,
       nakedQuadruple,
       XYChain,
-      trialAndError,
+      trialAndErrorDIY,
     ];
     let result = null;
 
@@ -639,6 +896,12 @@ const Sudoku: React.FC = () => {
           hintContent = `尝试向拥有最少候选数的方格内填入${target[0]}，若后续无解，说明填入${target[0]}是错误的，则尝试其他候选数`;
           break;
         case SOLUTION_METHODS.BINARY_UNIVERSAL_GRAVE:
+          boardWithHighlight = applyHintHighlight(board, result, "both");
+          setPositions(target);
+          setPrompts(target);
+          break;
+
+        case SOLUTION_METHODS.LOOP:
           boardWithHighlight = applyHintHighlight(board, result, "both");
           setPositions(target);
           setPrompts(target);
@@ -1530,9 +1793,13 @@ const Sudoku: React.FC = () => {
           setPositions(target);
           setPrompts(target);
           break;
+        case SOLUTION_METHODS.UNIQUE_RECTANGLE:
+          boardWithHighlight = applyHintHighlight(board, result, "both");
+          setPositions(target);
+          setPrompts(target);
+          break;
       }
     }
-
     updateBoard(
       boardWithHighlight!,
       `提示：${result.method}`,
@@ -1655,6 +1922,10 @@ const Sudoku: React.FC = () => {
     );
   };
 
+  const handleTest = () => {
+    testExtreme();
+  };
+
   return (
     <Card title="">
       <div className="gameInfo">
@@ -1774,6 +2045,7 @@ const Sudoku: React.FC = () => {
         <Button onClick={handleGraph}>图</Button>
         <Button onClick={handleDraft}>候选数</Button>
         <Button onClick={handleGraphNodePaths}>打印路径</Button>
+        <Button onClick={handleTest}>测试</Button>
       </div>
       <div className="numberButtons">
         {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((number) => (
