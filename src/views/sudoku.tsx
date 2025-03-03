@@ -115,6 +115,24 @@ const Sudoku: React.FC = () => {
     return result;
   };
 
+  const convertToAnswer = (index: number): CellData[][] => {
+    const board = extreme[index].solution;
+    const result: CellData[][] = [];
+    for (let i = 0; i < 9; i++) {
+      const row: CellData[] = [];
+      for (let j = 0; j < 9; j++) {
+        const value = parseInt(board[i * 9 + j]) || null;
+        row.push({
+          value,
+          isGiven: value !== null,
+          draft: [],
+        });
+      }
+      result.push(row);
+    }
+    return result;
+  };
+
   const updateCandidateMap = (newBoard: CellData[][]) => {
     const newCandidateMap: CandidateMap = {};
     for (let num = 1; num <= 9; num++) {
@@ -205,13 +223,16 @@ const Sudoku: React.FC = () => {
     const uniqueRectangleMap3 = new Map();
     const binaryUniversalGraveMap = new Map();
     const loopMap = new Map();
+    const falseSolutionMap = new Map();
     for (let i = 0; i < extreme.length; i++) {
+      // for (let i = 241; i < 242; i++) {
       if (i % 100 === 0) {
         console.log(`正在处理第${i}个数独...`);
       }
       
       const map = new Map();
       let board2 = convertToBoard(i);
+      let answer = convertToAnswer(i);
       board2 = copyOfficialDraft(board2);
       let counts = board2.reduce(
         (acc, row) => acc + row.filter((cell) => cell.value !== null).length,
@@ -297,9 +318,15 @@ const Sudoku: React.FC = () => {
               break;
           }
           const newBoard = deepCopyBoard(board2);
+          let isFalse = false;
 
           position.forEach(({ row, col }) => {
             if (isFill) {
+              if(answer[row][col].value !== target[0]){
+                falseSolutionMap.set(i, `${result?.method} ${result?.label}`);
+                isFalse = true;
+                return;
+              }
               newBoard[row][col].value = target[0];
               newBoard[row][col].draft = [];
 
@@ -314,12 +341,20 @@ const Sudoku: React.FC = () => {
               // 将受影响的单元格合并到 position 中
               position.push(...affectedCells);
             } else {
+              if(target.includes(answer[row][col].value)){
+                falseSolutionMap.set(i, `${result?.method} ${result?.label}`);
+                isFalse = true;
+                return;
+              }
               newBoard[row][col].draft =
                 newBoard[row][col].draft?.filter(
                   (num) => !target.includes(num)
                 ) ?? [];
             }
           });
+          if(isFalse){
+            break;
+          }
           board2 = newBoard;
           ({ candidateMap, graph } = updateCandidateMap(board2));
           continue;
@@ -348,6 +383,7 @@ const Sudoku: React.FC = () => {
     console.log("uniqueRectangleMap3", uniqueRectangleMap3);
     console.log("binaryUniversalGraveMap", binaryUniversalGraveMap);
     console.log("loopMap", loopMap);
+    console.log("falseSolutionMap", falseSolutionMap);
   };
 
   const generateBoard = () => {
@@ -378,7 +414,7 @@ const Sudoku: React.FC = () => {
     newBoard = deepCopyBoard(mockBoard);
 
     // updateBoard(newBoard, "生成新棋盘");
-    updateBoard(convertToBoard(23), "生成新棋盘");
+    updateBoard(convertToBoard(430), "生成新棋盘");
 
     // 生成解决方案
     const solvedBoard = newBoard.map((row) => row.map((cell) => ({ ...cell })));
@@ -406,7 +442,7 @@ const Sudoku: React.FC = () => {
             return;
           }
 
-          const newBoard = deepCopyBoard(board);
+          const newBoard = deepCopyBoard(board);  
           const newCell = newBoard[row][col];
 
           if (draftMode) {

@@ -3679,18 +3679,18 @@ export const uniqueRectangle = (
                   JSON.stringify(cell1.candidates) &&
                 (cell4.candidates.includes(a) || cell4.candidates.includes(b))
               ) {
-                return {
-                  isFill: false,
-                  position: [{ row: cell4.row, col: cell4.col }],
-                  prompt: [
-                    { row: cell1.row, col: cell1.col },
-                    { row: cell2.row, col: cell2.col },
-                    { row: cell3.row, col: cell3.col },
-                  ],
-                  method: SOLUTION_METHODS.UNIQUE_RECTANGLE,
-                  target: [a, b],
-                  label: "ab-ab-ab-abc",
-                };
+                // return {
+                //   isFill: false,
+                //   position: [{ row: cell4.row, col: cell4.col }],
+                //   prompt: [
+                //     { row: cell1.row, col: cell1.col },
+                //     { row: cell2.row, col: cell2.col },
+                //     { row: cell3.row, col: cell3.col },
+                //   ],
+                //   method: SOLUTION_METHODS.UNIQUE_RECTANGLE,
+                //   target: [a, b],
+                //   label: "ab-ab-ab-abc",
+                // };
               }
             }
           }
@@ -3842,440 +3842,440 @@ export const uniqueRectangle = (
       }
     }
 
-    // ab-ab-abc-abcd行
-    for (let row = 0; row < 9; row++) {
-      if (candidateMap[num].row.get(row)?.count === 2) {
-        const cell1 = candidateMap[num].row.get(row)?.positions[0];
-        const cell2 = candidateMap[num].row.get(row)?.positions[1];
+    // // ab-ab-abc-abcd行
+    // for (let row = 0; row < 9; row++) {
+    //   if (candidateMap[num].row.get(row)?.count === 2) {
+    //     const cell1 = candidateMap[num].row.get(row)?.positions[0];
+    //     const cell2 = candidateMap[num].row.get(row)?.positions[1];
 
-        if (
-          cell1 &&
-          cell2 &&
-          JSON.stringify(cell1.candidates) ===
-            JSON.stringify(cell2.candidates) &&
-          cell1.candidates.length === 2
-        ) {
-          let col1 = cell1.col;
-          let col2 = cell2.col;
-          let [a, b] = [cell1.candidates[0], cell1.candidates[1]];
-          let cell3: Candidate | undefined;
-          let cell4: Candidate | undefined;
-          for (let row2 = 0; row2 < 9; row2++) {
-            if (row2 === row) continue;
+    //     if (
+    //       cell1 &&
+    //       cell2 &&
+    //       JSON.stringify(cell1.candidates) ===
+    //         JSON.stringify(cell2.candidates) &&
+    //       cell1.candidates.length === 2
+    //     ) {
+    //       let col1 = cell1.col;
+    //       let col2 = cell2.col;
+    //       let [a, b] = [cell1.candidates[0], cell1.candidates[1]];
+    //       let cell3: Candidate | undefined;
+    //       let cell4: Candidate | undefined;
+    //       for (let row2 = 0; row2 < 9; row2++) {
+    //         if (row2 === row) continue;
 
-            if (
-              board[row2][col1].draft.length === 3 &&
-              board[row2][col1].draft.includes(a) &&
-              board[row2][col1].draft.includes(b)
-            ) {
-              cell3 = {
-                row: row2,
-                col: col1,
-                candidates: board[row2][col1].draft,
-              };
-            } else if (
-              board[row2][col2].draft.length === 3 &&
-              board[row2][col2].draft.includes(a) &&
-              board[row2][col2].draft.includes(b)
-            ) {
-              cell3 = {
-                row: row2,
-                col: col2,
-                candidates: board[row2][col2].draft,
-              };
-            }
-            if (
-              board[row2][col1].draft.length === 4 &&
-              board[row2][col1].draft.includes(a) &&
-              board[row2][col1].draft.includes(b)
-            ) {
-              cell4 = {
-                row: row2,
-                col: col1,
-                candidates: board[row2][col1].draft,
-              };
-            } else if (
-              board[row2][col2].draft.length === 4 &&
-              board[row2][col2].draft.includes(a) &&
-              board[row2][col2].draft.includes(b)
-            ) {
-              cell4 = {
-                row: row2,
-                col: col2,
-                candidates: board[row2][col2].draft,
-              };
-            }
-            if (cell3 && cell4) {
-              const remainingCandidates1 = cell4.candidates.filter(
-                (item) => item !== a && item !== b
-              );
-              const remainingCandidates2 = cell3.candidates.filter(
-                (item) => item !== a && item !== b
-              );
-              if (
-                remainingCandidates1.length === 2 &&
-                remainingCandidates1.includes(remainingCandidates2[0])
-              ) {
-                const [c, d] = remainingCandidates1;
-                const affectedCells_Row = getEmptyCellsInRow(cell3.row, board);
-                const affectedCells_Col = getEmptyCellsInCol(cell3.col, board);
-                const affectedCells_Box = getEmptyCellsInBox(
-                  cell3.row,
-                  cell3.col,
-                  board
-                );
-                let deleteCells: Position[] = [];
-                let cell5: Candidate | undefined;
-                for (const cell of affectedCells_Row) {
-                  if (
-                    (cell.row === cell3.row && cell.col === cell3.col) ||
-                    (cell.row === cell4.row && cell.col === cell4.col)
-                  )
-                    continue;
-                  if (
-                    board[cell.row][cell.col].draft.includes(c) &&
-                    board[cell.row][cell.col].draft.includes(d) &&
-                    board[cell.row][cell.col].draft.length === 2
-                  ) {
-                    cell5 = {
-                      row: cell.row,
-                      col: cell.col,
-                      candidates: board[cell.row][cell.col].draft,
-                    };
-                  }
-                  if (
-                    board[cell.row][cell.col].draft.length >= 3 &&
-                    (board[cell.row][cell.col].draft.includes(c) ||
-                      board[cell.row][cell.col].draft.includes(d))
-                  ) {
-                    deleteCells.push(cell);
-                  }
-                }
-                if (deleteCells.length && cell5) {
-                  return {
-                    isFill: false,
-                    position: deleteCells,
-                    prompt: [
-                      { row: cell1.row, col: cell1.col },
-                      { row: cell2.row, col: cell2.col },
-                      { row: cell3.row, col: cell3.col },
-                      { row: cell4.row, col: cell4.col },
-                      { row: cell5.row, col: cell5.col },
-                    ],
-                    method: SOLUTION_METHODS.UNIQUE_RECTANGLE,
-                    target: [c, d],
-                    label: "ab-ab-abc-abcd",
-                  };
-                }
-                deleteCells = [];
-                cell5 = undefined;
-                for (const cell of affectedCells_Col) {
-                  if (
-                    (cell.row === cell3.row && cell.col === cell3.col) ||
-                    (cell.row === cell4.row && cell.col === cell4.col)
-                  )
-                    continue;
-                  if (
-                    board[cell.row][cell.col].draft.includes(c) &&
-                    board[cell.row][cell.col].draft.includes(d) &&
-                    board[cell.row][cell.col].draft.length === 2
-                  ) {
-                    cell5 = {
-                      row: cell.row,
-                      col: cell.col,
-                      candidates: board[cell.row][cell.col].draft,
-                    };
-                  }
-                  if (
-                    board[cell.row][cell.col].draft.length >= 3 &&
-                    (board[cell.row][cell.col].draft.includes(c) ||
-                      board[cell.row][cell.col].draft.includes(d))
-                  ) {
-                    deleteCells.push(cell);
-                  }
-                }
-                if (deleteCells.length && cell5) {
-                  return {
-                    isFill: false,
-                    position: deleteCells,
-                    prompt: [
-                      { row: cell1.row, col: cell1.col },
-                      { row: cell2.row, col: cell2.col },
-                      { row: cell3.row, col: cell3.col },
-                      { row: cell4.row, col: cell4.col },
-                      { row: cell5.row, col: cell5.col },
-                    ],
-                    method: SOLUTION_METHODS.UNIQUE_RECTANGLE,
-                    target: [c, d],
-                    label: "ab-ab-abc-abcd",
-                  };
-                }
-                deleteCells = [];
-                cell5 = undefined;
-                for (const cell of affectedCells_Box) {
-                  if (
-                    (cell.row === cell3.row && cell.col === cell3.col) ||
-                    (cell.row === cell4.row && cell.col === cell4.col)
-                  )
-                    continue;
-                  if (
-                    board[cell.row][cell.col].draft.includes(c) &&
-                    board[cell.row][cell.col].draft.includes(d) &&
-                    board[cell.row][cell.col].draft.length === 2
-                  ) {
-                    cell5 = {
-                      row: cell.row,
-                      col: cell.col,
-                      candidates: board[cell.row][cell.col].draft,
-                    };
-                  }
-                  if (
-                    board[cell.row][cell.col].draft.length >= 3 &&
-                    (board[cell.row][cell.col].draft.includes(c) ||
-                      board[cell.row][cell.col].draft.includes(d))
-                  ) {
-                    deleteCells.push(cell);
-                  }
-                }
-                if (deleteCells.length && cell5) {
-                  return {
-                    isFill: false,
-                    position: deleteCells,
-                    prompt: [
-                      { row: cell1.row, col: cell1.col },
-                      { row: cell2.row, col: cell2.col },
-                      { row: cell3.row, col: cell3.col },
-                      { row: cell4.row, col: cell4.col },
-                      { row: cell5.row, col: cell5.col },
-                    ],
-                    method: SOLUTION_METHODS.UNIQUE_RECTANGLE,
-                    target: [c, d],
-                    label: "ab-ab-abc-abcd",
-                  };
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-    // ab-ab-abc-abcd列
-    for (let col = 0; col < 9; col++) {
-      if (candidateMap[num].col.get(col)?.count === 2) {
-        const cell1 = candidateMap[num].col.get(col)?.positions[0];
-        const cell2 = candidateMap[num].col.get(col)?.positions[1];
+    //         if (
+    //           board[row2][col1].draft.length === 3 &&
+    //           board[row2][col1].draft.includes(a) &&
+    //           board[row2][col1].draft.includes(b)
+    //         ) {
+    //           cell3 = {
+    //             row: row2,
+    //             col: col1,
+    //             candidates: board[row2][col1].draft,
+    //           };
+    //         } else if (
+    //           board[row2][col2].draft.length === 3 &&
+    //           board[row2][col2].draft.includes(a) &&
+    //           board[row2][col2].draft.includes(b)
+    //         ) {
+    //           cell3 = {
+    //             row: row2,
+    //             col: col2,
+    //             candidates: board[row2][col2].draft,
+    //           };
+    //         }
+    //         if (
+    //           board[row2][col1].draft.length === 4 &&
+    //           board[row2][col1].draft.includes(a) &&
+    //           board[row2][col1].draft.includes(b)
+    //         ) {
+    //           cell4 = {
+    //             row: row2,
+    //             col: col1,
+    //             candidates: board[row2][col1].draft,
+    //           };
+    //         } else if (
+    //           board[row2][col2].draft.length === 4 &&
+    //           board[row2][col2].draft.includes(a) &&
+    //           board[row2][col2].draft.includes(b)
+    //         ) {
+    //           cell4 = {
+    //             row: row2,
+    //             col: col2,
+    //             candidates: board[row2][col2].draft,
+    //           };
+    //         }
+    //         if (cell3 && cell4) {
+    //           const remainingCandidates1 = cell4.candidates.filter(
+    //             (item) => item !== a && item !== b
+    //           );
+    //           const remainingCandidates2 = cell3.candidates.filter(
+    //             (item) => item !== a && item !== b
+    //           );
+    //           if (
+    //             remainingCandidates1.length === 2 &&
+    //             remainingCandidates1.includes(remainingCandidates2[0])
+    //           ) {
+    //             const [c, d] = remainingCandidates1;
+    //             const affectedCells_Row = getEmptyCellsInRow(cell3.row, board);
+    //             const affectedCells_Col = getEmptyCellsInCol(cell3.col, board);
+    //             const affectedCells_Box = getEmptyCellsInBox(
+    //               cell3.row,
+    //               cell3.col,
+    //               board
+    //             );
+    //             let deleteCells: Position[] = [];
+    //             let cell5: Candidate | undefined;
+    //             for (const cell of affectedCells_Row) {
+    //               if (
+    //                 (cell.row === cell3.row && cell.col === cell3.col) ||
+    //                 (cell.row === cell4.row && cell.col === cell4.col)
+    //               )
+    //                 continue;
+    //               if (
+    //                 board[cell.row][cell.col].draft.includes(c) &&
+    //                 board[cell.row][cell.col].draft.includes(d) &&
+    //                 board[cell.row][cell.col].draft.length === 2
+    //               ) {
+    //                 cell5 = {
+    //                   row: cell.row,
+    //                   col: cell.col,
+    //                   candidates: board[cell.row][cell.col].draft,
+    //                 };
+    //               }
+    //               if (
+    //                 board[cell.row][cell.col].draft.length >= 3 &&
+    //                 (board[cell.row][cell.col].draft.includes(c) ||
+    //                   board[cell.row][cell.col].draft.includes(d))
+    //               ) {
+    //                 deleteCells.push(cell);
+    //               }
+    //             }
+    //             if (deleteCells.length && cell5) {
+    //               return {
+    //                 isFill: false,
+    //                 position: deleteCells,
+    //                 prompt: [
+    //                   { row: cell1.row, col: cell1.col },
+    //                   { row: cell2.row, col: cell2.col },
+    //                   { row: cell3.row, col: cell3.col },
+    //                   { row: cell4.row, col: cell4.col },
+    //                   { row: cell5.row, col: cell5.col },
+    //                 ],
+    //                 method: SOLUTION_METHODS.UNIQUE_RECTANGLE,
+    //                 target: [c, d],
+    //                 label: "ab-ab-abc-abcd",
+    //               };
+    //             }
+    //             deleteCells = [];
+    //             cell5 = undefined;
+    //             for (const cell of affectedCells_Col) {
+    //               if (
+    //                 (cell.row === cell3.row && cell.col === cell3.col) ||
+    //                 (cell.row === cell4.row && cell.col === cell4.col)
+    //               )
+    //                 continue;
+    //               if (
+    //                 board[cell.row][cell.col].draft.includes(c) &&
+    //                 board[cell.row][cell.col].draft.includes(d) &&
+    //                 board[cell.row][cell.col].draft.length === 2
+    //               ) {
+    //                 cell5 = {
+    //                   row: cell.row,
+    //                   col: cell.col,
+    //                   candidates: board[cell.row][cell.col].draft,
+    //                 };
+    //               }
+    //               if (
+    //                 board[cell.row][cell.col].draft.length >= 3 &&
+    //                 (board[cell.row][cell.col].draft.includes(c) ||
+    //                   board[cell.row][cell.col].draft.includes(d))
+    //               ) {
+    //                 deleteCells.push(cell);
+    //               }
+    //             }
+    //             if (deleteCells.length && cell5) {
+    //               return {
+    //                 isFill: false,
+    //                 position: deleteCells,
+    //                 prompt: [
+    //                   { row: cell1.row, col: cell1.col },
+    //                   { row: cell2.row, col: cell2.col },
+    //                   { row: cell3.row, col: cell3.col },
+    //                   { row: cell4.row, col: cell4.col },
+    //                   { row: cell5.row, col: cell5.col },
+    //                 ],
+    //                 method: SOLUTION_METHODS.UNIQUE_RECTANGLE,
+    //                 target: [c, d],
+    //                 label: "ab-ab-abc-abcd",
+    //               };
+    //             }
+    //             deleteCells = [];
+    //             cell5 = undefined;
+    //             for (const cell of affectedCells_Box) {
+    //               if (
+    //                 (cell.row === cell3.row && cell.col === cell3.col) ||
+    //                 (cell.row === cell4.row && cell.col === cell4.col)
+    //               )
+    //                 continue;
+    //               if (
+    //                 board[cell.row][cell.col].draft.includes(c) &&
+    //                 board[cell.row][cell.col].draft.includes(d) &&
+    //                 board[cell.row][cell.col].draft.length === 2
+    //               ) {
+    //                 cell5 = {
+    //                   row: cell.row,
+    //                   col: cell.col,
+    //                   candidates: board[cell.row][cell.col].draft,
+    //                 };
+    //               }
+    //               if (
+    //                 board[cell.row][cell.col].draft.length >= 3 &&
+    //                 (board[cell.row][cell.col].draft.includes(c) ||
+    //                   board[cell.row][cell.col].draft.includes(d))
+    //               ) {
+    //                 deleteCells.push(cell);
+    //               }
+    //             }
+    //             if (deleteCells.length && cell5) {
+    //               return {
+    //                 isFill: false,
+    //                 position: deleteCells,
+    //                 prompt: [
+    //                   { row: cell1.row, col: cell1.col },
+    //                   { row: cell2.row, col: cell2.col },
+    //                   { row: cell3.row, col: cell3.col },
+    //                   { row: cell4.row, col: cell4.col },
+    //                   { row: cell5.row, col: cell5.col },
+    //                 ],
+    //                 method: SOLUTION_METHODS.UNIQUE_RECTANGLE,
+    //                 target: [c, d],
+    //                 label: "ab-ab-abc-abcd",
+    //               };
+    //             }
+    //           }
+    //         }
+    //       }
+    //     }
+    //   }
+    // }
+    // // ab-ab-abc-abcd列
+    // for (let col = 0; col < 9; col++) {
+    //   if (candidateMap[num].col.get(col)?.count === 2) {
+    //     const cell1 = candidateMap[num].col.get(col)?.positions[0];
+    //     const cell2 = candidateMap[num].col.get(col)?.positions[1];
 
-        if (
-          cell1 &&
-          cell2 &&
-          JSON.stringify(cell1.candidates) ===
-            JSON.stringify(cell2.candidates) &&
-          cell1.candidates.length === 2
-        ) {
-          let row1 = cell1.row;
-          let row2 = cell2.row;
-          let [a, b] = [cell1.candidates[0], cell1.candidates[1]];
-          let cell3: Candidate | undefined;
-          let cell4: Candidate | undefined;
-          for (let col2 = 0; col2 < 9; col2++) {
-            if (col2 === col) continue;
+    //     if (
+    //       cell1 &&
+    //       cell2 &&
+    //       JSON.stringify(cell1.candidates) ===
+    //         JSON.stringify(cell2.candidates) &&
+    //       cell1.candidates.length === 2
+    //     ) {
+    //       let row1 = cell1.row;
+    //       let row2 = cell2.row;
+    //       let [a, b] = [cell1.candidates[0], cell1.candidates[1]];
+    //       let cell3: Candidate | undefined;
+    //       let cell4: Candidate | undefined;
+    //       for (let col2 = 0; col2 < 9; col2++) {
+    //         if (col2 === col) continue;
 
-            if (
-              board[row1][col2].draft.length === 3 &&
-              board[row1][col2].draft.includes(a) &&
-              board[row1][col2].draft.includes(b)
-            ) {
-              cell3 = {
-                row: row1,
-                col: col2,
-                candidates: board[row1][col2].draft,
-              };
-            } else if (
-              board[row2][col2].draft.length === 3 &&
-              board[row2][col2].draft.includes(a) &&
-              board[row2][col2].draft.includes(b)
-            ) {
-              cell3 = {
-                row: row2,
-                col: col2,
-                candidates: board[row2][col2].draft,
-              };
-            }
-            if (
-              board[row1][col2].draft.length === 4 &&
-              board[row1][col2].draft.includes(a) &&
-              board[row1][col2].draft.includes(b)
-            ) {
-              cell4 = {
-                row: row1,
-                col: col2,
-                candidates: board[row1][col2].draft,
-              };
-            } else if (
-              board[row2][col2].draft.length === 4 &&
-              board[row2][col2].draft.includes(a) &&
-              board[row2][col2].draft.includes(b)
-            ) {
-              cell4 = {
-                row: row2,
-                col: col2,
-                candidates: board[row2][col2].draft,
-              };
-            }
-            if (cell3 && cell4) {
-              const remainingCandidates1 = cell4.candidates.filter(
-                (item) => item !== a && item !== b
-              );
-              const remainingCandidates2 = cell3.candidates.filter(
-                (item) => item !== a && item !== b
-              );
-              if (
-                remainingCandidates1.length === 2 &&
-                remainingCandidates1.includes(remainingCandidates2[0])
-              ) {
-                const [c, d] = remainingCandidates1;
-                const affectedCells_Row = getEmptyCellsInRow(cell3.row, board);
-                const affectedCells_Col = getEmptyCellsInCol(cell3.col, board);
-                const affectedCells_Box = getEmptyCellsInBox(
-                  cell3.row,
-                  cell3.col,
-                  board
-                );
-                let deleteCells: Position[] = [];
-                let cell5: Candidate | undefined;
-                for (const cell of affectedCells_Row) {
-                  if (
-                    (cell.row === cell3.row && cell.col === cell3.col) ||
-                    (cell.row === cell4.row && cell.col === cell4.col)
-                  )
-                    continue;
-                  if (
-                    board[cell.row][cell.col].draft.includes(c) &&
-                    board[cell.row][cell.col].draft.includes(d) &&
-                    board[cell.row][cell.col].draft.length === 2
-                  ) {
-                    cell5 = {
-                      row: cell.row,
-                      col: cell.col,
-                      candidates: board[cell.row][cell.col].draft,
-                    };
-                  }
-                  if (
-                    board[cell.row][cell.col].draft.length >= 3 &&
-                    (board[cell.row][cell.col].draft.includes(c) ||
-                      board[cell.row][cell.col].draft.includes(d))
-                  ) {
-                    deleteCells.push(cell);
-                  }
-                }
-                if (deleteCells.length && cell5) {
-                  return {
-                    isFill: false,
-                    position: deleteCells,
-                    prompt: [
-                      { row: cell1.row, col: cell1.col },
-                      { row: cell2.row, col: cell2.col },
-                      { row: cell3.row, col: cell3.col },
-                      { row: cell4.row, col: cell4.col },
-                      { row: cell5.row, col: cell5.col },
-                    ],
-                    method: SOLUTION_METHODS.UNIQUE_RECTANGLE,
-                    target: [c, d],
-                    label: "ab-ab-abc-abcd",
-                  };
-                }
-                deleteCells = [];
-                cell5 = undefined;
-                for (const cell of affectedCells_Col) {
-                  if (
-                    (cell.row === cell3.row && cell.col === cell3.col) ||
-                    (cell.row === cell4.row && cell.col === cell4.col)
-                  )
-                    continue;
-                  if (
-                    board[cell.row][cell.col].draft.includes(c) &&
-                    board[cell.row][cell.col].draft.includes(d) &&
-                    board[cell.row][cell.col].draft.length === 2
-                  ) {
-                    cell5 = {
-                      row: cell.row,
-                      col: cell.col,
-                      candidates: board[cell.row][cell.col].draft,
-                    };
-                  }
-                  if (
-                    board[cell.row][cell.col].draft.length >= 3 &&
-                    (board[cell.row][cell.col].draft.includes(c) ||
-                      board[cell.row][cell.col].draft.includes(d))
-                  ) {
-                    deleteCells.push(cell);
-                  }
-                }
-                if (deleteCells.length && cell5) {
-                  return {
-                    isFill: false,
-                    position: deleteCells,
-                    prompt: [
-                      { row: cell1.row, col: cell1.col },
-                      { row: cell2.row, col: cell2.col },
-                      { row: cell3.row, col: cell3.col },
-                      { row: cell4.row, col: cell4.col },
-                      { row: cell5.row, col: cell5.col },
-                    ],
-                    method: SOLUTION_METHODS.UNIQUE_RECTANGLE,
-                    target: [c, d],
-                    label: "ab-ab-abc-abcd",
-                  };
-                }
-                deleteCells = [];
-                cell5 = undefined;
-                for (const cell of affectedCells_Box) {
-                  if (
-                    (cell.row === cell3.row && cell.col === cell3.col) ||
-                    (cell.row === cell4.row && cell.col === cell4.col)
-                  )
-                    continue;
-                  if (
-                    board[cell.row][cell.col].draft.includes(c) &&
-                    board[cell.row][cell.col].draft.includes(d) &&
-                    board[cell.row][cell.col].draft.length === 2
-                  ) {
-                    cell5 = {
-                      row: cell.row,
-                      col: cell.col,
-                      candidates: board[cell.row][cell.col].draft,
-                    };
-                  }
-                  if (
-                    board[cell.row][cell.col].draft.length >= 3 &&
-                    (board[cell.row][cell.col].draft.includes(c) ||
-                      board[cell.row][cell.col].draft.includes(d))
-                  ) {
-                    deleteCells.push(cell);
-                  }
-                }
-                if (deleteCells.length && cell5) {
-                  return {
-                    isFill: false,
-                    position: deleteCells,
-                    prompt: [
-                      { row: cell1.row, col: cell1.col },
-                      { row: cell2.row, col: cell2.col },
-                      { row: cell3.row, col: cell3.col },
-                      { row: cell4.row, col: cell4.col },
-                      { row: cell5.row, col: cell5.col },
-                    ],
-                    method: SOLUTION_METHODS.UNIQUE_RECTANGLE,
-                    target: [c, d],
-                    label: "ab-ab-abc-abcd",
-                  };
-                }
-              }
-            }
-          }
-        }
-      }
-    }
+    //         if (
+    //           board[row1][col2].draft.length === 3 &&
+    //           board[row1][col2].draft.includes(a) &&
+    //           board[row1][col2].draft.includes(b)
+    //         ) {
+    //           cell3 = {
+    //             row: row1,
+    //             col: col2,
+    //             candidates: board[row1][col2].draft,
+    //           };
+    //         } else if (
+    //           board[row2][col2].draft.length === 3 &&
+    //           board[row2][col2].draft.includes(a) &&
+    //           board[row2][col2].draft.includes(b)
+    //         ) {
+    //           cell3 = {
+    //             row: row2,
+    //             col: col2,
+    //             candidates: board[row2][col2].draft,
+    //           };
+    //         }
+    //         if (
+    //           board[row1][col2].draft.length === 4 &&
+    //           board[row1][col2].draft.includes(a) &&
+    //           board[row1][col2].draft.includes(b)
+    //         ) {
+    //           cell4 = {
+    //             row: row1,
+    //             col: col2,
+    //             candidates: board[row1][col2].draft,
+    //           };
+    //         } else if (
+    //           board[row2][col2].draft.length === 4 &&
+    //           board[row2][col2].draft.includes(a) &&
+    //           board[row2][col2].draft.includes(b)
+    //         ) {
+    //           cell4 = {
+    //             row: row2,
+    //             col: col2,
+    //             candidates: board[row2][col2].draft,
+    //           };
+    //         }
+    //         if (cell3 && cell4) {
+    //           const remainingCandidates1 = cell4.candidates.filter(
+    //             (item) => item !== a && item !== b
+    //           );
+    //           const remainingCandidates2 = cell3.candidates.filter(
+    //             (item) => item !== a && item !== b
+    //           );
+    //           if (
+    //             remainingCandidates1.length === 2 &&
+    //             remainingCandidates1.includes(remainingCandidates2[0])
+    //           ) {
+    //             const [c, d] = remainingCandidates1;
+    //             const affectedCells_Row = getEmptyCellsInRow(cell3.row, board);
+    //             const affectedCells_Col = getEmptyCellsInCol(cell3.col, board);
+    //             const affectedCells_Box = getEmptyCellsInBox(
+    //               cell3.row,
+    //               cell3.col,
+    //               board
+    //             );
+    //             let deleteCells: Position[] = [];
+    //             let cell5: Candidate | undefined;
+    //             for (const cell of affectedCells_Row) {
+    //               if (
+    //                 (cell.row === cell3.row && cell.col === cell3.col) ||
+    //                 (cell.row === cell4.row && cell.col === cell4.col)
+    //               )
+    //                 continue;
+    //               if (
+    //                 board[cell.row][cell.col].draft.includes(c) &&
+    //                 board[cell.row][cell.col].draft.includes(d) &&
+    //                 board[cell.row][cell.col].draft.length === 2
+    //               ) {
+    //                 cell5 = {
+    //                   row: cell.row,
+    //                   col: cell.col,
+    //                   candidates: board[cell.row][cell.col].draft,
+    //                 };
+    //               }
+    //               if (
+    //                 board[cell.row][cell.col].draft.length >= 3 &&
+    //                 (board[cell.row][cell.col].draft.includes(c) ||
+    //                   board[cell.row][cell.col].draft.includes(d))
+    //               ) {
+    //                 deleteCells.push(cell);
+    //               }
+    //             }
+    //             if (deleteCells.length && cell5) {
+    //               return {
+    //                 isFill: false,
+    //                 position: deleteCells,
+    //                 prompt: [
+    //                   { row: cell1.row, col: cell1.col },
+    //                   { row: cell2.row, col: cell2.col },
+    //                   { row: cell3.row, col: cell3.col },
+    //                   { row: cell4.row, col: cell4.col },
+    //                   { row: cell5.row, col: cell5.col },
+    //                 ],
+    //                 method: SOLUTION_METHODS.UNIQUE_RECTANGLE,
+    //                 target: [c, d],
+    //                 label: "ab-ab-abc-abcd",
+    //               };
+    //             }
+    //             deleteCells = [];
+    //             cell5 = undefined;
+    //             for (const cell of affectedCells_Col) {
+    //               if (
+    //                 (cell.row === cell3.row && cell.col === cell3.col) ||
+    //                 (cell.row === cell4.row && cell.col === cell4.col)
+    //               )
+    //                 continue;
+    //               if (
+    //                 board[cell.row][cell.col].draft.includes(c) &&
+    //                 board[cell.row][cell.col].draft.includes(d) &&
+    //                 board[cell.row][cell.col].draft.length === 2
+    //               ) {
+    //                 cell5 = {
+    //                   row: cell.row,
+    //                   col: cell.col,
+    //                   candidates: board[cell.row][cell.col].draft,
+    //                 };
+    //               }
+    //               if (
+    //                 board[cell.row][cell.col].draft.length >= 3 &&
+    //                 (board[cell.row][cell.col].draft.includes(c) ||
+    //                   board[cell.row][cell.col].draft.includes(d))
+    //               ) {
+    //                 deleteCells.push(cell);
+    //               }
+    //             }
+    //             if (deleteCells.length && cell5) {
+    //               return {
+    //                 isFill: false,
+    //                 position: deleteCells,
+    //                 prompt: [
+    //                   { row: cell1.row, col: cell1.col },
+    //                   { row: cell2.row, col: cell2.col },
+    //                   { row: cell3.row, col: cell3.col },
+    //                   { row: cell4.row, col: cell4.col },
+    //                   { row: cell5.row, col: cell5.col },
+    //                 ],
+    //                 method: SOLUTION_METHODS.UNIQUE_RECTANGLE,
+    //                 target: [c, d],
+    //                 label: "ab-ab-abc-abcd",
+    //               };
+    //             }
+    //             deleteCells = [];
+    //             cell5 = undefined;
+    //             for (const cell of affectedCells_Box) {
+    //               if (
+    //                 (cell.row === cell3.row && cell.col === cell3.col) ||
+    //                 (cell.row === cell4.row && cell.col === cell4.col)
+    //               )
+    //                 continue;
+    //               if (
+    //                 board[cell.row][cell.col].draft.includes(c) &&
+    //                 board[cell.row][cell.col].draft.includes(d) &&
+    //                 board[cell.row][cell.col].draft.length === 2
+    //               ) {
+    //                 cell5 = {
+    //                   row: cell.row,
+    //                   col: cell.col,
+    //                   candidates: board[cell.row][cell.col].draft,
+    //                 };
+    //               }
+    //               if (
+    //                 board[cell.row][cell.col].draft.length >= 3 &&
+    //                 (board[cell.row][cell.col].draft.includes(c) ||
+    //                   board[cell.row][cell.col].draft.includes(d))
+    //               ) {
+    //                 deleteCells.push(cell);
+    //               }
+    //             }
+    //             if (deleteCells.length && cell5) {
+    //               return {
+    //                 isFill: false,
+    //                 position: deleteCells,
+    //                 prompt: [
+    //                   { row: cell1.row, col: cell1.col },
+    //                   { row: cell2.row, col: cell2.col },
+    //                   { row: cell3.row, col: cell3.col },
+    //                   { row: cell4.row, col: cell4.col },
+    //                   { row: cell5.row, col: cell5.col },
+    //                 ],
+    //                 method: SOLUTION_METHODS.UNIQUE_RECTANGLE,
+    //                 target: [c, d],
+    //                 label: "ab-ab-abc-abcd",
+    //               };
+    //             }
+    //           }
+    //         }
+    //       }
+    //     }
+    //   }
+    // }
   }
   return null;
 };
