@@ -284,7 +284,7 @@ const Sudoku: React.FC = () => {
                 case "ab-ab-abc-abc":
                   uniqueRectangleMap2.set(i, true);
                   break;
-                case "abc-ab-abc-abcd":
+                case "ab-ab-abc-abcd":
                   uniqueRectangleMap3.set(i, true);
                   break;
               }
@@ -378,7 +378,7 @@ const Sudoku: React.FC = () => {
     newBoard = deepCopyBoard(mockBoard);
 
     // updateBoard(newBoard, "生成新棋盘");
-    updateBoard(convertToBoard(41), "生成新棋盘");
+    updateBoard(convertToBoard(23), "生成新棋盘");
 
     // 生成解决方案
     const solvedBoard = newBoard.map((row) => row.map((cell) => ({ ...cell })));
