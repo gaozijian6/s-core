@@ -807,165 +807,6 @@ const checkNakedTriple2 = (
   return null;
 };
 
-// 显性四数对
-export const nakedQuadruple = (
-  board: CellData[][],
-  candidateMap: CandidateMap,
-  graph: Graph
-): Result | null => {
-  // 检查行
-  const rowResult = checkNakedQuadruple(board, "row");
-  if (rowResult) return rowResult;
-
-  // 检查列
-  const colResult = checkNakedQuadruple(board, "col");
-  if (colResult) return colResult;
-
-  // 检查宫
-  const boxResult = checkNakedQuadruple(board, "box");
-  if (boxResult) return boxResult;
-
-  return null;
-};
-
-const checkNakedQuadruple = (
-  board: CellData[][],
-  unitType: "row" | "col" | "box"
-): Result | null => {
-  for (let unit = 0; unit < 9; unit++) {
-    const cellsWithCandidates: { pos: Position; candidates: number[] }[] = [];
-
-    // 收集单元内的候选数和位置
-    for (let i = 0; i < 9; i++) {
-      const [row, col] =
-        unitType === "row"
-          ? [unit, i]
-          : unitType === "col"
-          ? [i, unit]
-          : [
-              Math.floor(unit / 3) * 3 + Math.floor(i / 3),
-              (unit % 3) * 3 + (i % 3),
-            ];
-      const cell = board[row]?.[col];
-      if (
-        cell?.value === null &&
-        cell.draft?.length >= 2 &&
-        cell.draft?.length <= 4
-      ) {
-        cellsWithCandidates.push({ pos: { row, col }, candidates: cell.draft });
-      }
-    }
-
-    // 检查所有可能的四个格子组合
-    for (let i = 0; i < cellsWithCandidates.length - 3; i++) {
-      for (let j = i + 1; j < cellsWithCandidates.length - 2; j++) {
-        for (let k = j + 1; k < cellsWithCandidates.length - 1; k++) {
-          for (let l = k + 1; l < cellsWithCandidates.length; l++) {
-            const cellA = cellsWithCandidates[i];
-            const cellB = cellsWithCandidates[j];
-            const cellC = cellsWithCandidates[k];
-            const cellD = cellsWithCandidates[l];
-
-            const uniqueCandidates = [
-              ...new Set([
-                ...cellA.candidates,
-                ...cellB.candidates,
-                ...cellC.candidates,
-                ...cellD.candidates,
-              ]),
-            ];
-
-            if (uniqueCandidates.length === 4) {
-              const [a, b, c, d] = uniqueCandidates;
-
-              // 检查是否满足显性四数对法的条件
-              const hasFourCandidates =
-                cellA.candidates.length === 4 ||
-                cellB.candidates.length === 4 ||
-                cellC.candidates.length === 4 ||
-                cellD.candidates.length === 4;
-
-              const allHaveThreeOrFourCandidates =
-                cellA.candidates.length >= 3 &&
-                cellB.candidates.length >= 3 &&
-                cellC.candidates.length >= 3 &&
-                cellD.candidates.length >= 3;
-
-              if (hasFourCandidates && allHaveThreeOrFourCandidates) {
-                const affectedPositions: Position[] = [];
-                const prompt: Position[] = [
-                  cellA.pos,
-                  cellB.pos,
-                  cellC.pos,
-                  cellD.pos,
-                ];
-
-                // 检查其他格子是否受影响
-                for (let m = 0; m < 9; m++) {
-                  const [row, col] =
-                    unitType === "row"
-                      ? [unit, m]
-                      : unitType === "col"
-                      ? [m, unit]
-                      : [
-                          Math.floor(unit / 3) * 3 + Math.floor(m / 3),
-                          (unit % 3) * 3 + (m % 3),
-                        ];
-                  const cell = board[row]?.[col];
-                  if (
-                    cell?.value === null &&
-                    !prompt.some((p) => p.row === row && p.col === col) &&
-                    cell.draft?.some((num) => [a, b, c, d].includes(num))
-                  ) {
-                    affectedPositions.push({ row, col });
-                  }
-                }
-
-                if (affectedPositions.length > 0) {
-                  const getMethodKey = (unitType: string): string => {
-                    switch (unitType) {
-                      case "row":
-                        return "ROW";
-                      case "col":
-                        return "COLUMN";
-                      case "box":
-                        return "BOX";
-                      default:
-                        return unitType.toUpperCase();
-                    }
-                  };
-
-                  const method =
-                    SOLUTION_METHODS[
-                      `NAKED_QUADRUPLE_${getMethodKey(
-                        unitType
-                      )}` as keyof typeof SOLUTION_METHODS
-                    ];
-
-                  return {
-                    position: affectedPositions,
-                    prompt,
-                    method,
-                    target: uniqueCandidates,
-                    isFill: false,
-                    row: cellA.pos.row,
-                    col: cellA.pos.col,
-                    box:
-                      Math.floor(cellA.pos.row / 3) * 3 +
-                      Math.floor(cellA.pos.col / 3),
-                  };
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  return null;
-};
-
 // 隐形数对法
 export const hiddenPair = (
   board: CellData[][],
@@ -3627,8 +3468,7 @@ export const uniqueRectangle = (
         if (
           cell1 &&
           cell2 &&
-          JSON.stringify(cell1.candidates) ===
-            JSON.stringify(cell2.candidates) &&
+          JSON.stringify(cell1.candidates) === JSON.stringify(cell2.candidates) &&
           cell1.candidates.length === 2
         ) {
           let col1 = cell1.col;
@@ -3641,56 +3481,50 @@ export const uniqueRectangle = (
             let cell3: Candidate | undefined;
             let cell4: Candidate | undefined;
             if (candidateMap[num].col.get(col1)?.count === 2) {
-              if (
-                candidateMap[num].col.get(col1)?.positions[0].row === cell1.row
-              ) {
+              if (candidateMap[num].col.get(col1)?.positions[0].row === cell1.row) {
                 cell3 = candidateMap[num].col.get(col1)?.positions[1];
+                cell4 = {row:cell3?.row,col:cell2.col,candidates:board[cell3?.row][cell2.col].draft}
               } else {
                 cell3 = candidateMap[num].col.get(col1)?.positions[0];
+                cell4 = {row:cell3?.row,col:cell2.col,candidates:board[cell3?.row][cell2.col].draft}
               }
-              if (
-                candidateMap[num].col.get(col2)?.positions[0].row === cell2.row
-              ) {
-                cell4 = candidateMap[num].col.get(col2)?.positions[1];
-              } else {
-                cell4 = candidateMap[num].col.get(col2)?.positions[0];
-              }
-            } else {
-              if (
-                candidateMap[num].col.get(col1)?.positions[0].row === cell1.row
-              ) {
-                cell4 = candidateMap[num].col.get(col1)?.positions[1];
-              } else {
-                cell4 = candidateMap[num].col.get(col1)?.positions[0];
-              }
-              if (
-                candidateMap[num].col.get(col2)?.positions[0].row === cell2.row
-              ) {
+            } else if (candidateMap[num].col.get(col2)?.count === 2) {
+              if (candidateMap[num].col.get(col2)?.positions[0].row === cell2.row) {
                 cell3 = candidateMap[num].col.get(col2)?.positions[1];
+                cell4 = {row:cell3?.row,col:cell1.col,candidates:board[cell3?.row][cell1.col].draft}
               } else {
                 cell3 = candidateMap[num].col.get(col2)?.positions[0];
+                cell4 = {row:cell3?.row,col:cell1.col,candidates:board[cell3?.row][cell1.col].draft}
               }
             }
-
             if (cell3?.row !== cell4?.row) continue;
             if (cell3 && cell4) {
+              let box1 = Math.floor(cell1.row / 3) * 3 + Math.floor(cell1.col / 3);
+              let box2 = Math.floor(cell2.row / 3) * 3 + Math.floor(cell2.col / 3);
+              let box3 = Math.floor(cell3.row / 3) * 3 + Math.floor(cell3.col / 3);
+              let box4 = Math.floor(cell4.row / 3) * 3 + Math.floor(cell4.col / 3);
+              let arr = [box1, box2, box3, box4];
+              let set = new Set(arr);
               if (
-                JSON.stringify(cell3.candidates) ===
-                  JSON.stringify(cell1.candidates) &&
-                (cell4.candidates.includes(a) || cell4.candidates.includes(b))
+                JSON.stringify(cell3.candidates) === JSON.stringify(cell1.candidates) &&
+                cell4.candidates.includes(a) &&
+                cell4.candidates.includes(b) &&
+                cell4.candidates.length > 2 &&
+                set.size === 2
               ) {
-                // return {
-                //   isFill: false,
-                //   position: [{ row: cell4.row, col: cell4.col }],
-                //   prompt: [
-                //     { row: cell1.row, col: cell1.col },
-                //     { row: cell2.row, col: cell2.col },
-                //     { row: cell3.row, col: cell3.col },
-                //   ],
-                //   method: SOLUTION_METHODS.UNIQUE_RECTANGLE,
-                //   target: [a, b],
-                //   label: "ab-ab-ab-abc",
-                // };
+         
+                return {
+                  isFill: false,
+                  position: [{ row: cell4.row, col: cell4.col }],
+                  prompt: [
+                    { row: cell1.row, col: cell1.col },
+                    { row: cell2.row, col: cell2.col },
+                    { row: cell3.row, col: cell3.col },
+                  ],
+                  method: SOLUTION_METHODS.UNIQUE_RECTANGLE,
+                  target: [a, b],
+                  label: 'ab-ab-ab-abc',
+                };
               }
             }
           }
@@ -3705,8 +3539,7 @@ export const uniqueRectangle = (
         if (
           cell1 &&
           cell2 &&
-          JSON.stringify(cell1.candidates) ===
-            JSON.stringify(cell2.candidates) &&
+          JSON.stringify(cell1.candidates) === JSON.stringify(cell2.candidates) &&
           cell1.candidates.length === 2
         ) {
           let col1 = cell1.col;
@@ -3718,8 +3551,7 @@ export const uniqueRectangle = (
             if (row2 === row) continue;
             if (
               board[row2][col1].draft.length === 3 &&
-              JSON.stringify(board[row2][col1].draft) ===
-                JSON.stringify(board[row2][col2].draft) &&
+              JSON.stringify(board[row2][col1].draft) === JSON.stringify(board[row2][col2].draft) &&
               board[row2][col1].draft.includes(a) &&
               board[row2][col2].draft.includes(b)
             ) {
@@ -3733,9 +3565,7 @@ export const uniqueRectangle = (
                 col: col2,
                 candidates: board[row2][col2].draft,
               };
-              const c = board[row2][col1].draft.find(
-                (item) => item !== a && item !== b
-              );
+              const c = board[row2][col1].draft.find(item => item !== a && item !== b);
               if (!c) continue;
               const affectedCells = findCommonAffectedPositions(
                 { row: cell3.row, col: cell3.col },
@@ -3749,7 +3579,13 @@ export const uniqueRectangle = (
                   deleteCells.push(cell);
                 }
               }
-              if (deleteCells.length) {
+              let box1 = Math.floor(cell1.row / 3) * 3 + Math.floor(cell1.col / 3);
+              let box2 = Math.floor(cell2.row / 3) * 3 + Math.floor(cell2.col / 3);
+              let box3 = Math.floor(cell3.row / 3) * 3 + Math.floor(cell3.col / 3);
+              let box4 = Math.floor(cell4.row / 3) * 3 + Math.floor(cell4.col / 3);
+              let arr = [box1, box2, box3, box4];
+              let set = new Set(arr);
+              if (deleteCells.length && set.size === 2) {
                 return {
                   isFill: false,
                   position: deleteCells,
@@ -3761,7 +3597,7 @@ export const uniqueRectangle = (
                   ],
                   method: SOLUTION_METHODS.UNIQUE_RECTANGLE,
                   target: [c],
-                  label: "ab-ab-abc-abc",
+                  label: 'ab-ab-abc-abc',
                 };
               }
             }
@@ -3777,8 +3613,7 @@ export const uniqueRectangle = (
         if (
           cell1 &&
           cell2 &&
-          JSON.stringify(cell1.candidates) ===
-            JSON.stringify(cell2.candidates) &&
+          JSON.stringify(cell1.candidates) === JSON.stringify(cell2.candidates) &&
           cell1.candidates.length === 2
         ) {
           let row1 = cell1.row;
@@ -3790,8 +3625,7 @@ export const uniqueRectangle = (
             if (col2 === col) continue;
             if (
               board[row1][col2].draft.length === 3 &&
-              JSON.stringify(board[row1][col2].draft) ===
-                JSON.stringify(board[row2][col2].draft) &&
+              JSON.stringify(board[row1][col2].draft) === JSON.stringify(board[row2][col2].draft) &&
               board[row1][col2].draft.includes(a) &&
               board[row2][col2].draft.includes(b)
             ) {
@@ -3805,9 +3639,7 @@ export const uniqueRectangle = (
                 col: col2,
                 candidates: board[row2][col2].draft,
               };
-              const c = board[row1][col2].draft.find(
-                (item) => item !== a && item !== b
-              );
+              const c = board[row1][col2].draft.find(item => item !== a && item !== b);
               if (!c) continue;
               const affectedCells = findCommonAffectedPositions(
                 { row: cell3.row, col: cell3.col },
@@ -3821,7 +3653,13 @@ export const uniqueRectangle = (
                   deleteCells.push(cell);
                 }
               }
-              if (deleteCells.length) {
+              let box1 = Math.floor(cell1.row / 3) * 3 + Math.floor(cell1.col / 3);
+              let box2 = Math.floor(cell2.row / 3) * 3 + Math.floor(cell2.col / 3);
+              let box3 = Math.floor(cell3.row / 3) * 3 + Math.floor(cell3.col / 3);
+              let box4 = Math.floor(cell4.row / 3) * 3 + Math.floor(cell4.col / 3);
+              let arr = [box1, box2, box3, box4];
+              let set = new Set(arr);
+              if (deleteCells.length && set.size === 2) {
                 return {
                   isFill: false,
                   position: deleteCells,
@@ -3833,7 +3671,7 @@ export const uniqueRectangle = (
                   ],
                   method: SOLUTION_METHODS.UNIQUE_RECTANGLE,
                   target: [c],
-                  label: "ab-ab-abc-abc",
+                  label: 'ab-ab-abc-abc',
                 };
               }
             }
@@ -3842,440 +3680,260 @@ export const uniqueRectangle = (
       }
     }
 
-    // // ab-ab-abc-abcd行
-    // for (let row = 0; row < 9; row++) {
-    //   if (candidateMap[num].row.get(row)?.count === 2) {
-    //     const cell1 = candidateMap[num].row.get(row)?.positions[0];
-    //     const cell2 = candidateMap[num].row.get(row)?.positions[1];
+    // ab-ab-abc-abcd行
+    for (let row = 0; row < 9; row++) {
+      if (candidateMap[num].row.get(row)?.count === 2) {
+        const cell1 = candidateMap[num].row.get(row)?.positions[0];
+        const cell2 = candidateMap[num].row.get(row)?.positions[1];
 
-    //     if (
-    //       cell1 &&
-    //       cell2 &&
-    //       JSON.stringify(cell1.candidates) ===
-    //         JSON.stringify(cell2.candidates) &&
-    //       cell1.candidates.length === 2
-    //     ) {
-    //       let col1 = cell1.col;
-    //       let col2 = cell2.col;
-    //       let [a, b] = [cell1.candidates[0], cell1.candidates[1]];
-    //       let cell3: Candidate | undefined;
-    //       let cell4: Candidate | undefined;
-    //       for (let row2 = 0; row2 < 9; row2++) {
-    //         if (row2 === row) continue;
+        if (
+          cell1 &&
+          cell2 &&
+          JSON.stringify(cell1.candidates) === JSON.stringify(cell2.candidates) &&
+          cell1.candidates.length === 2
+        ) {
+          let col1 = cell1.col;
+          let col2 = cell2.col;
+          let [a, b] = [cell1.candidates[0], cell1.candidates[1]];
+          let cell3: Candidate | undefined;
+          let cell4: Candidate | undefined;
+          for (let row2 = 0; row2 < 9; row2++) {
+            if (row2 === row) continue;
 
-    //         if (
-    //           board[row2][col1].draft.length === 3 &&
-    //           board[row2][col1].draft.includes(a) &&
-    //           board[row2][col1].draft.includes(b)
-    //         ) {
-    //           cell3 = {
-    //             row: row2,
-    //             col: col1,
-    //             candidates: board[row2][col1].draft,
-    //           };
-    //         } else if (
-    //           board[row2][col2].draft.length === 3 &&
-    //           board[row2][col2].draft.includes(a) &&
-    //           board[row2][col2].draft.includes(b)
-    //         ) {
-    //           cell3 = {
-    //             row: row2,
-    //             col: col2,
-    //             candidates: board[row2][col2].draft,
-    //           };
-    //         }
-    //         if (
-    //           board[row2][col1].draft.length === 4 &&
-    //           board[row2][col1].draft.includes(a) &&
-    //           board[row2][col1].draft.includes(b)
-    //         ) {
-    //           cell4 = {
-    //             row: row2,
-    //             col: col1,
-    //             candidates: board[row2][col1].draft,
-    //           };
-    //         } else if (
-    //           board[row2][col2].draft.length === 4 &&
-    //           board[row2][col2].draft.includes(a) &&
-    //           board[row2][col2].draft.includes(b)
-    //         ) {
-    //           cell4 = {
-    //             row: row2,
-    //             col: col2,
-    //             candidates: board[row2][col2].draft,
-    //           };
-    //         }
-    //         if (cell3 && cell4) {
-    //           const remainingCandidates1 = cell4.candidates.filter(
-    //             (item) => item !== a && item !== b
-    //           );
-    //           const remainingCandidates2 = cell3.candidates.filter(
-    //             (item) => item !== a && item !== b
-    //           );
-    //           if (
-    //             remainingCandidates1.length === 2 &&
-    //             remainingCandidates1.includes(remainingCandidates2[0])
-    //           ) {
-    //             const [c, d] = remainingCandidates1;
-    //             const affectedCells_Row = getEmptyCellsInRow(cell3.row, board);
-    //             const affectedCells_Col = getEmptyCellsInCol(cell3.col, board);
-    //             const affectedCells_Box = getEmptyCellsInBox(
-    //               cell3.row,
-    //               cell3.col,
-    //               board
-    //             );
-    //             let deleteCells: Position[] = [];
-    //             let cell5: Candidate | undefined;
-    //             for (const cell of affectedCells_Row) {
-    //               if (
-    //                 (cell.row === cell3.row && cell.col === cell3.col) ||
-    //                 (cell.row === cell4.row && cell.col === cell4.col)
-    //               )
-    //                 continue;
-    //               if (
-    //                 board[cell.row][cell.col].draft.includes(c) &&
-    //                 board[cell.row][cell.col].draft.includes(d) &&
-    //                 board[cell.row][cell.col].draft.length === 2
-    //               ) {
-    //                 cell5 = {
-    //                   row: cell.row,
-    //                   col: cell.col,
-    //                   candidates: board[cell.row][cell.col].draft,
-    //                 };
-    //               }
-    //               if (
-    //                 board[cell.row][cell.col].draft.length >= 3 &&
-    //                 (board[cell.row][cell.col].draft.includes(c) ||
-    //                   board[cell.row][cell.col].draft.includes(d))
-    //               ) {
-    //                 deleteCells.push(cell);
-    //               }
-    //             }
-    //             if (deleteCells.length && cell5) {
-    //               return {
-    //                 isFill: false,
-    //                 position: deleteCells,
-    //                 prompt: [
-    //                   { row: cell1.row, col: cell1.col },
-    //                   { row: cell2.row, col: cell2.col },
-    //                   { row: cell3.row, col: cell3.col },
-    //                   { row: cell4.row, col: cell4.col },
-    //                   { row: cell5.row, col: cell5.col },
-    //                 ],
-    //                 method: SOLUTION_METHODS.UNIQUE_RECTANGLE,
-    //                 target: [c, d],
-    //                 label: "ab-ab-abc-abcd",
-    //               };
-    //             }
-    //             deleteCells = [];
-    //             cell5 = undefined;
-    //             for (const cell of affectedCells_Col) {
-    //               if (
-    //                 (cell.row === cell3.row && cell.col === cell3.col) ||
-    //                 (cell.row === cell4.row && cell.col === cell4.col)
-    //               )
-    //                 continue;
-    //               if (
-    //                 board[cell.row][cell.col].draft.includes(c) &&
-    //                 board[cell.row][cell.col].draft.includes(d) &&
-    //                 board[cell.row][cell.col].draft.length === 2
-    //               ) {
-    //                 cell5 = {
-    //                   row: cell.row,
-    //                   col: cell.col,
-    //                   candidates: board[cell.row][cell.col].draft,
-    //                 };
-    //               }
-    //               if (
-    //                 board[cell.row][cell.col].draft.length >= 3 &&
-    //                 (board[cell.row][cell.col].draft.includes(c) ||
-    //                   board[cell.row][cell.col].draft.includes(d))
-    //               ) {
-    //                 deleteCells.push(cell);
-    //               }
-    //             }
-    //             if (deleteCells.length && cell5) {
-    //               return {
-    //                 isFill: false,
-    //                 position: deleteCells,
-    //                 prompt: [
-    //                   { row: cell1.row, col: cell1.col },
-    //                   { row: cell2.row, col: cell2.col },
-    //                   { row: cell3.row, col: cell3.col },
-    //                   { row: cell4.row, col: cell4.col },
-    //                   { row: cell5.row, col: cell5.col },
-    //                 ],
-    //                 method: SOLUTION_METHODS.UNIQUE_RECTANGLE,
-    //                 target: [c, d],
-    //                 label: "ab-ab-abc-abcd",
-    //               };
-    //             }
-    //             deleteCells = [];
-    //             cell5 = undefined;
-    //             for (const cell of affectedCells_Box) {
-    //               if (
-    //                 (cell.row === cell3.row && cell.col === cell3.col) ||
-    //                 (cell.row === cell4.row && cell.col === cell4.col)
-    //               )
-    //                 continue;
-    //               if (
-    //                 board[cell.row][cell.col].draft.includes(c) &&
-    //                 board[cell.row][cell.col].draft.includes(d) &&
-    //                 board[cell.row][cell.col].draft.length === 2
-    //               ) {
-    //                 cell5 = {
-    //                   row: cell.row,
-    //                   col: cell.col,
-    //                   candidates: board[cell.row][cell.col].draft,
-    //                 };
-    //               }
-    //               if (
-    //                 board[cell.row][cell.col].draft.length >= 3 &&
-    //                 (board[cell.row][cell.col].draft.includes(c) ||
-    //                   board[cell.row][cell.col].draft.includes(d))
-    //               ) {
-    //                 deleteCells.push(cell);
-    //               }
-    //             }
-    //             if (deleteCells.length && cell5) {
-    //               return {
-    //                 isFill: false,
-    //                 position: deleteCells,
-    //                 prompt: [
-    //                   { row: cell1.row, col: cell1.col },
-    //                   { row: cell2.row, col: cell2.col },
-    //                   { row: cell3.row, col: cell3.col },
-    //                   { row: cell4.row, col: cell4.col },
-    //                   { row: cell5.row, col: cell5.col },
-    //                 ],
-    //                 method: SOLUTION_METHODS.UNIQUE_RECTANGLE,
-    //                 target: [c, d],
-    //                 label: "ab-ab-abc-abcd",
-    //               };
-    //             }
-    //           }
-    //         }
-    //       }
-    //     }
-    //   }
-    // }
-    // // ab-ab-abc-abcd列
-    // for (let col = 0; col < 9; col++) {
-    //   if (candidateMap[num].col.get(col)?.count === 2) {
-    //     const cell1 = candidateMap[num].col.get(col)?.positions[0];
-    //     const cell2 = candidateMap[num].col.get(col)?.positions[1];
+            if (
+              board[row2][col1].draft.length === 3 &&
+              board[row2][col1].draft.includes(a) &&
+              board[row2][col1].draft.includes(b)
+            ) {
+              cell3 = {
+                row: row2,
+                col: col1,
+                candidates: board[row2][col1].draft,
+              };
+              cell4 = {
+                row: row2,
+                col: col2,
+                candidates: board[row2][col2].draft,
+              };
+            } else if (
+              board[row2][col2].draft.length === 3 &&
+              board[row2][col2].draft.includes(a) &&
+              board[row2][col2].draft.includes(b)
+            ) {
+              cell3 = {
+                row: row2,
+                col: col2,
+                candidates: board[row2][col2].draft,
+              };
+              cell4 = {
+                row: row2,
+                col: col1,
+                candidates: board[row2][col1].draft,
+              };
+            }
+            const other = cell3?.candidates.filter(item => item !== a && item !== b);
+            if (
+              cell3 &&
+              cell4 &&
+              cell4.candidates.length === 4 &&
+              cell4.candidates.includes(a) &&
+              cell4.candidates.includes(b) &&
+              cell4.candidates.includes(other[0])
+            ) {
+              const remainingCandidates1 = cell4.candidates.filter(
+                item => item !== a && item !== b
+              );
+              const remainingCandidates2 = cell3.candidates.filter(
+                item => item !== a && item !== b
+              );
+              if (
+                remainingCandidates1.length === 2 &&
+                remainingCandidates1.includes(remainingCandidates2[0])
+              ) {
+                const [c, d] = remainingCandidates1;
+                const affectedCells_Row = getEmptyCellsInRow(cell3.row, board);
+                let deleteCells: Position[] = [];
+                let cell5: Candidate | undefined;
+                for (const cell of affectedCells_Row) {
+                  if (
+                    (cell.row === cell3.row && cell.col === cell3.col) ||
+                    (cell.row === cell4.row && cell.col === cell4.col)
+                  )
+                    continue;
+                  if (
+                    board[cell.row][cell.col].draft.includes(c) &&
+                    board[cell.row][cell.col].draft.includes(d) &&
+                    board[cell.row][cell.col].draft.length === 2
+                  ) {
+                    cell5 = {
+                      row: cell.row,
+                      col: cell.col,
+                      candidates: board[cell.row][cell.col].draft,
+                    };
+                  }
+                  if (
+                    board[cell.row][cell.col].draft.length >= 3 &&
+                    (board[cell.row][cell.col].draft.includes(c) ||
+                      board[cell.row][cell.col].draft.includes(d))
+                  ) {
+                    deleteCells.push(cell);
+                  }
+                }
+                const box1 = Math.floor(cell1.row / 3) * 3 + Math.floor(cell1.col / 3);
+                const box2 = Math.floor(cell2.row / 3) * 3 + Math.floor(cell2.col / 3);
+                const box3 = Math.floor(cell3.row / 3) * 3 + Math.floor(cell3.col / 3);
+                const box4 = Math.floor(cell4.row / 3) * 3 + Math.floor(cell4.col / 3);
+                const arr = [box1, box2, box3, box4];
+                const set = new Set(arr);
+                if (deleteCells.length && cell5 && set.size === 2) {
+                  return {
+                    isFill: false,
+                    position: deleteCells,
+                    prompt: [
+                      { row: cell1.row, col: cell1.col },
+                      { row: cell2.row, col: cell2.col },
+                      { row: cell3.row, col: cell3.col },
+                      { row: cell4.row, col: cell4.col },
+                      { row: cell5.row, col: cell5.col },
+                    ],
+                    method: SOLUTION_METHODS.UNIQUE_RECTANGLE,
+                    target: [c, d],
+                    label: 'ab-ab-abc-abcd',
+                  };
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    // ab-ab-abc-abcd列
+    for (let col = 0; col < 9; col++) {
+      if (candidateMap[num].col.get(col)?.count === 2) {
+        const cell1 = candidateMap[num].col.get(col)?.positions[0];
+        const cell2 = candidateMap[num].col.get(col)?.positions[1];
 
-    //     if (
-    //       cell1 &&
-    //       cell2 &&
-    //       JSON.stringify(cell1.candidates) ===
-    //         JSON.stringify(cell2.candidates) &&
-    //       cell1.candidates.length === 2
-    //     ) {
-    //       let row1 = cell1.row;
-    //       let row2 = cell2.row;
-    //       let [a, b] = [cell1.candidates[0], cell1.candidates[1]];
-    //       let cell3: Candidate | undefined;
-    //       let cell4: Candidate | undefined;
-    //       for (let col2 = 0; col2 < 9; col2++) {
-    //         if (col2 === col) continue;
+        if (
+          cell1 &&
+          cell2 &&
+          JSON.stringify(cell1.candidates) === JSON.stringify(cell2.candidates) &&
+          cell1.candidates.length === 2
+        ) {
+          let row1 = cell1.row;
+          let row2 = cell2.row;
+          let [a, b] = [cell1.candidates[0], cell1.candidates[1]];
+          let cell3: Candidate | undefined;
+          let cell4: Candidate | undefined;
+          for (let col2 = 0; col2 < 9; col2++) {
+            if (col2 === col) continue;
 
-    //         if (
-    //           board[row1][col2].draft.length === 3 &&
-    //           board[row1][col2].draft.includes(a) &&
-    //           board[row1][col2].draft.includes(b)
-    //         ) {
-    //           cell3 = {
-    //             row: row1,
-    //             col: col2,
-    //             candidates: board[row1][col2].draft,
-    //           };
-    //         } else if (
-    //           board[row2][col2].draft.length === 3 &&
-    //           board[row2][col2].draft.includes(a) &&
-    //           board[row2][col2].draft.includes(b)
-    //         ) {
-    //           cell3 = {
-    //             row: row2,
-    //             col: col2,
-    //             candidates: board[row2][col2].draft,
-    //           };
-    //         }
-    //         if (
-    //           board[row1][col2].draft.length === 4 &&
-    //           board[row1][col2].draft.includes(a) &&
-    //           board[row1][col2].draft.includes(b)
-    //         ) {
-    //           cell4 = {
-    //             row: row1,
-    //             col: col2,
-    //             candidates: board[row1][col2].draft,
-    //           };
-    //         } else if (
-    //           board[row2][col2].draft.length === 4 &&
-    //           board[row2][col2].draft.includes(a) &&
-    //           board[row2][col2].draft.includes(b)
-    //         ) {
-    //           cell4 = {
-    //             row: row2,
-    //             col: col2,
-    //             candidates: board[row2][col2].draft,
-    //           };
-    //         }
-    //         if (cell3 && cell4) {
-    //           const remainingCandidates1 = cell4.candidates.filter(
-    //             (item) => item !== a && item !== b
-    //           );
-    //           const remainingCandidates2 = cell3.candidates.filter(
-    //             (item) => item !== a && item !== b
-    //           );
-    //           if (
-    //             remainingCandidates1.length === 2 &&
-    //             remainingCandidates1.includes(remainingCandidates2[0])
-    //           ) {
-    //             const [c, d] = remainingCandidates1;
-    //             const affectedCells_Row = getEmptyCellsInRow(cell3.row, board);
-    //             const affectedCells_Col = getEmptyCellsInCol(cell3.col, board);
-    //             const affectedCells_Box = getEmptyCellsInBox(
-    //               cell3.row,
-    //               cell3.col,
-    //               board
-    //             );
-    //             let deleteCells: Position[] = [];
-    //             let cell5: Candidate | undefined;
-    //             for (const cell of affectedCells_Row) {
-    //               if (
-    //                 (cell.row === cell3.row && cell.col === cell3.col) ||
-    //                 (cell.row === cell4.row && cell.col === cell4.col)
-    //               )
-    //                 continue;
-    //               if (
-    //                 board[cell.row][cell.col].draft.includes(c) &&
-    //                 board[cell.row][cell.col].draft.includes(d) &&
-    //                 board[cell.row][cell.col].draft.length === 2
-    //               ) {
-    //                 cell5 = {
-    //                   row: cell.row,
-    //                   col: cell.col,
-    //                   candidates: board[cell.row][cell.col].draft,
-    //                 };
-    //               }
-    //               if (
-    //                 board[cell.row][cell.col].draft.length >= 3 &&
-    //                 (board[cell.row][cell.col].draft.includes(c) ||
-    //                   board[cell.row][cell.col].draft.includes(d))
-    //               ) {
-    //                 deleteCells.push(cell);
-    //               }
-    //             }
-    //             if (deleteCells.length && cell5) {
-    //               return {
-    //                 isFill: false,
-    //                 position: deleteCells,
-    //                 prompt: [
-    //                   { row: cell1.row, col: cell1.col },
-    //                   { row: cell2.row, col: cell2.col },
-    //                   { row: cell3.row, col: cell3.col },
-    //                   { row: cell4.row, col: cell4.col },
-    //                   { row: cell5.row, col: cell5.col },
-    //                 ],
-    //                 method: SOLUTION_METHODS.UNIQUE_RECTANGLE,
-    //                 target: [c, d],
-    //                 label: "ab-ab-abc-abcd",
-    //               };
-    //             }
-    //             deleteCells = [];
-    //             cell5 = undefined;
-    //             for (const cell of affectedCells_Col) {
-    //               if (
-    //                 (cell.row === cell3.row && cell.col === cell3.col) ||
-    //                 (cell.row === cell4.row && cell.col === cell4.col)
-    //               )
-    //                 continue;
-    //               if (
-    //                 board[cell.row][cell.col].draft.includes(c) &&
-    //                 board[cell.row][cell.col].draft.includes(d) &&
-    //                 board[cell.row][cell.col].draft.length === 2
-    //               ) {
-    //                 cell5 = {
-    //                   row: cell.row,
-    //                   col: cell.col,
-    //                   candidates: board[cell.row][cell.col].draft,
-    //                 };
-    //               }
-    //               if (
-    //                 board[cell.row][cell.col].draft.length >= 3 &&
-    //                 (board[cell.row][cell.col].draft.includes(c) ||
-    //                   board[cell.row][cell.col].draft.includes(d))
-    //               ) {
-    //                 deleteCells.push(cell);
-    //               }
-    //             }
-    //             if (deleteCells.length && cell5) {
-    //               return {
-    //                 isFill: false,
-    //                 position: deleteCells,
-    //                 prompt: [
-    //                   { row: cell1.row, col: cell1.col },
-    //                   { row: cell2.row, col: cell2.col },
-    //                   { row: cell3.row, col: cell3.col },
-    //                   { row: cell4.row, col: cell4.col },
-    //                   { row: cell5.row, col: cell5.col },
-    //                 ],
-    //                 method: SOLUTION_METHODS.UNIQUE_RECTANGLE,
-    //                 target: [c, d],
-    //                 label: "ab-ab-abc-abcd",
-    //               };
-    //             }
-    //             deleteCells = [];
-    //             cell5 = undefined;
-    //             for (const cell of affectedCells_Box) {
-    //               if (
-    //                 (cell.row === cell3.row && cell.col === cell3.col) ||
-    //                 (cell.row === cell4.row && cell.col === cell4.col)
-    //               )
-    //                 continue;
-    //               if (
-    //                 board[cell.row][cell.col].draft.includes(c) &&
-    //                 board[cell.row][cell.col].draft.includes(d) &&
-    //                 board[cell.row][cell.col].draft.length === 2
-    //               ) {
-    //                 cell5 = {
-    //                   row: cell.row,
-    //                   col: cell.col,
-    //                   candidates: board[cell.row][cell.col].draft,
-    //                 };
-    //               }
-    //               if (
-    //                 board[cell.row][cell.col].draft.length >= 3 &&
-    //                 (board[cell.row][cell.col].draft.includes(c) ||
-    //                   board[cell.row][cell.col].draft.includes(d))
-    //               ) {
-    //                 deleteCells.push(cell);
-    //               }
-    //             }
-    //             if (deleteCells.length && cell5) {
-    //               return {
-    //                 isFill: false,
-    //                 position: deleteCells,
-    //                 prompt: [
-    //                   { row: cell1.row, col: cell1.col },
-    //                   { row: cell2.row, col: cell2.col },
-    //                   { row: cell3.row, col: cell3.col },
-    //                   { row: cell4.row, col: cell4.col },
-    //                   { row: cell5.row, col: cell5.col },
-    //                 ],
-    //                 method: SOLUTION_METHODS.UNIQUE_RECTANGLE,
-    //                 target: [c, d],
-    //                 label: "ab-ab-abc-abcd",
-    //               };
-    //             }
-    //           }
-    //         }
-    //       }
-    //     }
-    //   }
-    // }
+            if (
+              board[row1][col2].draft.length === 3 &&
+              board[row1][col2].draft.includes(a) &&
+              board[row1][col2].draft.includes(b)
+            ) {
+              cell3 = {
+                row: row1,
+                col: col2,
+                candidates: board[row1][col2].draft,
+              };
+              cell4 = {
+                row: row2,
+                col: col2,
+                candidates: board[row2][col2].draft,
+              };
+            } else if (
+              board[row2][col2].draft.length === 3 &&
+              board[row2][col2].draft.includes(a) &&
+              board[row2][col2].draft.includes(b)
+            ) {
+              cell3 = {
+                row: row2,
+                col: col2,
+                candidates: board[row2][col2].draft,
+              };
+              cell4 = {
+                row: row1,
+                col: col2,
+                candidates: board[row1][col2].draft,
+              };
+            }
+            const other = cell3?.candidates.filter(item => item !== a && item !== b);
+            if (
+              cell3 &&
+              cell4 &&
+              cell4.candidates.length === 4 &&
+              cell4.candidates.includes(a) &&
+              cell4.candidates.includes(b) &&
+              cell4.candidates.includes(other[0])
+            ) {
+              const remainingCandidates1 = cell4.candidates.filter(
+                item => item !== a && item !== b
+              );
+              const remainingCandidates2 = cell3.candidates.filter(
+                item => item !== a && item !== b
+              );
+              if (
+                remainingCandidates1.length === 2 &&
+                remainingCandidates1.includes(remainingCandidates2[0])
+              ) {
+                const [c, d] = remainingCandidates1;
+                const affectedCells_Col = getEmptyCellsInCol(cell3.col, board);
+                let deleteCells: Position[] = [];
+                let cell5: Candidate | undefined;
+                for (const cell of affectedCells_Col) {
+                  if (
+                    (cell.row === cell3.row && cell.col === cell3.col) ||
+                    (cell.row === cell4.row && cell.col === cell4.col)
+                  )
+                    continue;
+                  if (
+                    board[cell.row][cell.col].draft.includes(c) &&
+                    board[cell.row][cell.col].draft.includes(d) &&
+                    board[cell.row][cell.col].draft.length === 2
+                  ) {
+                    cell5 = {
+                      row: cell.row,
+                      col: cell.col,
+                      candidates: board[cell.row][cell.col].draft,
+                    };
+                  }
+                  if (
+                    board[cell.row][cell.col].draft.length >= 3 &&
+                    (board[cell.row][cell.col].draft.includes(c) ||
+                      board[cell.row][cell.col].draft.includes(d))
+                  ) {
+                    deleteCells.push(cell);
+                  }
+                }
+                const box1 = Math.floor(cell1.row / 3) * 3 + Math.floor(cell1.col / 3);
+                const box2 = Math.floor(cell2.row / 3) * 3 + Math.floor(cell2.col / 3);
+                const box3 = Math.floor(cell3.row / 3) * 3 + Math.floor(cell3.col / 3);
+                const box4 = Math.floor(cell4.row / 3) * 3 + Math.floor(cell4.col / 3);
+                const arr = [box1, box2, box3, box4];
+                const set = new Set(arr);
+                if (deleteCells.length && cell5 && set.size === 2) {
+                  return {
+                    isFill: false,
+                    position: deleteCells,
+                    prompt: [
+                      { row: cell1.row, col: cell1.col },
+                      { row: cell2.row, col: cell2.col },
+                      { row: cell3.row, col: cell3.col },
+                      { row: cell4.row, col: cell4.col },
+                      { row: cell5.row, col: cell5.col },
+                    ],
+                    method: SOLUTION_METHODS.UNIQUE_RECTANGLE,
+                    target: [c, d],
+                    label: 'ab-ab-abc-abcd',
+                  };
+                }
+              }
+            }
+          }
+        }
+      }
+    }
   }
   return null;
 };
