@@ -390,7 +390,7 @@ const Sudoku: React.FC = () => {
       .map(() => Array(9).fill(null));
 
     // const initialBoard = [
-    //   [9,null,null,4,3,7,1,8,null],z
+    //   [9,null,null,4,3,7,1,8,null],
     //   [3,null,null,9,5,null,4,2,7],
     //   [4,7,null,null,8,null,3,9,null],
     //   [null,4,3,5,null,9,null,null,2],
@@ -409,10 +409,10 @@ const Sudoku: React.FC = () => {
       }))
     );
 
-    // newBoard = deepCopyBoard(mockBoard);
+    newBoard = deepCopyBoard(mockBoard);
 
     // updateBoard(newBoard, "生成新棋盘");
-    updateBoard(convertToBoard(221), "生成新棋盘");
+    updateBoard(convertToBoard(99), "生成新棋盘");
 
     // 生成解决方案
     const solvedBoard = newBoard.map((row) => row.map((cell) => ({ ...cell })));
