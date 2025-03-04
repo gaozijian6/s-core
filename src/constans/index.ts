@@ -49,6 +49,7 @@ export const SOLUTION_METHODS = {
   XY_CHAIN: "XY-Chain",
   BINARY_UNIVERSAL_GRAVE: "双全值坟墓",
   LOOP: "环",
+  NAKED_QUADRUPLE: "显性四数对法",
 };
 
 export const STRONG_LINK_TYPE = {

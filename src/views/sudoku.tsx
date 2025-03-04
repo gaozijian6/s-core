@@ -33,7 +33,6 @@ import {
   nakedTriple1,
   nakedTriple2,
   hiddenTriple2,
-  nakedQuadruple,
   swordfish,
   trialAndErrorDIY,
   isUnitStrongLink,
@@ -201,7 +200,6 @@ const Sudoku: React.FC = () => {
       uniqueRectangle,
       xyzWing,
       BinaryUniversalGrave,
-      nakedQuadruple,
       XYChain,
     ];
 
@@ -414,7 +412,7 @@ const Sudoku: React.FC = () => {
     newBoard = deepCopyBoard(mockBoard);
 
     // updateBoard(newBoard, "生成新棋盘");
-    updateBoard(convertToBoard(430), "生成新棋盘");
+    updateBoard(convertToBoard(221), "生成新棋盘");
 
     // 生成解决方案
     const solvedBoard = newBoard.map((row) => row.map((cell) => ({ ...cell })));
@@ -850,7 +848,6 @@ const Sudoku: React.FC = () => {
       uniqueRectangle,
       xyzWing,
       BinaryUniversalGrave,
-      nakedQuadruple,
       XYChain,
       trialAndErrorDIY,
     ];
