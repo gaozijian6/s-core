@@ -3436,20 +3436,33 @@ export const getEmptyCellsInCol = (
 };
 
 export const getEmptyCellsInBox = (
-  row: number,
-  col: number,
+  pos1: Position,
+  pos2: Position,
   board: CellData[][]
 ): Position[] => {
   const emptyCells: Position[] = [];
-  const startRow = Math.floor(row / 3) * 3;
-  const startCol = Math.floor(col / 3) * 3;
-  for (let r = startRow; r < startRow + 3; r++) {
-    for (let c = startCol; c < startCol + 3; c++) {
-      if (board[r][c].draft.length) {
-        emptyCells.push({ row: r, col: c });
+  const box1 = Math.floor(pos1.row / 3) * 3 + Math.floor(pos1.col / 3);
+  const box2 = Math.floor(pos2.row / 3) * 3 + Math.floor(pos2.col / 3);
+
+  if (box1 === box2) {
+    const startRow = Math.floor(pos1.row / 3) * 3;
+    const startCol = Math.floor(pos1.col / 3) * 3;
+
+    for (let r = startRow; r < startRow + 3; r++) {
+      for (let c = startCol; c < startCol + 3; c++) {
+        if (
+          board[r][c].draft.length &&
+          !(
+            (r === pos1.row && c === pos1.col) ||
+            (r === pos2.row && c === pos2.col)
+          )
+        ) {
+          emptyCells.push({ row: r, col: c });
+        }
       }
     }
   }
+
   return emptyCells;
 };
 
@@ -3486,33 +3499,38 @@ export const uniqueRectangle = (
                 candidateMap[num].col.get(col1)?.positions[0].row === cell1.row
               ) {
                 cell3 = candidateMap[num].col.get(col1)?.positions[1];
+                cell4 = {
+                  row: cell3?.row,
+                  col: cell2.col,
+                  candidates: board[cell3?.row][cell2.col].draft,
+                };
               } else {
                 cell3 = candidateMap[num].col.get(col1)?.positions[0];
+                cell4 = {
+                  row: cell3?.row,
+                  col: cell2.col,
+                  candidates: board[cell3?.row][cell2.col].draft,
+                };
               }
-              if (
-                candidateMap[num].col.get(col2)?.positions[0].row === cell2.row
-              ) {
-                cell4 = candidateMap[num].col.get(col2)?.positions[1];
-              } else {
-                cell4 = candidateMap[num].col.get(col2)?.positions[0];
-              }
-            } else {
-              if (
-                candidateMap[num].col.get(col1)?.positions[0].row === cell1.row
-              ) {
-                cell4 = candidateMap[num].col.get(col1)?.positions[1];
-              } else {
-                cell4 = candidateMap[num].col.get(col1)?.positions[0];
-              }
+            } else if (candidateMap[num].col.get(col2)?.count === 2) {
               if (
                 candidateMap[num].col.get(col2)?.positions[0].row === cell2.row
               ) {
                 cell3 = candidateMap[num].col.get(col2)?.positions[1];
+                cell4 = {
+                  row: cell3?.row,
+                  col: cell1.col,
+                  candidates: board[cell3?.row][cell1.col].draft,
+                };
               } else {
                 cell3 = candidateMap[num].col.get(col2)?.positions[0];
+                cell4 = {
+                  row: cell3?.row,
+                  col: cell1.col,
+                  candidates: board[cell3?.row][cell1.col].draft,
+                };
               }
             }
-
             if (cell3?.row !== cell4?.row) continue;
             if (cell3 && cell4) {
               let box1 =
@@ -3809,25 +3827,85 @@ export const uniqueRectangle = (
                       col: cell.col,
                       candidates: board[cell.row][cell.col].draft,
                     };
+                    continue
                   }
                   if (
-                    board[cell.row][cell.col].draft.length >= 3 &&
+                    board[cell.row][cell.col].draft.length >= 2 &&
                     (board[cell.row][cell.col].draft.includes(c) ||
                       board[cell.row][cell.col].draft.includes(d))
                   ) {
                     deleteCells.push(cell);
                   }
                 }
-                const box1 =
+                let box1 =
                   Math.floor(cell1.row / 3) * 3 + Math.floor(cell1.col / 3);
-                const box2 =
+                let box2 =
                   Math.floor(cell2.row / 3) * 3 + Math.floor(cell2.col / 3);
-                const box3 =
+                let box3 =
                   Math.floor(cell3.row / 3) * 3 + Math.floor(cell3.col / 3);
-                const box4 =
+                let box4 =
                   Math.floor(cell4.row / 3) * 3 + Math.floor(cell4.col / 3);
-                const arr = [box1, box2, box3, box4];
-                const set = new Set(arr);
+                let arr = [box1, box2, box3, box4];
+                let set = new Set(arr);
+                if (deleteCells.length && cell5 && set.size === 2) {
+                  return {
+                    isFill: false,
+                    position: deleteCells,
+                    prompt: [
+                      { row: cell1.row, col: cell1.col },
+                      { row: cell2.row, col: cell2.col },
+                      { row: cell3.row, col: cell3.col },
+                      { row: cell4.row, col: cell4.col },
+                      { row: cell5.row, col: cell5.col },
+                    ],
+                    method: SOLUTION_METHODS.UNIQUE_RECTANGLE,
+                    target: [c, d],
+                    label: "ab-ab-abc-abcd",
+                  };
+                }
+                deleteCells=[]
+                cell5=undefined
+                const affectedCells_Box = getEmptyCellsInBox(
+                  { row: cell3.row, col: cell3.col },
+                  { row: cell4.row, col: cell4.col },
+                  board
+                );
+                for (const cell of affectedCells_Box) {
+                  if (
+                    (cell.row === cell3.row && cell.col === cell3.col) ||
+                    (cell.row === cell4.row && cell.col === cell4.col)
+                  )
+                    continue;
+                  if (
+                    board[cell.row][cell.col].draft.includes(c) &&
+                    board[cell.row][cell.col].draft.includes(d) &&
+                    board[cell.row][cell.col].draft.length === 2
+                  ) {
+                    cell5 = {
+                      row: cell.row,
+                      col: cell.col,
+                      candidates: board[cell.row][cell.col].draft,
+                    };
+                    continue;
+                  }
+                  if (
+                    board[cell.row][cell.col].draft.length >= 2 &&
+                    (board[cell.row][cell.col].draft.includes(c) ||
+                      board[cell.row][cell.col].draft.includes(d))
+                  ) {
+                    deleteCells.push(cell);
+                  }
+                }
+                box1 =
+                  Math.floor(cell1.row / 3) * 3 + Math.floor(cell1.col / 3);
+                box2 =
+                  Math.floor(cell2.row / 3) * 3 + Math.floor(cell2.col / 3);
+                box3 =
+                  Math.floor(cell3.row / 3) * 3 + Math.floor(cell3.col / 3);
+                box4 =
+                  Math.floor(cell4.row / 3) * 3 + Math.floor(cell4.col / 3);
+                arr = [box1, box2, box3, box4];
+                set = new Set(arr);
                 if (deleteCells.length && cell5 && set.size === 2) {
                   return {
                     isFill: false,
@@ -3943,25 +4021,85 @@ export const uniqueRectangle = (
                       col: cell.col,
                       candidates: board[cell.row][cell.col].draft,
                     };
+                    continue;
                   }
                   if (
-                    board[cell.row][cell.col].draft.length >= 3 &&
+                    board[cell.row][cell.col].draft.length >= 2 &&
                     (board[cell.row][cell.col].draft.includes(c) ||
                       board[cell.row][cell.col].draft.includes(d))
                   ) {
                     deleteCells.push(cell);
                   }
                 }
-                const box1 =
+                let box1 =
                   Math.floor(cell1.row / 3) * 3 + Math.floor(cell1.col / 3);
-                const box2 =
+                let box2 =
                   Math.floor(cell2.row / 3) * 3 + Math.floor(cell2.col / 3);
-                const box3 =
+                let box3 =
                   Math.floor(cell3.row / 3) * 3 + Math.floor(cell3.col / 3);
-                const box4 =
+                let box4 =
                   Math.floor(cell4.row / 3) * 3 + Math.floor(cell4.col / 3);
-                const arr = [box1, box2, box3, box4];
-                const set = new Set(arr);
+                let arr = [box1, box2, box3, box4];
+                let set = new Set(arr);
+                if (deleteCells.length && cell5 && set.size === 2) {
+                  return {
+                    isFill: false,
+                    position: deleteCells,
+                    prompt: [
+                      { row: cell1.row, col: cell1.col },
+                      { row: cell2.row, col: cell2.col },
+                      { row: cell3.row, col: cell3.col },
+                      { row: cell4.row, col: cell4.col },
+                      { row: cell5.row, col: cell5.col },
+                    ],
+                    method: SOLUTION_METHODS.UNIQUE_RECTANGLE,
+                    target: [c, d],
+                    label: "ab-ab-abc-abcd",
+                  };
+                }
+                deleteCells=[]
+                cell5=undefined
+                const affectedCells_Box = getEmptyCellsInBox(
+                  { row: cell3.row, col: cell3.col },
+                  { row: cell4.row, col: cell4.col },
+                  board
+                );
+                for (const cell of affectedCells_Box) {
+                  if (
+                    (cell.row === cell3.row && cell.col === cell3.col) ||
+                    (cell.row === cell4.row && cell.col === cell4.col)
+                  )
+                    continue;
+                  if (
+                    board[cell.row][cell.col].draft.includes(c) &&
+                    board[cell.row][cell.col].draft.includes(d) &&
+                    board[cell.row][cell.col].draft.length === 2
+                  ) {
+                    cell5 = {
+                      row: cell.row,
+                      col: cell.col,
+                      candidates: board[cell.row][cell.col].draft,
+                    };
+                    continue;
+                  }
+                  if (
+                    board[cell.row][cell.col].draft.length >= 2 &&
+                    (board[cell.row][cell.col].draft.includes(c) ||
+                      board[cell.row][cell.col].draft.includes(d))
+                  ) {
+                    deleteCells.push(cell);
+                  }
+                }
+                box1 =
+                  Math.floor(cell1.row / 3) * 3 + Math.floor(cell1.col / 3);
+                box2 =
+                  Math.floor(cell2.row / 3) * 3 + Math.floor(cell2.col / 3);
+                box3 =
+                  Math.floor(cell3.row / 3) * 3 + Math.floor(cell3.col / 3);
+                box4 =
+                  Math.floor(cell4.row / 3) * 3 + Math.floor(cell4.col / 3);
+                arr = [box1, box2, box3, box4];
+                set = new Set(arr);
                 if (deleteCells.length && cell5 && set.size === 2) {
                   return {
                     isFill: false,
@@ -4159,8 +4297,6 @@ export const XYChain = (
                       );
 
                       if (!isOverlap && positions.length && e === b) {
-                        // console.log(a, c, b, d);
-
                         return {
                           isFill: false,
                           position: positions,
@@ -4217,8 +4353,6 @@ export const XYChain = (
                             )
                           );
                           if (!isOverlap && f === b) {
-                            // console.log(a, c, d, e, b);
-
                             return {
                               isFill: false,
                               position: positions,
@@ -4285,8 +4419,6 @@ export const XYChain = (
                               positions.length &&
                               !isDuplicatePrompt
                             ) {
-                              // console.log(a, c, d, e, b);
-
                               return {
                                 isFill: false,
                                 position: positions,
@@ -4479,8 +4611,6 @@ export const XYChain = (
                               positions.length &&
                               !isDuplicatePrompt
                             ) {
-                              // console.log(a, c, d, e, b);
-
                               return {
                                 isFill: false,
                                 position: positions,
@@ -4675,7 +4805,6 @@ export const XYChain = (
                           )
                         );
                         if (!isOverlap && positions.length) {
-                          // console.log(a, c);
                           return {
                             isFill: false,
                             position: positions,
@@ -4734,8 +4863,6 @@ export const XYChain = (
                               )
                             );
                             if (!isOverlap && positions.length && d === b) {
-                              // console.log(1);
-
                               return {
                                 isFill: false,
                                 position: positions,
@@ -4939,7 +5066,6 @@ export const XYChain = (
                                         )
                                       );
                                       if (!isOverlap && b === e) {
-                                        // console.log(a, c, d, e, "888");
                                         return {
                                           isFill: false,
                                           position: positions,
@@ -5140,8 +5266,6 @@ export const XYChain = (
                           )
                         );
                         if (!isOverlap && positions.length) {
-                          // console.log(b, c);
-
                           return {
                             isFill: false,
                             position: positions,
@@ -5200,8 +5324,6 @@ export const XYChain = (
                               )
                             );
                             if (!isOverlap && positions.length && d === a) {
-                              // console.log(2);
-
                               return {
                                 isFill: false,
                                 position: positions,
@@ -5402,7 +5524,6 @@ export const XYChain = (
                                         )
                                       );
                                       if (!isOverlap && a === e) {
-                                        // console.log(a, c, d, e, "999");
                                         return {
                                           isFill: false,
                                           position: positions,
