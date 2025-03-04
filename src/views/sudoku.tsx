@@ -192,35 +192,25 @@ const Sudoku: React.FC = () => {
       xWing,
       xWingVarient,
       xyWing,
+      xyzWing,
       skyscraper,
       skyscraper2,
       combinationChain,
       swordfish,
-      Loop,
       uniqueRectangle,
-      xyzWing,
-      BinaryUniversalGrave,
       XYChain,
+      Loop,
+      BinaryUniversalGrave,
     ];
 
     const mapArray = [];
     const failureMap = new Map();
-    const xyChainMap = new Map();
-    const xyChainMap1 = new Map();
-    const xyChainMap2 = new Map();
-    const xyChainMap3 = new Map();
-    const xyChainMap4 = new Map();
-    const xyChainMap5 = new Map();
-    const xyChainMap6 = new Map();
-    const xyChainMap7 = new Map();  
-    const xyChainMap8 = new Map();
-    const xyChainMap9 = new Map();
-    const xyChainMap10 = new Map();
-    const uniqueRectangleMap1 = new Map();
-    const uniqueRectangleMap2 = new Map();
-    const uniqueRectangleMap3 = new Map();
+    const swordfishMap1 = new Map();
+    const swordfishMap2 = new Map();
+    const xyzWingMap = new Map();
     const binaryUniversalGraveMap = new Map();
     const loopMap = new Map();
+
     const falseSolutionMap = new Map();
     for (let i = 0; i < extreme.length; i++) {
       // for (let i = 241; i < 242; i++) {
@@ -260,59 +250,22 @@ const Sudoku: React.FC = () => {
             counts++;
           }
           switch (result.method) {
-            case SOLUTION_METHODS.XY_CHAIN:
-              xyChainMap.set(i, true);
-              switch (result.label) {
-                case "双双双":
-                  xyChainMap1.set(i, true);
-                  break;
-                case "弱强双":
-                  xyChainMap2.set(i, true);
-                  break;
-                case "弱强强":
-                  xyChainMap3.set(i, true);
-                  break;
-                case "双双双双":
-                  xyChainMap4.set(i, true);
-                  break;
-                case "弱强强强":
-                  xyChainMap5.set(i, true);
-                  break;
-                case "弱强强双":
-                  xyChainMap6.set(i, true);
-                  break;
-                case "弱强强强强":
-                  xyChainMap7.set(i, true);
-                  break;
-                case "弱强强强双":
-                  xyChainMap8.set(i, true);
-                  break;
-                case "弱强双双":
-                  xyChainMap9.set(i, true);
-                  break;
-                case "双双强强":
-                  xyChainMap10.set(i, true);
-                  break;
-              }
-              break;
-            case SOLUTION_METHODS.UNIQUE_RECTANGLE:
-              switch(result.label){
-                case "ab-ab-ab-abc":
-                  uniqueRectangleMap1.set(i, true);
-                  break;
-                case "ab-ab-abc-abc":
-                  uniqueRectangleMap2.set(i, true);
-                  break;
-                case "ab-ab-abc-abcd":
-                  uniqueRectangleMap3.set(i, true);
-                  break;
-              }
-              break;
             case SOLUTION_METHODS.BINARY_UNIVERSAL_GRAVE:
               binaryUniversalGraveMap.set(i, true);
               break;
             case SOLUTION_METHODS.LOOP:
               loopMap.set(i, true);
+              break;
+            case SOLUTION_METHODS.XYZ_WING:
+              xyzWingMap.set(i, true);
+              break;
+            case SOLUTION_METHODS.SWORDFISH_ROW:
+            case SOLUTION_METHODS.SWORDFISH_COLUMN:
+              swordfishMap1.set(i, true);
+              break;
+            case SOLUTION_METHODS.SWORDFISH_WITH_FIN_ROW:
+            case SOLUTION_METHODS.SWORDFISH_WITH_FIN_COLUMN:
+              swordfishMap2.set(i, true);
               break;
           }
           const newBoard = deepCopyBoard(board2);
@@ -365,21 +318,10 @@ const Sudoku: React.FC = () => {
     }
     console.log("mapArray", mapArray);
     console.log("failureMap", failureMap);
-    console.log("xyChainMap", xyChainMap);
-    console.log("xyChainMap1 双双双", xyChainMap1);
-    console.log("xyChainMap2 弱强双", xyChainMap2);
-    console.log("xyChainMap3 弱强强", xyChainMap3);
-    console.log("xyChainMap4 双双双双", xyChainMap4);
-    console.log("xyChainMap5 弱强强强", xyChainMap5);
-    console.log("xyChainMap6 弱强强双", xyChainMap6);
-    console.log("xyChainMap7 弱强强强强", xyChainMap7);
-    console.log("xyChainMap8 弱强强强双", xyChainMap8);
-    console.log("xyChainMap9 弱强双双", xyChainMap9);
-    console.log("xyChainMap10 双双强强", xyChainMap10);
-    console.log("uniqueRectangleMap1", uniqueRectangleMap1);
-    console.log("uniqueRectangleMap2", uniqueRectangleMap2);
-    console.log("uniqueRectangleMap3", uniqueRectangleMap3);
+    console.log("swordfishMap1", swordfishMap1);
+    console.log("swordfishMap2", swordfishMap2);
     console.log("binaryUniversalGraveMap", binaryUniversalGraveMap);
+    console.log("xyzWingMap", xyzWingMap);
     console.log("loopMap", loopMap);
     console.log("falseSolutionMap", falseSolutionMap);
   };
@@ -411,8 +353,8 @@ const Sudoku: React.FC = () => {
 
     newBoard = deepCopyBoard(mockBoard);
 
-    // updateBoard(newBoard, "生成新棋盘");
-    updateBoard(convertToBoard(99), "生成新棋盘");
+    updateBoard(newBoard, "生成新棋盘");
+    // updateBoard(convertToBoard(12), "生成新棋盘");
 
     // 生成解决方案
     const solvedBoard = newBoard.map((row) => row.map((cell) => ({ ...cell })));
