@@ -363,8 +363,8 @@ const Sudoku: React.FC = () => {
 
     newBoard = deepCopyBoard(mockBoard);
 
-    // updateBoard(newBoard, "生成新棋盘");
-    updateBoard(convertToBoard(16), "生成新棋盘");
+    updateBoard(newBoard, "生成新棋盘");
+    // updateBoard(convertToBoard(12), "生成新棋盘");
 
     // 生成解决方案
     const solvedBoard = newBoard.map((row) => row.map((cell) => ({ ...cell })));

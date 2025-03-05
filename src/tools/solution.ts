@@ -4743,16 +4743,23 @@ export const XYChain = (
                                 (p) => p.row === pos.row && p.col === pos.col
                               )
                             );
-                            const isDuplicatePrompt = prompt.some((pos) =>
-                              positions.some(
-                                (p) => p.row === pos.row && p.col === pos.col
-                              )
-                            );
+                            const isDuplicatePrompt = prompt.some((p1, i) => {
+                              return prompt.some((p2, j) => {
+                                return (
+                                  i !== j &&
+                                  p1.row === p2.row &&
+                                  p1.col === p2.col
+                                );
+                              });
+                            });
                             if (
                               !isOverlap &&
                               positions.length &&
-                              !isDuplicatePrompt
+                              !isDuplicatePrompt &&
+                              e === b
                             ) {
+                              console.log(1);
+                              
                               return {
                                 isFill: false,
                                 position: positions,
@@ -4935,15 +4942,20 @@ export const XYChain = (
                                 (p) => p.row === pos.row && p.col === pos.col
                               )
                             );
-                            const isDuplicatePrompt = prompt.some((pos) =>
-                              prompt.some(
-                                (p) => p.row === pos.row && p.col === pos.col
-                              )
-                            );
+                            const isDuplicatePrompt = prompt.some((p1, i) => {
+                              return prompt.some((p2, j) => {
+                                return (
+                                  i !== j &&
+                                  p1.row === p2.row &&
+                                  p1.col === p2.col
+                                );
+                              });
+                            });
                             if (
                               !isOverlap &&
                               positions.length &&
-                              !isDuplicatePrompt
+                              !isDuplicatePrompt &&
+                              e === a
                             ) {
                               return {
                                 isFill: false,
