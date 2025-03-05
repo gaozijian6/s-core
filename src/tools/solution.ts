@@ -2906,118 +2906,6 @@ export const findFourPath = (
   return allPaths;
 };
 
-// 三阶鱼
-export const swordfish = (
-  board: CellData[][],
-  candidateMap: CandidateMap,
-  graph: Graph
-): Result | null => {
-  // 检查行
-  const rowResult = checkSwordfish(board, candidateMap, true);
-  if (rowResult) return rowResult;
-
-  // 检查列
-  const colResult = checkSwordfish(board, candidateMap, false);
-  if (colResult) return colResult;
-
-  return null;
-};
-
-const checkSwordfish = (
-  board: CellData[][],
-  candidateMap: CandidateMap,
-  isRow: boolean
-): Result | null => {
-  for (let num = 1; num <= 9; num++) {
-    const candidatePositions: Position[][] = [];
-
-    // 收集候选数字位置
-    for (let i = 0; i < 9; i++) {
-      const positions = isRow
-        ? candidateMap[num]?.row?.get(i)?.positions ?? []
-        : candidateMap[num]?.col?.get(i)?.positions ?? [];
-      if (positions.length >= 2 && positions.length <= 3) {
-        candidatePositions.push(positions);
-      }
-    }
-
-    // 检查三阶鱼模式
-    if (candidatePositions.length >= 3) {
-      for (let i = 0; i < candidatePositions.length - 2; i++) {
-        for (let j = i + 1; j < candidatePositions.length - 1; j++) {
-          for (let k = j + 1; k < candidatePositions.length; k++) {
-            const combinedPositions = [
-              ...candidatePositions[i],
-              ...candidatePositions[j],
-              ...candidatePositions[k],
-            ];
-            const uniqueIndices = new Set(
-              combinedPositions.map((pos) => (isRow ? pos.col : pos.row))
-            );
-
-            if (uniqueIndices.size === 3) {
-              const a = isRow
-                ? candidatePositions[0][0].row
-                : candidatePositions[0][0].col;
-              const b = isRow
-                ? candidatePositions[1][0].row
-                : candidatePositions[1][0].col;
-              const c = isRow
-                ? candidatePositions[2][0].row
-                : candidatePositions[2][0].col;
-              if (
-                Math.floor(a / 3) == Math.floor(b / 3) ||
-                Math.floor(a / 3) == Math.floor(c / 3) ||
-                Math.floor(b / 3) == Math.floor(c / 3)
-              ) {
-                continue;
-              }
-
-              const affectedPositions: Position[] = [];
-
-              // 寻找可以消除候选数字的位置
-              for (const index of uniqueIndices) {
-                for (let m = 0; m < 9; m++) {
-                  const checkPos = isRow
-                    ? { row: m, col: index }
-                    : { row: index, col: m };
-                  if (
-                    !combinedPositions.some(
-                      (pos) =>
-                        pos.row === checkPos.row && pos.col === checkPos.col
-                    )
-                  ) {
-                    const cell = board[checkPos.row]?.[checkPos.col];
-                    if (cell?.draft?.includes(num)) {
-                      affectedPositions.push(checkPos);
-                    }
-                  }
-                }
-              }
-
-              if (affectedPositions.length > 0) {
-                return {
-                  position: affectedPositions,
-                  prompt: combinedPositions,
-                  method: isRow
-                    ? SOLUTION_METHODS.SWORDFISH_ROW
-                    : SOLUTION_METHODS.SWORDFISH_COLUMN,
-                  target: [num],
-                  isFill: false,
-                  rows: isRow ? [a, b, c] : undefined,
-                  cols: isRow ? undefined : [a, b, c],
-                };
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  return null;
-};
-
 // 获取两个格子的共同区域
 const getCommonUnits = (
   pos1: Position,
@@ -4736,13 +4624,18 @@ export const XYChain = (
                         { row: pos3.row, col: pos3.col },
                         { row: pos4.row, col: pos4.col },
                       ];
+                      const isDuplicatePrompt = prompt.some((pos) =>
+                        prompt.some(
+                          (p) => p.row === pos.row && p.col === pos.col
+                        )
+                      );
                       const isOverlap = positions.some((pos) =>
                         prompt.some(
                           (p) => p.row === pos.row && p.col === pos.col
                         )
                       );
 
-                      if (!isOverlap && positions.length && e === b) {
+                      if (!isOverlap && positions.length && e === b && !isDuplicatePrompt) {
                         return {
                           isFill: false,
                           position: positions,
@@ -4927,6 +4820,11 @@ export const XYChain = (
                         { row: pos3.row, col: pos3.col },
                         { row: pos4.row, col: pos4.col },
                       ];
+                      const isDuplicatePrompt = prompt.some((pos) =>
+                        prompt.some(
+                          (p) => p.row === pos.row && p.col === pos.col
+                        )
+                      );
                       const isOverlap = positions.some((pos) =>
                         prompt.some(
                           (p) => p.row === pos.row && p.col === pos.col
@@ -4934,7 +4832,7 @@ export const XYChain = (
                       );
 
                       // 如果有重复，则跳过当前情况
-                      if (!isOverlap && positions.length && e === a) {
+                      if (!isOverlap && positions.length && e === a && !isDuplicatePrompt) {
                         return {
                           isFill: false,
                           position: positions,
@@ -5125,12 +5023,17 @@ export const XYChain = (
                               positions.push(pos5);
                             }
                           }
+                          const isDuplicatePrompt = prompt.some((pos) =>
+                            prompt.some(
+                              (p) => p.row === pos.row && p.col === pos.col
+                            )
+                          );
                           const isOverlap = positions.some((pos) =>
                             prompt.some(
                               (p) => p.row === pos.row && p.col === pos.col
                             )
                           );
-                          if (!isOverlap && positions.length) {
+                          if (!isOverlap && positions.length && !isDuplicatePrompt) {
                             return {
                               isFill: false,
                               position: positions,
@@ -5244,13 +5147,17 @@ export const XYChain = (
                             positions.push(pos5);
                           }
                         }
-
+                        const isDuplicatePrompt = prompt.some((pos) =>
+                          prompt.some(
+                            (p) => p.row === pos.row && p.col === pos.col
+                          )
+                        );
                         const isOverlap = positions.some((pos) =>
                           prompt.some(
                             (p) => p.row === pos.row && p.col === pos.col
                           )
                         );
-                        if (!isOverlap && positions.length) {
+                        if (!isOverlap && positions.length && !isDuplicatePrompt) {
                           return {
                             isFill: false,
                             position: positions,
@@ -5586,12 +5493,17 @@ export const XYChain = (
                               positions.push(pos5);
                             }
                           }
+                          const isDuplicatePrompt = prompt.some((pos) =>
+                            prompt.some(
+                              (p) => p.row === pos.row && p.col === pos.col
+                            )
+                          );
                           const isOverlap = positions.some((pos) =>
                             prompt.some(
                               (p) => p.row === pos.row && p.col === pos.col
                             )
                           );
-                          if (!isOverlap && positions.length) {
+                          if (!isOverlap && positions.length && !isDuplicatePrompt) {
                             return {
                               isFill: false,
                               position: positions,
@@ -5706,12 +5618,17 @@ export const XYChain = (
                           }
                         }
 
+                        const isDuplicatePrompt = prompt.some((pos) =>
+                          prompt.some(
+                            (p) => p.row === pos.row && p.col === pos.col
+                          )
+                        );
                         const isOverlap = positions.some((pos) =>
                           prompt.some(
                             (p) => p.row === pos.row && p.col === pos.col
                           )
                         );
-                        if (!isOverlap && positions.length) {
+                        if (!isOverlap && positions.length && !isDuplicatePrompt) {
                           return {
                             isFill: false,
                             position: positions,
@@ -5999,4 +5916,124 @@ export const XYChain = (
     }
   }
   return null;
+};
+
+export const swordfish = (
+  board: Board,
+  candidateMap: CandidateMap,
+  graph: Graph
+) => {
+  for (let num = 1; num <= 9; num++) {
+    if (true) {
+      const arr: { row: number; positions: Position[] }[] = [];
+      for (let row = 0; row < 9; row++) {
+        const rowStats = candidateMap[num].row.get(row);
+        if (
+          rowStats &&
+          (rowStats.positions.length === 2 || rowStats.positions.length === 3)
+        ) {
+          arr.push({ row, positions: rowStats.positions });
+        }
+      }
+      if (arr.length >= 3) {
+        for (let i = 0; i < arr.length - 2; i++) {
+          for (let j = i + 1; j < arr.length - 1; j++) {
+            for (let k = j + 1; k < arr.length; k++) {
+              const { positions: positions1 } = arr[i];
+              const { positions: positions2 } = arr[j];
+              const { positions: positions3 } = arr[k];
+              const row1 = arr[i].row;
+              const row2 = arr[j].row;
+              const row3 = arr[k].row;
+
+              const allPositions = [
+                ...positions1,
+                ...positions2,
+                ...positions3,
+              ];
+              const allCols = allPositions.map((pos) => pos.col);
+              const uniqueCols = new Set(allCols);
+
+              if (uniqueCols.size === 3) {
+                const deletedPositions: Position[] = [];
+                for (const col of uniqueCols) {
+                  const positions = candidateMap[num].col.get(col)?.positions;
+                  for (const pos of positions) {
+                    if (![row1, row2, row3].includes(pos.row)) {
+                      deletedPositions.push(pos);
+                    }
+                  }
+                }
+                if (deletedPositions.length) {
+                  return {
+                    isFill: false,
+                    position: deletedPositions,
+                    prompt: allPositions,
+                    method: SOLUTION_METHODS.SWORDFISH_ROW,
+                    target: [num],
+                  };
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    // 列版本的剑鱼
+    if (true) {
+      const arr: { col: number; positions: Position[] }[] = [];
+      for (let col = 0; col < 9; col++) {
+        const colStats = candidateMap[num].col.get(col);
+        if (
+          colStats &&
+          (colStats.positions.length === 2 || colStats.positions.length === 3)
+        ) {
+          arr.push({ col, positions: colStats.positions });
+        }
+      }
+      if (arr.length >= 3) {
+        for (let i = 0; i < arr.length - 2; i++) {
+          for (let j = i + 1; j < arr.length - 1; j++) {
+            for (let k = j + 1; k < arr.length; k++) {
+              const { positions: positions1 } = arr[i];
+              const { positions: positions2 } = arr[j];
+              const { positions: positions3 } = arr[k];
+              const col1 = arr[i].col;
+              const col2 = arr[j].col;
+              const col3 = arr[k].col;
+
+              const allPositions = [
+                ...positions1,
+                ...positions2,
+                ...positions3,
+              ];
+              const allRows = allPositions.map((pos) => pos.row);
+              const uniqueRows = new Set(allRows);
+
+              if (uniqueRows.size === 3) {
+                const deletedPositions: Position[] = [];
+                for (const row of uniqueRows) {
+                  const positions = candidateMap[num].row.get(row)?.positions;
+                  for (const pos of positions) {
+                    if (![col1, col2, col3].includes(pos.col)) {
+                      deletedPositions.push(pos);
+                    }
+                  }
+                }
+                if (deletedPositions.length) {
+                  return {
+                    isFill: false,
+                    position: deletedPositions,
+                    prompt: allPositions,
+                    method: SOLUTION_METHODS.SWORDFISH_COLUMN,
+                    target: [num],
+                  };
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 };

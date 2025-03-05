@@ -351,7 +351,7 @@ const Sudoku: React.FC = () => {
       }))
     );
 
-    // newBoard = deepCopyBoard(mockBoard);
+    newBoard = deepCopyBoard(mockBoard);
 
     updateBoard(newBoard, "生成新棋盘");
     // updateBoard(convertToBoard(12), "生成新棋盘");
@@ -1472,51 +1472,6 @@ const Sudoku: React.FC = () => {
             position[0].col + 1
           }依旧为假，无论如何，${posStr}内都不应出现候选数${target[0]}`;
           break;
-        case SOLUTION_METHODS.REMOTE_PAIR:
-          boardWithHighlight = applyHintHighlight(board, result, "both");
-          setPositions(target);
-          setPrompts(target);
-          if (position.length === 1) {
-            posStr = `R${position[0].row + 1}C${position[0].col + 1}`;
-          } else if (position.length === 2) {
-            posStr = `R${position[0].row + 1}C${position[0].col + 1}、R${
-              position[1].row + 1
-            }C${position[1].col + 1}`;
-          } else if (position.length === 3) {
-            posStr = `R${position[0].row + 1}C${position[0].col + 1}、R${
-              position[1].row + 1
-            }C${position[1].col + 1}、R${position[2].row + 1}C${
-              position[2].col + 1
-            }`;
-          }
-          if (prompt.length === 4) {
-            hintContent = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
-              prompt[3].row + 1
-            }C${prompt[3].col + 1}构成远程数对，这两个远程数对通过R${
-              prompt[1].row + 1
-            }C${prompt[1].col + 1}、R${prompt[2].row + 1}C${
-              prompt[2].col + 1
-            }形成强链，无论R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
-              prompt[3].row + 1
-            }C${prompt[3].col + 1}谁为真，${posStr}内都不能出现候选数${
-              target[0]
-            }`;
-          } else if (prompt.length === 6) {
-            hintContent = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
-              prompt[5].row + 1
-            }C${prompt[5].col + 1}构成远程数对，这两个远程数对通过R${
-              prompt[1].row + 1
-            }C${prompt[1].col + 1}、R${prompt[2].row + 1}C${
-              prompt[2].col + 1
-            }、R${prompt[3].row + 1}C${prompt[3].col + 1}、R${
-              prompt[4].row + 1
-            }C${prompt[4].col + 1}形成强链，无论R${prompt[0].row + 1}C${
-              prompt[0].col + 1
-            }、R${prompt[5].row + 1}C${
-              prompt[5].col + 1
-            }谁为真，${posStr}内都不能出现候选数${target[0]}`;
-          }
-          break;
         case SOLUTION_METHODS.COMBINATION_CHAIN:
           boardWithHighlight = applyHintHighlight(board, result, "both");
           setPositions(target);
@@ -1635,6 +1590,8 @@ const Sudoku: React.FC = () => {
           }
           break;
         case SOLUTION_METHODS.SWORDFISH_ROW:
+          setPositions(target);
+          setPrompts(target);
           boardWithHighlight = applyHintHighlight(board, result, "both");
           if (prompt.length === 6) {
             posStr = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
@@ -1685,6 +1642,8 @@ const Sudoku: React.FC = () => {
           }，第${columns.join("、")}列内都不能出现候选数${target[0]}`;
           break;
         case SOLUTION_METHODS.SWORDFISH_COLUMN:
+          setPositions(target);
+          setPrompts(target);
           boardWithHighlight = applyHintHighlight(board, result, "both");
           if (prompt.length === 6) {
             posStr = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
@@ -1734,35 +1693,6 @@ const Sudoku: React.FC = () => {
             target[0]
           }，第${rows.join("、")}行内都不能出现候选数${target[0]}`;
           break;
-        case SOLUTION_METHODS.WXYZ_WING:
-          boardWithHighlight = applyHintHighlight(board, result, "both");
-          setPositions(target);
-          setPrompts(target);
-          if (position.length === 1) {
-            hintContent = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
-              prompt[1].row + 1
-            }C${prompt[1].col + 1}、R${prompt[2].row + 1}C${
-              prompt[2].col + 1
-            }、R${prompt[3].row + 1}C${prompt[3].col + 1}构成WXYZ-Wing,其中R${
-              prompt[0].row + 1
-            }C${prompt[0].col + 1}为枢纽，无论这四个候选方格内如何取值，R${
-              position[0].row + 1
-            }C${position[0].col + 1}内都不能出现候选数${target[0]}`;
-          } else if (position.length === 2) {
-            hintContent = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
-              prompt[1].row + 1
-            }C${prompt[1].col + 1}、R${prompt[2].row + 1}C${
-              prompt[2].col + 1
-            }、R${prompt[3].row + 1}C${prompt[3].col + 1}构成WXYZ-Wing，其中R${
-              prompt[0].row + 1
-            }C${prompt[0].col + 1}为枢纽，无论这四个候选方格内如何取值，R${
-              position[0].row + 1
-            }C${position[0].col + 1}、R${position[1].row + 1}C${
-              position[1].col + 1
-            }内都不能出现候选数${target[0]}`;
-          }
-          break;
-
         case SOLUTION_METHODS.XY_CHAIN:
           boardWithHighlight = applyHintHighlight(board, result, "both");
           setPositions(target);
