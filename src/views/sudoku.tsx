@@ -43,7 +43,7 @@ import {
   Loop,
   uniqueRectangle,
   BinaryUniversalGrave,
-  jellyfish
+  jellyfish,
 } from "../tools/solution";
 import "./sudoku.less";
 import type {
@@ -103,7 +103,7 @@ const Sudoku: React.FC = () => {
   const [inputValue, setInputValue] = useState<string>("");
 
   const convertToBoard = (index: number): CellData[][] => {
-    const board = hard[index].puzzle;
+    const board = extreme[index].puzzle;
     const result: CellData[][] = [];
     for (let i = 0; i < 9; i++) {
       const row: CellData[] = [];
@@ -121,7 +121,7 @@ const Sudoku: React.FC = () => {
   };
 
   const convertToAnswer = (index: number): CellData[][] => {
-    const board = hard[index].solution;
+    const board = extreme[index].solution;
     const result: CellData[][] = [];
     for (let i = 0; i < 9; i++) {
       const row: CellData[] = [];
@@ -212,15 +212,10 @@ const Sudoku: React.FC = () => {
 
     const mapArray = [];
     const failureMap = new Map();
-    const swordfishMap1 = new Map();
-    const swordfishMap2 = new Map();
-    const xyzWingMap = new Map();
     const binaryUniversalGraveMap = new Map();
-    const loopMap = new Map();
-    const xyChainMap1 = new Map();
-    const jellyfishMap1 = new Map();
-    const jellyfishMap2 = new Map();
-
+    const skyscraperMap1 = new Map();
+    const skyscraperMap2 = new Map();
+    const skyscraperMap3 = new Map();
     const falseSolutionMap = new Map();
     for (let i = 0; i < extreme.length; i++) {
       // for (let i = 241; i < 242; i++) {
@@ -263,23 +258,18 @@ const Sudoku: React.FC = () => {
             case SOLUTION_METHODS.BINARY_UNIVERSAL_GRAVE:
               binaryUniversalGraveMap.set(i, true);
               break;
-            case SOLUTION_METHODS.LOOP:
-              loopMap.set(i, true);
-              break;
-            case SOLUTION_METHODS.XYZ_WING:
-              xyzWingMap.set(i, true);
-              break;
-            case SOLUTION_METHODS.SWORDFISH_ROW:
-              swordfishMap1.set(i, true);
-              break;
-            case SOLUTION_METHODS.SWORDFISH_COLUMN:
-              swordfishMap2.set(i, true);
-              break;
-            case SOLUTION_METHODS.JELLYFISH_ROW:
-              jellyfishMap1.set(i, true);
-              break;
-            case SOLUTION_METHODS.JELLYFISH_COLUMN:
-              jellyfishMap2.set(i, true);
+            case SOLUTION_METHODS.SKYSCRAPER:
+              switch (result.label) {
+                case '4':
+                  skyscraperMap1.set(i, true);
+                  break;
+                case '6':
+                  skyscraperMap2.set(i, true);
+                  break;
+                case '8':
+                  skyscraperMap3.set(i, true);
+                  break;
+              }
               break;
           }
           const newBoard = deepCopyBoard(board2);
@@ -332,14 +322,10 @@ const Sudoku: React.FC = () => {
     }
     console.log("mapArray", mapArray);
     console.log("failureMap", failureMap);
-    console.log("swordfishMap1", swordfishMap1);
-    console.log("swordfishMap2", swordfishMap2);
     console.log("binaryUniversalGraveMap", binaryUniversalGraveMap);
-    console.log("xyzWingMap", xyzWingMap);
-    console.log("loopMap", loopMap);
-    console.log("xyChainMap1", xyChainMap1);
-    console.log("jellyfishMap1", jellyfishMap1);
-    console.log("jellyfishMap2", jellyfishMap2);
+    console.log("skyscraperMap1", skyscraperMap1);
+    console.log("skyscraperMap2", skyscraperMap2);
+    console.log("skyscraperMap3", skyscraperMap3);
     console.log("falseSolutionMap", falseSolutionMap);
   };
 
@@ -370,8 +356,8 @@ const Sudoku: React.FC = () => {
 
     newBoard = deepCopyBoard(mockBoard);
 
-    updateBoard(newBoard, "生成新棋盘");
-    // updateBoard(convertToBoard(334), "生成新棋盘");
+    // updateBoard(newBoard, "生成新棋盘");
+    updateBoard(convertToBoard(1), "生成新棋盘");
 
     // 生成解决方案
     const solvedBoard = newBoard.map((row) => row.map((cell) => ({ ...cell })));
@@ -1424,23 +1410,9 @@ const Sudoku: React.FC = () => {
         case SOLUTION_METHODS.SKYSCRAPER:
           boardWithHighlight = applyHintHighlight(board, result, "both");
           setPrompts(target);
-          posStr = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
-            prompt[1].row + 1
-          }C${prompt[1].col + 1}、R${prompt[2].row + 1}C${
-            prompt[2].col + 1
-          }、R${prompt[3].row + 1}C${prompt[3].col + 1}`;
-          if (position.length === 1) {
-            deleteStr = `R${position[0].row + 1}C${position[0].col + 1}`;
-          } else if (position.length === 2) {
-            deleteStr = `R${position[0].row + 1}C${position[0].col + 1}、R${
-              position[1].row + 1
-            }C${position[1].col + 1}`;
-          } else if (position.length === 3) {
-            deleteStr = `R${position[0].row + 1}C${position[0].col + 1}、R${
-              position[1].row + 1
-            }C${position[1].col + 1}、R${position[2].row + 1}C${
-              position[2].col + 1
-            }`;
+          posStr = prompt.map(p => `R${p.row + 1}C${p.col + 1}`).join("、");
+          if (position.length > 0) {
+            deleteStr = position.map(p => `R${p.row + 1}C${p.col + 1}`).join("、");
           }
           hintContent = `${posStr}四个方格构成共轭链，无论R${
             prompt[0].row + 1

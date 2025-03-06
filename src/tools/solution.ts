@@ -2231,55 +2231,169 @@ export const skyscraper = (
           continue;
         }
 
-        // 寻找一条包含四个节点的路径
-        const paths = findFourPath(pos1, pos2, num, graph);
-        for (const path of paths) {
-          if (path.length !== 4) {
-            continue;
-          }
+        if (true) {
+          // 寻找一条包含四个节点的路径
+          const paths = findFourPath(pos1, pos2, num, graph);
+          for (const path of paths) {
+            if (path.length !== 4) {
+              continue;
+            }
 
-          // 找到共同影响的区域
-          let affectedPositions = findCommonAffectedPositions(
-            pos1,
-            pos2,
-            board,
-            num
-          );
-
-          // 排除与路径开头和结尾都为强连接的位置
-          affectedPositions = affectedPositions.filter((pos) => {
-            const isStrongLinkWithStart = isUnitStrongLink(
+            // 找到共同影响的区域
+            let affectedPositions = findCommonAffectedPositions(
+              pos1,
+              pos2,
               board,
-              pos,
-              path[0],
-              num,
-              candidateMap
+              num
             );
-            const isStrongLinkWithEnd = isUnitStrongLink(
-              board,
-              pos,
-              path[3],
-              num,
-              candidateMap
-            );
-            return !(isStrongLinkWithStart && isStrongLinkWithEnd);
-          });
 
-          if (
-            affectedPositions.length > 0 &&
-            !affectedPositions.some((pos) =>
-              path.some(
-                (pathPos) => pathPos.row === pos.row && pathPos.col === pos.col
+            // 排除与路径开头和结尾都为强连接的位置
+            affectedPositions = affectedPositions.filter((pos) => {
+              const isStrongLinkWithStart = isUnitStrongLink(
+                board,
+                pos,
+                path[0],
+                num,
+                candidateMap
+              );
+              const isStrongLinkWithEnd = isUnitStrongLink(
+                board,
+                pos,
+                path[3],
+                num,
+                candidateMap
+              );
+              return !(isStrongLinkWithStart && isStrongLinkWithEnd);
+            });
+
+            if (
+              affectedPositions.length > 0 &&
+              !affectedPositions.some((pos) =>
+                path.some(
+                  (pathPos) =>
+                    pathPos.row === pos.row && pathPos.col === pos.col
+                )
               )
-            )
-          ) {
-            return {
-              position: affectedPositions,
-              prompt: path,
-              method: SOLUTION_METHODS.SKYSCRAPER,
-              target: [num],
-              isFill: false,
-            };
+            ) {
+              return {
+                position: affectedPositions,
+                prompt: path,
+                method: SOLUTION_METHODS.SKYSCRAPER,
+                target: [num],
+                isFill: false,
+                label:'4'
+              };
+            }
+          }
+        }
+        if (true) {
+          // 寻找一条包含六个节点的路径
+          const paths = findSixPath(pos1, pos2, num, graph);
+          for (const path of paths) {
+            if (path.length !== 6) {
+              continue;
+            }
+
+            // 找到共同影响的区域
+            let affectedPositions = findCommonAffectedPositions(
+              pos1,
+              pos2,
+              board,
+              num
+            );
+
+            // 排除与路径开头和结尾都为强连接的位置
+            affectedPositions = affectedPositions.filter((pos) => {
+              const isStrongLinkWithStart = isUnitStrongLink(
+                board,
+                pos,
+                path[0],
+                num,
+                candidateMap
+              );
+              const isStrongLinkWithEnd = isUnitStrongLink(
+                board,
+                pos,
+                path[5],
+                num,
+                candidateMap
+              );
+              return !(isStrongLinkWithStart && isStrongLinkWithEnd);
+            });
+
+            if (
+              affectedPositions.length > 0 &&
+              !affectedPositions.some((pos) =>
+                path.some(
+                  (pathPos) =>
+                    pathPos.row === pos.row && pathPos.col === pos.col
+                )
+              )
+            ) {
+              return {
+                position: affectedPositions,
+                prompt: path,
+                method: SOLUTION_METHODS.SKYSCRAPER,
+                target: [num],
+                isFill: false,
+                label:'6'
+              };
+            }
+          }
+        }
+        if (true) {
+          // 寻找一条包含八个节点的路径
+          const paths = findEightPath(pos1, pos2, num, graph);
+          for (const path of paths) {
+            if (path.length !== 8) {
+              continue;
+            }
+
+            // 找到共同影响的区域
+            let affectedPositions = findCommonAffectedPositions(
+              pos1,
+              pos2,
+              board,
+              num
+            );
+
+            // 排除与路径开头和结尾都为强连接的位置
+            affectedPositions = affectedPositions.filter((pos) => {
+              const isStrongLinkWithStart = isUnitStrongLink(
+                board,
+                pos,
+                path[0],
+                num,
+                candidateMap
+              );
+              const isStrongLinkWithEnd = isUnitStrongLink(
+                board,
+                pos,
+                path[7],
+                num,
+                candidateMap
+              );
+              return !(isStrongLinkWithStart && isStrongLinkWithEnd);
+            });
+
+            if (
+              affectedPositions.length > 0 &&
+              !affectedPositions.some((pos) =>
+                path.some(
+                  (pathPos) =>
+                    pathPos.row === pos.row && pathPos.col === pos.col
+                )
+              )
+            ) {
+              return {
+                position: affectedPositions,
+                prompt: path,
+                method: SOLUTION_METHODS.SKYSCRAPER,
+                target: [num],
+                isFill: false,
+                label:'8'
+              };
+            }
           }
         }
       }
@@ -2893,6 +3007,94 @@ export const findFourPath = (
     }
 
     if (path.length < 4) {
+      for (const nextNode of node.next) {
+        dfs(nextNode);
+      }
+    }
+
+    visited.delete(key);
+    path.pop();
+  };
+
+  dfs(startNode);
+  return allPaths;
+};
+
+// 已知两个强关联的格子，寻找A到B为6个格子的所有路径
+export const findSixPath = (
+  pos1: Position,
+  pos2: Position,
+  num: number,
+  graph: Graph
+): Position[][] => {
+  const startNode = findGraphNodeByPosition(pos1, num, graph);
+  if (!startNode) {
+    return [];
+  }
+
+  const visited: Set<string> = new Set();
+  const path: Position[] = [];
+  const allPaths: Position[][] = [];
+
+  const dfs = (node: GraphNode) => {
+    const key = `${node.row},${node.col}`;
+
+    if (visited.has(key)) {
+      return;
+    }
+
+    visited.add(key);
+    path.push({ row: node.row, col: node.col });
+
+    if (path.length === 6 && node.row === pos2.row && node.col === pos2.col) {
+      allPaths.push([...path]);
+    }
+
+    if (path.length < 6) {
+      for (const nextNode of node.next) {
+        dfs(nextNode);
+      }
+    }
+
+    visited.delete(key);
+    path.pop();
+  };
+
+  dfs(startNode);
+  return allPaths;
+};
+
+// 已知两个强关联的格子，寻找A到B为8个格子的所有路径
+export const findEightPath = (
+  pos1: Position,
+  pos2: Position,
+  num: number,
+  graph: Graph
+): Position[][] => {
+  const startNode = findGraphNodeByPosition(pos1, num, graph);
+  if (!startNode) {
+    return [];
+  }
+
+  const visited: Set<string> = new Set();
+  const path: Position[] = [];
+  const allPaths: Position[][] = [];
+
+  const dfs = (node: GraphNode) => {
+    const key = `${node.row},${node.col}`;
+
+    if (visited.has(key)) {
+      return;
+    }
+
+    visited.add(key);
+    path.push({ row: node.row, col: node.col });
+
+    if (path.length === 8 && node.row === pos2.row && node.col === pos2.col) {
+      allPaths.push([...path]);
+    }
+
+    if (path.length < 8) {
       for (const nextNode of node.next) {
         dfs(nextNode);
       }

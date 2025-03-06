@@ -52,6 +52,7 @@ export const SOLUTION_METHODS = {
   NAKED_QUADRUPLE: "显性四数对法",
   JELLYFISH_ROW: "四阶鱼(行)",
   JELLYFISH_COLUMN: "四阶鱼(列)",
+  COLOR_CHAIN: "颜色链",
 };
 
 export const STRONG_LINK_TYPE = {
