@@ -50,6 +50,8 @@ export const SOLUTION_METHODS = {
   BINARY_UNIVERSAL_GRAVE: "双全值坟墓",
   LOOP: "环",
   NAKED_QUADRUPLE: "显性四数对法",
+  JELLYFISH_ROW: "四阶鱼(行)",
+  JELLYFISH_COLUMN: "四阶鱼(列)",
 };
 
 export const STRONG_LINK_TYPE = {

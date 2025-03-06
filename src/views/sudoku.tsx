@@ -43,9 +43,15 @@ import {
   Loop,
   uniqueRectangle,
   BinaryUniversalGrave,
+  jellyfish
 } from "../tools/solution";
 import "./sudoku.less";
-import type { CandidateMap, CandidateStats, CellData, Position } from "../tools";
+import type {
+  CandidateMap,
+  CandidateStats,
+  CellData,
+  Position,
+} from "../tools";
 import type { Result } from "../tools/solution";
 import { SOLUTION_METHODS } from "../constans";
 import mockBoard from "./mock";
@@ -97,7 +103,7 @@ const Sudoku: React.FC = () => {
   const [inputValue, setInputValue] = useState<string>("");
 
   const convertToBoard = (index: number): CellData[][] => {
-    const board = extreme[index].puzzle;
+    const board = hard[index].puzzle;
     const result: CellData[][] = [];
     for (let i = 0; i < 9; i++) {
       const row: CellData[] = [];
@@ -115,7 +121,7 @@ const Sudoku: React.FC = () => {
   };
 
   const convertToAnswer = (index: number): CellData[][] => {
-    const board = extreme[index].solution;
+    const board = hard[index].solution;
     const result: CellData[][] = [];
     for (let i = 0; i < 9; i++) {
       const row: CellData[] = [];
@@ -196,10 +202,11 @@ const Sudoku: React.FC = () => {
       skyscraper,
       skyscraper2,
       combinationChain,
-      // swordfish,
+      swordfish,
+      Loop,
       uniqueRectangle,
       XYChain,
-      Loop,
+      jellyfish,
       BinaryUniversalGrave,
     ];
 
@@ -211,6 +218,8 @@ const Sudoku: React.FC = () => {
     const binaryUniversalGraveMap = new Map();
     const loopMap = new Map();
     const xyChainMap1 = new Map();
+    const jellyfishMap1 = new Map();
+    const jellyfishMap2 = new Map();
 
     const falseSolutionMap = new Map();
     for (let i = 0; i < extreme.length; i++) {
@@ -218,7 +227,7 @@ const Sudoku: React.FC = () => {
       if (i % 100 === 0) {
         console.log(`正在处理第${i}个数独...`);
       }
-      
+
       const map = new Map();
       let board2 = convertToBoard(i);
       let answer = convertToAnswer(i);
@@ -261,19 +270,16 @@ const Sudoku: React.FC = () => {
               xyzWingMap.set(i, true);
               break;
             case SOLUTION_METHODS.SWORDFISH_ROW:
-            case SOLUTION_METHODS.SWORDFISH_COLUMN:
               swordfishMap1.set(i, true);
               break;
-            case SOLUTION_METHODS.SWORDFISH_WITH_FIN_ROW:
-            case SOLUTION_METHODS.SWORDFISH_WITH_FIN_COLUMN:
+            case SOLUTION_METHODS.SWORDFISH_COLUMN:
               swordfishMap2.set(i, true);
               break;
-            case SOLUTION_METHODS.XY_CHAIN:
-              switch(result.label){
-                case "双双双":
-                  xyChainMap1.set(i, true);
-                  break;
-              }
+            case SOLUTION_METHODS.JELLYFISH_ROW:
+              jellyfishMap1.set(i, true);
+              break;
+            case SOLUTION_METHODS.JELLYFISH_COLUMN:
+              jellyfishMap2.set(i, true);
               break;
           }
           const newBoard = deepCopyBoard(board2);
@@ -281,7 +287,7 @@ const Sudoku: React.FC = () => {
 
           position.forEach(({ row, col }) => {
             if (isFill) {
-              if(answer[row][col].value !== target[0]){
+              if (answer[row][col].value !== target[0]) {
                 falseSolutionMap.set(i, `${result?.method} ${result?.label}`);
                 isFalse = true;
                 return;
@@ -300,7 +306,7 @@ const Sudoku: React.FC = () => {
               // 将受影响的单元格合并到 position 中
               position.push(...affectedCells);
             } else {
-              if(target.includes(answer[row][col].value)){
+              if (target.includes(answer[row][col].value)) {
                 falseSolutionMap.set(i, `${result?.method} ${result?.label}`);
                 isFalse = true;
                 return;
@@ -311,7 +317,7 @@ const Sudoku: React.FC = () => {
                 ) ?? [];
             }
           });
-          if(isFalse){
+          if (isFalse) {
             break;
           }
           board2 = newBoard;
@@ -331,8 +337,9 @@ const Sudoku: React.FC = () => {
     console.log("binaryUniversalGraveMap", binaryUniversalGraveMap);
     console.log("xyzWingMap", xyzWingMap);
     console.log("loopMap", loopMap);
-    console.log('xyChainMap1',xyChainMap1);
-    
+    console.log("xyChainMap1", xyChainMap1);
+    console.log("jellyfishMap1", jellyfishMap1);
+    console.log("jellyfishMap2", jellyfishMap2);
     console.log("falseSolutionMap", falseSolutionMap);
   };
 
@@ -364,7 +371,7 @@ const Sudoku: React.FC = () => {
     newBoard = deepCopyBoard(mockBoard);
 
     updateBoard(newBoard, "生成新棋盘");
-    // updateBoard(convertToBoard(12), "生成新棋盘");
+    // updateBoard(convertToBoard(334), "生成新棋盘");
 
     // 生成解决方案
     const solvedBoard = newBoard.map((row) => row.map((cell) => ({ ...cell })));
@@ -392,7 +399,7 @@ const Sudoku: React.FC = () => {
             return;
           }
 
-          const newBoard = deepCopyBoard(board);  
+          const newBoard = deepCopyBoard(board);
           const newCell = newBoard[row][col];
 
           if (draftMode) {
@@ -801,6 +808,7 @@ const Sudoku: React.FC = () => {
       xyzWing,
       BinaryUniversalGrave,
       XYChain,
+      jellyfish,
       trialAndErrorDIY,
     ];
     let result = null;
@@ -1709,6 +1717,16 @@ const Sudoku: React.FC = () => {
           setPrompts(target);
           break;
         case SOLUTION_METHODS.UNIQUE_RECTANGLE:
+          boardWithHighlight = applyHintHighlight(board, result, "both");
+          setPositions(target);
+          setPrompts(target);
+          break;
+        case SOLUTION_METHODS.JELLYFISH_ROW:
+          boardWithHighlight = applyHintHighlight(board, result, "both");
+          setPositions(target);
+          setPrompts(target);
+          break;
+        case SOLUTION_METHODS.JELLYFISH_COLUMN:
           boardWithHighlight = applyHintHighlight(board, result, "both");
           setPositions(target);
           setPrompts(target);

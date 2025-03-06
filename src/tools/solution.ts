@@ -4629,8 +4629,20 @@ export const XYChain = (
                           (p) => p.row === pos.row && p.col === pos.col
                         )
                       );
+                      const isDuplicatePrompt = prompt.some((p1, i) => {
+                        return prompt.some((p2, j) => {
+                          return (
+                            i !== j && p1.row === p2.row && p1.col === p2.col
+                          );
+                        });
+                      });
 
-                      if (!isOverlap && positions.length && e === b) {
+                      if (
+                        !isOverlap &&
+                        positions.length &&
+                        e === b &&
+                        !isDuplicatePrompt
+                      ) {
                         return {
                           isFill: false,
                           position: positions,
@@ -4681,12 +4693,21 @@ export const XYChain = (
                             { row: pos4.row, col: pos4.col },
                             { row: pos5.row, col: pos5.col },
                           ];
+                          const isDuplicatePrompt = prompt.some((p1, i) => {
+                            return prompt.some((p2, j) => {
+                              return (
+                                i !== j &&
+                                p1.row === p2.row &&
+                                p1.col === p2.col
+                              );
+                            });
+                          });
                           const isOverlap = positions.some((pos) =>
                             prompt.some(
                               (p) => p.row === pos.row && p.col === pos.col
                             )
                           );
-                          if (!isOverlap && f === b) {
+                          if (!isOverlap && f === b && !isDuplicatePrompt) {
                             return {
                               isFill: false,
                               position: positions,
@@ -4758,8 +4779,6 @@ export const XYChain = (
                               !isDuplicatePrompt &&
                               e === b
                             ) {
-                              console.log(1);
-                              
                               return {
                                 isFill: false,
                                 position: positions,
@@ -4822,6 +4841,13 @@ export const XYChain = (
                         { row: pos3.row, col: pos3.col },
                         { row: pos4.row, col: pos4.col },
                       ];
+                      const isDuplicatePrompt = prompt.some((p1, i) => {
+                        return prompt.some((p2, j) => {
+                          return (
+                            i !== j && p1.row === p2.row && p1.col === p2.col
+                          );
+                        });
+                      });
                       const isOverlap = positions.some((pos) =>
                         prompt.some(
                           (p) => p.row === pos.row && p.col === pos.col
@@ -4829,7 +4855,12 @@ export const XYChain = (
                       );
 
                       // 如果有重复，则跳过当前情况
-                      if (!isOverlap && positions.length && e === a) {
+                      if (
+                        !isOverlap &&
+                        positions.length &&
+                        e === a &&
+                        !isDuplicatePrompt
+                      ) {
                         return {
                           isFill: false,
                           position: positions,
@@ -4879,12 +4910,21 @@ export const XYChain = (
                               { row: pos4.row, col: pos4.col },
                               { row: pos5.row, col: pos5.col },
                             ];
+                            const isDuplicatePrompt = prompt.some((p1, i) => {
+                              return prompt.some((p2, j) => {
+                                return (
+                                  i !== j &&
+                                  p1.row === p2.row &&
+                                  p1.col === p2.col
+                                );
+                              });
+                            });
                             const isOverlap = positions.some((pos) =>
                               prompt.some(
                                 (p) => p.row === pos.row && p.col === pos.col
                               )
                             );
-                            if (!isOverlap && f === a) {
+                            if (!isOverlap && f === a && !isDuplicatePrompt) {
                               return {
                                 isFill: false,
                                 position: positions,
@@ -5030,7 +5070,20 @@ export const XYChain = (
                               (p) => p.row === pos.row && p.col === pos.col
                             )
                           );
-                          if (!isOverlap && positions.length) {
+                          const isDuplicatePrompt = prompt.some((p1, i) => {
+                            return prompt.some((p2, j) => {
+                              return (
+                                i !== j &&
+                                p1.row === p2.row &&
+                                p1.col === p2.col
+                              );
+                            });
+                          });
+                          if (
+                            !isOverlap &&
+                            positions.length &&
+                            !isDuplicatePrompt
+                          ) {
                             return {
                               isFill: false,
                               position: positions,
@@ -5099,6 +5152,7 @@ export const XYChain = (
                                   (p) => p.row === pos.row && p.col === pos.col
                                 )
                               );
+
                               if (
                                 !isOverlap &&
                                 positions.length &&
@@ -5150,7 +5204,18 @@ export const XYChain = (
                             (p) => p.row === pos.row && p.col === pos.col
                           )
                         );
-                        if (!isOverlap && positions.length) {
+                        const isDuplicatePrompt = prompt.some((p1, i) => {
+                          return prompt.some((p2, j) => {
+                            return (
+                              i !== j && p1.row === p2.row && p1.col === p2.col
+                            );
+                          });
+                        });
+                        if (
+                          !isOverlap &&
+                          positions.length &&
+                          !isDuplicatePrompt
+                        ) {
                           return {
                             isFill: false,
                             position: positions,
@@ -5208,7 +5273,21 @@ export const XYChain = (
                                 (p) => p.row === pos.row && p.col === pos.col
                               )
                             );
-                            if (!isOverlap && positions.length && d === b) {
+                            const isDuplicatePrompt = prompt.some((p1, i) => {
+                              return prompt.some((p2, j) => {
+                                return (
+                                  i !== j &&
+                                  p1.row === p2.row &&
+                                  p1.col === p2.col
+                                );
+                              });
+                            });
+                            if (
+                              !isOverlap &&
+                              positions.length &&
+                              d === b &&
+                              !isDuplicatePrompt
+                            ) {
                               return {
                                 isFill: false,
                                 position: positions,
@@ -5256,7 +5335,20 @@ export const XYChain = (
                                 (p) => p.row === pos.row && p.col === pos.col
                               )
                             );
-                            if (!isOverlap && positions.length) {
+                            const isDuplicatePrompt = prompt.some((p1, i) => {
+                              return prompt.some((p2, j) => {
+                                return (
+                                  i !== j &&
+                                  p1.row === p2.row &&
+                                  p1.col === p2.col
+                                );
+                              });
+                            });
+                            if (
+                              !isOverlap &&
+                              positions.length &&
+                              !isDuplicatePrompt
+                            ) {
                               return {
                                 isFill: false,
                                 position: positions,
@@ -5491,7 +5583,20 @@ export const XYChain = (
                               (p) => p.row === pos.row && p.col === pos.col
                             )
                           );
-                          if (!isOverlap && positions.length) {
+                          const isDuplicatePrompt = prompt.some((p1, i) => {
+                            return prompt.some((p2, j) => {
+                              return (
+                                i !== j &&
+                                p1.row === p2.row &&
+                                p1.col === p2.col
+                              );
+                            });
+                          });
+                          if (
+                            !isOverlap &&
+                            positions.length &&
+                            !isDuplicatePrompt
+                          ) {
                             return {
                               isFill: false,
                               position: positions,
@@ -5611,7 +5716,18 @@ export const XYChain = (
                             (p) => p.row === pos.row && p.col === pos.col
                           )
                         );
-                        if (!isOverlap && positions.length) {
+                        const isDuplicatePrompt = prompt.some((p1, i) => {
+                          return prompt.some((p2, j) => {
+                            return (
+                              i !== j && p1.row === p2.row && p1.col === p2.col
+                            );
+                          });
+                        });
+                        if (
+                          !isOverlap &&
+                          positions.length &&
+                          !isDuplicatePrompt
+                        ) {
                           return {
                             isFill: false,
                             position: positions,
@@ -5669,7 +5785,21 @@ export const XYChain = (
                                 (p) => p.row === pos.row && p.col === pos.col
                               )
                             );
-                            if (!isOverlap && positions.length && d === a) {
+                            const isDuplicatePrompt = prompt.some((p1, i) => {
+                              return prompt.some((p2, j) => {
+                                return (
+                                  i !== j &&
+                                  p1.row === p2.row &&
+                                  p1.col === p2.col
+                                );
+                              });
+                            });
+                            if (
+                              !isOverlap &&
+                              positions.length &&
+                              d === a &&
+                              !isDuplicatePrompt
+                            ) {
                               return {
                                 isFill: false,
                                 position: positions,
@@ -5717,7 +5847,20 @@ export const XYChain = (
                                 (p) => p.row === pos.row && p.col === pos.col
                               )
                             );
-                            if (!isOverlap && positions.length) {
+                            const isDuplicatePrompt = prompt.some((p1, i) => {
+                              return prompt.some((p2, j) => {
+                                return (
+                                  i !== j &&
+                                  p1.row === p2.row &&
+                                  p1.col === p2.col
+                                );
+                              });
+                            });
+                            if (
+                              !isOverlap &&
+                              positions.length &&
+                              !isDuplicatePrompt
+                            ) {
                               return {
                                 isFill: false,
                                 position: positions,
@@ -6019,4 +6162,140 @@ export const swordfish = (
       }
     }
   }
+  return null;
+};
+
+export const jellyfish = (
+  board: Board,
+  candidateMap: CandidateMap,
+  graph: Graph
+) => {
+  for (let num = 1; num <= 9; num++) {
+    if (true) {
+      const arr: { row: number; positions: Position[] }[] = [];
+      for (let row = 0; row < 9; row++) {
+        const rowStats = candidateMap[num].row.get(row);
+        if (
+          rowStats &&
+          (rowStats.positions.length === 2 ||
+            rowStats.positions.length === 3 ||
+            rowStats.positions.length === 4)
+        ) {
+          arr.push({ row, positions: rowStats.positions });
+        }
+      }
+      if (arr.length >= 4) {
+        for (let i = 0; i < arr.length - 3; i++) {
+          for (let j = i + 1; j < arr.length - 2; j++) {
+            for (let k = j + 1; k < arr.length - 1; k++) {
+              for (let l = k + 1; l < arr.length; l++) {
+                const { positions: positions1 } = arr[i];
+                const { positions: positions2 } = arr[j];
+                const { positions: positions3 } = arr[k];
+                const { positions: positions4 } = arr[l];
+                const row1 = arr[i].row;
+                const row2 = arr[j].row;
+                const row3 = arr[k].row;
+                const row4 = arr[l].row;
+
+                const allPositions = [
+                  ...positions1,
+                  ...positions2,
+                  ...positions3,
+                  ...positions4,
+                ];
+                const allCols = allPositions.map((pos) => pos.col);
+                const uniqueCols = new Set(allCols);
+                if (uniqueCols.size === 4) {
+                  const deletedPositions: Position[] = [];
+                  for (const col of uniqueCols) {
+                    const positions = candidateMap[num].col.get(col)?.positions;
+                    for (const pos of positions) {
+                      if (![row1, row2, row3, row4].includes(pos.row)) {
+                        deletedPositions.push(pos);
+                      }
+                    }
+                  }
+                  if (deletedPositions.length) {
+                    return {
+                      isFill: false,
+                      position: deletedPositions,
+                      prompt: allPositions,
+                      method: SOLUTION_METHODS.JELLYFISH_ROW,
+                      target: [num],
+                    };
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      // 列版本的剑鱼
+      if (true) {
+        const arr: { col: number; positions: Position[] }[] = [];
+        for (let col = 0; col < 9; col++) {
+          const colStats = candidateMap[num].col.get(col);
+          if (
+            colStats &&
+            (colStats.positions.length === 2 ||
+              colStats.positions.length === 3 ||
+              colStats.positions.length === 4)
+          ) {
+            arr.push({ col, positions: colStats.positions });
+          }
+        }
+        if (arr.length >= 3) {
+          for (let i = 0; i < arr.length - 3; i++) {
+            for (let j = i + 1; j < arr.length - 2; j++) {
+              for (let k = j + 1; k < arr.length - 1; k++) {
+                for (let l = k + 1; l < arr.length; l++) {
+                  const { positions: positions1 } = arr[i];
+                  const { positions: positions2 } = arr[j];
+                  const { positions: positions3 } = arr[k];
+                  const { positions: positions4 } = arr[l];
+                  const col1 = arr[i].col;
+                  const col2 = arr[j].col;
+                  const col3 = arr[k].col;
+                  const col4 = arr[l].col;
+
+                  const allPositions = [
+                    ...positions1,
+                    ...positions2,
+                    ...positions3,
+                    ...positions4,
+                  ];
+                  const allRows = allPositions.map((pos) => pos.row);
+                  const uniqueRows = new Set(allRows);
+
+                  if (uniqueRows.size === 4) {
+                    const deletedPositions: Position[] = [];
+                    for (const row of uniqueRows) {
+                      const positions =
+                        candidateMap[num].row.get(row)?.positions;
+                      for (const pos of positions) {
+                        if (![col1, col2, col3, col4].includes(pos.col)) {
+                          deletedPositions.push(pos);
+                        }
+                      }
+                    }
+                    if (deletedPositions.length) {
+                      return {
+                        isFill: false,
+                        position: deletedPositions,
+                        prompt: allPositions,
+                        method: SOLUTION_METHODS.JELLYFISH_COLUMN,
+                        target: [num],
+                      };
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  return null;
 };
