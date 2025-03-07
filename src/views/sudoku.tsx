@@ -103,7 +103,7 @@ const Sudoku: React.FC = () => {
   const [inputValue, setInputValue] = useState<string>("");
 
   const convertToBoard = (index: number): CellData[][] => {
-    const board = hard[index].puzzle;
+    const board = extreme[index].puzzle;
     const result: CellData[][] = [];
     for (let i = 0; i < 9; i++) {
       const row: CellData[] = [];
@@ -121,7 +121,7 @@ const Sudoku: React.FC = () => {
   };
 
   const convertToAnswer = (index: number): CellData[][] => {
-    const board = hard[index].solution;
+    const board = extreme[index].solution;
     const result: CellData[][] = [];
     for (let i = 0; i < 9; i++) {
       const row: CellData[] = [];
@@ -211,8 +211,7 @@ const Sudoku: React.FC = () => {
     ];
 
     const mapArray = [];
-    const loopMap_5 = new Map();
-    const loopMap_7 = new Map();
+    const combinationChainMap = new Map();
     const failureMap = new Map();
     const falseSolutionMap = new Map();
 
@@ -254,12 +253,8 @@ const Sudoku: React.FC = () => {
             counts++;
           }
           switch (result.method) {
-            case SOLUTION_METHODS.LOOP:
-              if (result.label === '5') {
-                loopMap_5.set(i, result);
-              } else if (result.label === '7') {
-                loopMap_7.set(i, result);
-              }
+            case SOLUTION_METHODS.COMBINATION_CHAIN:
+              combinationChainMap.set(i, result);
               break;
           }
           const newBoard = deepCopyBoard(board2);
@@ -312,9 +307,7 @@ const Sudoku: React.FC = () => {
     }
     console.log("mapArray", mapArray);
     console.log("failureMap", failureMap);
-    console.log("loopMap_5", loopMap_5);
-    console.log("loopMap_7", loopMap_7);
-
+    console.log("combinationChainMap", combinationChainMap);
   };
 
   const generateBoard = () => {
@@ -342,10 +335,10 @@ const Sudoku: React.FC = () => {
       }))
     );
 
-    newBoard = deepCopyBoard(mockBoard);
+    // newBoard = deepCopyBoard(mockBoard);
 
     updateBoard(newBoard, "生成新棋盘");
-    // updateBoard(convertToBoard(171), "生成新棋盘");
+    // updateBoard(convertToBoard(352), "生成新棋盘");
 
     // 生成解决方案
     const solvedBoard = newBoard.map((row) => row.map((cell) => ({ ...cell })));
@@ -1398,9 +1391,11 @@ const Sudoku: React.FC = () => {
         case SOLUTION_METHODS.SKYSCRAPER:
           boardWithHighlight = applyHintHighlight(board, result, "both");
           setPrompts(target);
-          posStr = prompt.map(p => `R${p.row + 1}C${p.col + 1}`).join("、");
+          posStr = prompt.map((p) => `R${p.row + 1}C${p.col + 1}`).join("、");
           if (position.length > 0) {
-            deleteStr = position.map(p => `R${p.row + 1}C${p.col + 1}`).join("、");
+            deleteStr = position
+              .map((p) => `R${p.row + 1}C${p.col + 1}`)
+              .join("、");
           }
           hintContent = `${posStr}四个方格构成共轭链，无论R${
             prompt[0].row + 1
