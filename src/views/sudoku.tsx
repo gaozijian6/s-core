@@ -103,7 +103,7 @@ const Sudoku: React.FC = () => {
   const [inputValue, setInputValue] = useState<string>("");
 
   const convertToBoard = (index: number): CellData[][] => {
-    const board = extreme[index].puzzle;
+    const board = hard[index].puzzle;
     const result: CellData[][] = [];
     for (let i = 0; i < 9; i++) {
       const row: CellData[] = [];
@@ -121,7 +121,7 @@ const Sudoku: React.FC = () => {
   };
 
   const convertToAnswer = (index: number): CellData[][] => {
-    const board = extreme[index].solution;
+    const board = hard[index].solution;
     const result: CellData[][] = [];
     for (let i = 0; i < 9; i++) {
       const row: CellData[] = [];
@@ -211,12 +211,11 @@ const Sudoku: React.FC = () => {
     ];
 
     const mapArray = [];
+    const loopMap_5 = new Map();
+    const loopMap_7 = new Map();
     const failureMap = new Map();
-    const binaryUniversalGraveMap = new Map();
-    const skyscraperMap1 = new Map();
-    const skyscraperMap2 = new Map();
-    const skyscraperMap3 = new Map();
     const falseSolutionMap = new Map();
+
     for (let i = 0; i < extreme.length; i++) {
       // for (let i = 241; i < 242; i++) {
       if (i % 100 === 0) {
@@ -255,20 +254,11 @@ const Sudoku: React.FC = () => {
             counts++;
           }
           switch (result.method) {
-            case SOLUTION_METHODS.BINARY_UNIVERSAL_GRAVE:
-              binaryUniversalGraveMap.set(i, true);
-              break;
-            case SOLUTION_METHODS.SKYSCRAPER:
-              switch (result.label) {
-                case '4':
-                  skyscraperMap1.set(i, true);
-                  break;
-                case '6':
-                  skyscraperMap2.set(i, true);
-                  break;
-                case '8':
-                  skyscraperMap3.set(i, true);
-                  break;
+            case SOLUTION_METHODS.LOOP:
+              if (result.label === '5') {
+                loopMap_5.set(i, result);
+              } else if (result.label === '7') {
+                loopMap_7.set(i, result);
               }
               break;
           }
@@ -322,11 +312,9 @@ const Sudoku: React.FC = () => {
     }
     console.log("mapArray", mapArray);
     console.log("failureMap", failureMap);
-    console.log("binaryUniversalGraveMap", binaryUniversalGraveMap);
-    console.log("skyscraperMap1", skyscraperMap1);
-    console.log("skyscraperMap2", skyscraperMap2);
-    console.log("skyscraperMap3", skyscraperMap3);
-    console.log("falseSolutionMap", falseSolutionMap);
+    console.log("loopMap_5", loopMap_5);
+    console.log("loopMap_7", loopMap_7);
+
   };
 
   const generateBoard = () => {
@@ -356,8 +344,8 @@ const Sudoku: React.FC = () => {
 
     newBoard = deepCopyBoard(mockBoard);
 
-    // updateBoard(newBoard, "生成新棋盘");
-    updateBoard(convertToBoard(1), "生成新棋盘");
+    updateBoard(newBoard, "生成新棋盘");
+    // updateBoard(convertToBoard(171), "生成新棋盘");
 
     // 生成解决方案
     const solvedBoard = newBoard.map((row) => row.map((cell) => ({ ...cell })));
@@ -1699,6 +1687,11 @@ const Sudoku: React.FC = () => {
           setPrompts(target);
           break;
         case SOLUTION_METHODS.JELLYFISH_COLUMN:
+          boardWithHighlight = applyHintHighlight(board, result, "both");
+          setPositions(target);
+          setPrompts(target);
+          break;
+        case SOLUTION_METHODS.LOOP:
           boardWithHighlight = applyHintHighlight(board, result, "both");
           setPositions(target);
           setPrompts(target);
