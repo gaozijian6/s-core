@@ -58,6 +58,7 @@ import mockBoard from "./mock";
 import DLX from "../tools/DLX";
 import extreme from "./extreme";
 import hard from "./hard";
+import { SudokuSolver } from "../tools/DLX";
 
 const Sudoku: React.FC = () => {
   const initialBoard = Array(9)
@@ -229,6 +230,7 @@ const Sudoku: React.FC = () => {
     const xyChainMap10 = new Map();
     const swordfishMap = new Map();
     const jellyfishMap = new Map();
+    const xyzWingMap = new Map();
 
     for (let i = 0; i < extreme.length; i++) {
       // for (let i = 86; i < 87; i++) {
@@ -327,6 +329,9 @@ const Sudoku: React.FC = () => {
             case SOLUTION_METHODS.JELLYFISH_COLUMN:
               jellyfishMap.set(i, true);
               break;
+            case SOLUTION_METHODS.XYZ_WING:
+              xyzWingMap.set(i, true);
+              break;
           }
           const newBoard = deepCopyBoard(board2);
           let isFalse = false;
@@ -392,6 +397,7 @@ const Sudoku: React.FC = () => {
     console.log("xyChainMap10 双双强强", xyChainMap10);
     console.log("swordfishMap", swordfishMap);
     console.log("jellyfishMap", jellyfishMap);
+    console.log("xyzWingMap", xyzWingMap);
     console.log("falseSolutionMap", falseSolutionMap);
   };
 
@@ -2123,6 +2129,15 @@ const Sudoku: React.FC = () => {
     testExtreme();
   };
 
+  const handleTest2 = () => {
+    for(let i = 0; i < extreme.length; i++) {
+      const start = performance.now()
+      const result = new SudokuSolver().solve(extreme[i].puzzle)
+      const end = performance.now()
+      console.log(`Time taken ${i}: ${end - start} milliseconds`)
+    }
+  };
+
   return (
     <Card title="">
       <div className="gameInfo">
@@ -2243,6 +2258,7 @@ const Sudoku: React.FC = () => {
         <Button onClick={handleDraft}>候选数</Button>
         <Button onClick={handleGraphNodePaths}>打印路径</Button>
         <Button onClick={handleTest}>测试</Button>
+        <Button onClick={handleTest2}>测试2</Button>
       </div>
       <div className="numberButtons">
         {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((number) => (

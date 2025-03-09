@@ -146,7 +146,7 @@ class DLX {
   }
 }
 
-class SudokuSolver {
+export class SudokuSolver {
   private dlx: DLX
   private m: number // 小方格大小 (3 for 9x9 sudoku)
   private size: number // 整个数独大小 (9 for 9x9 sudoku)
@@ -168,7 +168,7 @@ class SudokuSolver {
     }
   }
 
-  solve(input: string): number[][] {
+  solve(input: string): string | undefined {
     // 将输入字符串转换为二维数组
     for (let i = 0; i < this.size; i++) {
       for (let j = 0; j < this.size; j++) {
@@ -211,8 +211,30 @@ class SudokuSolver {
       }
     }
 
-    this.dlx.dance()
-    return this.dlx.getResult()
+    // 如果dance()返回true，说明有多个解或无解
+    if (this.dlx.dance()) {
+      return undefined
+    }
+
+    const result = this.dlx.getResult()
+    
+    // 检查结果是否有效
+    for (let i = 1; i <= M; i++) {
+      for (let j = 1; j <= M; j++) {
+        if (!result[i] || !result[i][j]) {
+          return undefined
+        }
+      }
+    }
+    
+    // 将结果转换为字符串
+    let output = ''
+    for (let i = 1; i <= M; i++) {
+      for (let j = 1; j <= M; j++) {
+        output += result[i][j].toString()
+      }
+    }
+    return output
   }
 
   private grid(i: number, j: number): number {
@@ -220,19 +242,12 @@ class SudokuSolver {
   }
 }
 
-// // 使用示例
-// const solver = new SudokuSolver()
-// const input = "800000000003600000070090200050007000000045700000100030001000068008500010090000400"
-// const result = solver.solve(input)
+// 使用示例
+const solver = new SudokuSolver()
+// const input = "700030090500600000100000000007400105060800000000000200070900030000341000000275000"
+const input = "000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+const result = solver.solve(input)
 
-// // 打印结果
-// console.log("数独解答：")
-// for (let i = 1; i <= 9; i++) {
-//   let row = ""
-//   for (let j = 1; j <= 9; j++) {
-//     row += result[i][j] + " "
-//   }
-//   console.log(row)
-// }
+console.log(result)
 
 export default DLX
