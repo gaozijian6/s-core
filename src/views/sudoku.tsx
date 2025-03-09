@@ -103,7 +103,7 @@ const Sudoku: React.FC = () => {
   const [inputValue, setInputValue] = useState<string>("");
 
   const convertToBoard = (index: number): CellData[][] => {
-    const board = extreme[index].puzzle;
+    const board = hard[index].puzzle;
     const result: CellData[][] = [];
     for (let i = 0; i < 9; i++) {
       const row: CellData[] = [];
@@ -121,7 +121,7 @@ const Sudoku: React.FC = () => {
   };
 
   const convertToAnswer = (index: number): CellData[][] => {
-    const board = extreme[index].solution;
+    const board = hard[index].solution;
     const result: CellData[][] = [];
     for (let i = 0; i < 9; i++) {
       const row: CellData[] = [];
@@ -214,6 +214,9 @@ const Sudoku: React.FC = () => {
     const combinationChainMap = new Map();
     const failureMap = new Map();
     const falseSolutionMap = new Map();
+    const skyscraperMap_6 = new Map();
+    const binaryMap = new Map();
+    const xyChainMap = new Map();
 
     for (let i = 0; i < extreme.length; i++) {
       // for (let i = 241; i < 242; i++) {
@@ -255,6 +258,23 @@ const Sudoku: React.FC = () => {
           switch (result.method) {
             case SOLUTION_METHODS.COMBINATION_CHAIN:
               combinationChainMap.set(i, result);
+              break;
+            case SOLUTION_METHODS.SKYSCRAPER:
+              switch (result.label) {
+                case "6":
+                  skyscraperMap_6.set(i, result);
+                  break;
+              }
+              break;
+            case SOLUTION_METHODS.BINARY_UNIVERSAL_GRAVE:
+              binaryMap.set(i, result);
+              break;
+            case SOLUTION_METHODS.XY_CHAIN:
+              switch (result.label) {
+                case "双双强强":
+                  xyChainMap.set(i, result);
+                  break;
+              }
               break;
           }
           const newBoard = deepCopyBoard(board2);
@@ -308,6 +328,9 @@ const Sudoku: React.FC = () => {
     console.log("mapArray", mapArray);
     console.log("failureMap", failureMap);
     console.log("combinationChainMap", combinationChainMap);
+    console.log("skyscraperMap_6", skyscraperMap_6);
+    console.log("binaryMap", binaryMap);
+    console.log("xyChainMap", xyChainMap);
   };
 
   const generateBoard = () => {
@@ -335,10 +358,10 @@ const Sudoku: React.FC = () => {
       }))
     );
 
-    // newBoard = deepCopyBoard(mockBoard);
+    newBoard = deepCopyBoard(mockBoard);
 
     updateBoard(newBoard, "生成新棋盘");
-    // updateBoard(convertToBoard(352), "生成新棋盘");
+    // updateBoard(convertToBoard(419), "生成新棋盘");
 
     // 生成解决方案
     const solvedBoard = newBoard.map((row) => row.map((cell) => ({ ...cell })));
@@ -773,9 +796,9 @@ const Sudoku: React.FC = () => {
       Loop,
       uniqueRectangle,
       xyzWing,
-      BinaryUniversalGrave,
       XYChain,
       jellyfish,
+      BinaryUniversalGrave,
       trialAndErrorDIY,
     ];
     let result = null;

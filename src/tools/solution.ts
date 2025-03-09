@@ -5298,10 +5298,13 @@ export const XYChain = (
                                 );
                               });
                             });
+                            const isOverlap = positions.some(p =>
+                              prompt.some(p1 => p1.row === p.row && p1.col === p.col)
+                            );
                             if (
                               positions.length &&
                               !isDuplicatePrompt &&
-                              e === b
+                              !isOverlap
                             ) {
                               return {
                                 isFill: false,
@@ -5458,7 +5461,7 @@ export const XYChain = (
                     for (const node4 of node4Array) {
                       const cell4 = board[node4.row][node4.col];
                       const pos4 = { row: node4.row, col: node4.col };
-                      if (cell4.draft.includes(b) && a !== e) {
+                      if (cell4.draft.includes(a) && a !== e) {
                         const node_other = getGraphNode(pos4, b, graph);
                         if (node_other) {
                           const node5Array = findGraphNodeByDistance(
@@ -5496,10 +5499,13 @@ export const XYChain = (
                                 );
                               });
                             });
+                            const isOverlap = positions.some(p =>
+                              prompt.some(p1 => p1.row === p.row && p1.col === p.col)
+                            );
                             if (
                               positions.length &&
                               !isDuplicatePrompt &&
-                              e === a
+                              !isOverlap
                             ) {
                               return {
                                 isFill: false,
@@ -5881,6 +5887,7 @@ export const XYChain = (
                                       positions.push(pos7);
                                     }
                                   }
+                               
                                   if (positions.length) {
                                     if (b !== d && !isDuplicatePrompt) {
                                       return {
