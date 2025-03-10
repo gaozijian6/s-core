@@ -105,8 +105,6 @@ const Sudoku: React.FC = () => {
 
   const convertToBoard = (index: number): CellData[][] => {
     const board = extreme[index].puzzle;
-    console.log(extreme[index].puzzle);
-    console.log(extreme[index].answer);
     
     const result: CellData[][] = [];
     for (let i = 0; i < 9; i++) {
@@ -432,7 +430,7 @@ const Sudoku: React.FC = () => {
     // newBoard = deepCopyBoard(mockBoard);
 
     // updateBoard(newBoard, "生成新棋盘");
-    updateBoard(convertToBoard(17), "生成新棋盘");
+    updateBoard(convertToBoard(16), "生成新棋盘");
 
     // 生成解决方案
     const solvedBoard = newBoard.map((row) => row.map((cell) => ({ ...cell })));
