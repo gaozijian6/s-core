@@ -105,6 +105,9 @@ const Sudoku: React.FC = () => {
 
   const convertToBoard = (index: number): CellData[][] => {
     const board = extreme[index].puzzle;
+    console.log(extreme[index].puzzle);
+    console.log(extreme[index].answer);
+    
     const result: CellData[][] = [];
     for (let i = 0; i < 9; i++) {
       const row: CellData[] = [];
@@ -426,10 +429,10 @@ const Sudoku: React.FC = () => {
       }))
     );
 
-    newBoard = deepCopyBoard(mockBoard);
+    // newBoard = deepCopyBoard(mockBoard);
 
-    updateBoard(newBoard, "生成新棋盘");
-    // updateBoard(convertToBoard(39), "生成新棋盘");
+    // updateBoard(newBoard, "生成新棋盘");
+    updateBoard(convertToBoard(17), "生成新棋盘");
 
     // 生成解决方案
     const solvedBoard = newBoard.map((row) => row.map((cell) => ({ ...cell })));
@@ -2130,11 +2133,10 @@ const Sudoku: React.FC = () => {
   };
 
   const handleTest2 = () => {
-    for(let i = 0; i < extreme.length; i++) {
-      const start = performance.now()
+    // for(let i = 0; i < extreme.length; i++) {
+      for(let i = 17; i < 18; i++) {
       const result = new SudokuSolver().solve(extreme[i].puzzle)
-      const end = performance.now()
-      console.log(`Time taken ${i}: ${end - start} milliseconds`)
+      console.log(result);
     }
   };
 
