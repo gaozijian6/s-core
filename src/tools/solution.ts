@@ -4744,8 +4744,11 @@ export const XYChain = (
                           );
                         });
                       });
-
-                      if (positions.length && e === b && !isDuplicatePrompt) {
+                      if (
+                        positions.length &&
+                        e === b &&
+                        !isDuplicatePrompt
+                      ) {
                         return {
                           isFill: false,
                           position: positions,
@@ -4878,8 +4881,72 @@ export const XYChain = (
                     for (const node4 of node4Array) {
                       const cell4 = board[node4.row][node4.col];
                       const pos4 = { row: node4.row, col: node4.col };
-                      if (cell4.draft.includes(b)) {
-                        const node_other = getGraphNode(pos4, b, graph);
+                      if (true) {
+                        const prompt = [
+                          { row, col },
+                          { row: pos2.row, col: pos2.col },
+                          { row: pos3.row, col: pos3.col },
+                          { row: pos4.row, col: pos4.col },
+                        ];
+                        const isDuplicatePrompt = prompt.some((p1, i) => {
+                          return prompt.some((p2, j) => {
+                            return (
+                              i !== j && p1.row === p2.row && p1.col === p2.col
+                            );
+                          });
+                        });
+                        const isInSameUnit = areCellsInSameUnit(
+                          { row, col },
+                          { row: pos4.row, col: pos4.col }
+                        );
+                        const isHasTarget =
+                          board[pos4.row][pos4.col].draft.includes(b);
+                        if (
+                          isInSameUnit &&
+                          isHasTarget &&
+                          b !== e &&
+                          !isDuplicatePrompt
+                        ) {
+                          return {
+                            isFill: false,
+                            position: [
+                              { row: prompt[3].row, col: prompt[3].col },
+                            ],
+                            prompt,
+                            method: SOLUTION_METHODS.XY_CHAIN,
+                            target: [a, c, d, e, b],
+                            label: "双双强2",
+                            highlightPromts: [
+                              {
+                                row: prompt[0].row,
+                                col: prompt[0].col,
+                                values: [b, a],
+                              },
+                              {
+                                row: prompt[1].row,
+                                col: prompt[1].col,
+                                values: [c],
+                              },
+                              {
+                                row: prompt[2].row,
+                                col: prompt[2].col,
+                                values: [d],
+                              },
+                              {
+                                row: prompt[3].row,
+                                col: prompt[3].col,
+                                values: [e],
+                              },
+                            ],
+                            highlightDeletes: [
+                              { row: pos4.row, col: pos4.col, values: [b] },
+                            ],
+                          };
+                        }
+                      }
+                      for (const f of cell4.draft) {
+                        if (f === e) continue;
+                        const node_other = getGraphNode(pos4, f, graph);
                         if (node_other) {
                           const node5Array = findGraphNodeByDistance(
                             node_other,
@@ -4920,11 +4987,63 @@ export const XYChain = (
                                 (p1) => p1.row === p.row && p1.col === p.col
                               )
                             );
+                            const isInSameUnit = areCellsInSameUnit(
+                              { row, col },
+                              { row: pos5.row, col: pos5.col }
+                            );
+                            const isHasTarget =
+                              board[pos5.row][pos5.col].draft.includes(b);
                             if (
+                              isInSameUnit &&
+                              isHasTarget &&
+                              b !== f &&
+                              !isDuplicatePrompt
+                            ) {
+                              return {
+                                isFill: false,
+                                position: [
+                                  { row: prompt[4].row, col: prompt[4].col },
+                                ],
+                                prompt,
+                                method: SOLUTION_METHODS.XY_CHAIN,
+                                target: [a, c, d, e, f, b],
+                                label: "双双强强2",
+                                highlightPromts: [
+                                  {
+                                    row: prompt[0].row,
+                                    col: prompt[0].col,
+                                    values: [b, a],
+                                  },
+                                  {
+                                    row: prompt[1].row,
+                                    col: prompt[1].col,
+                                    values: [c],
+                                  },
+                                  {
+                                    row: prompt[2].row,
+                                    col: prompt[2].col,
+                                    values: [d],
+                                  },
+                                  {
+                                    row: prompt[3].row,
+                                    col: prompt[3].col,
+                                    values: [e],
+                                  },
+                                  {
+                                    row: prompt[4].row,
+                                    col: prompt[4].col,
+                                    values: [f],
+                                  },
+                                ],
+                                highlightDeletes: [
+                                  { row: pos5.row, col: pos5.col, values: [b] },
+                                ],
+                              };
+                            } else if (
                               positions.length &&
                               !isDuplicatePrompt &&
                               !isOverlap &&
-                              b !== e
+                              b === f
                             ) {
                               return {
                                 isFill: false,
@@ -4961,6 +5080,178 @@ export const XYChain = (
                                   },
                                 ],
                               };
+                            }
+                            if (true) {
+                              for (const g of cell5.draft) {
+                                if (g === f) continue;
+                                const node_other = getGraphNode(pos5, g, graph);
+                                if (node_other) {
+                                  const node6Array = findGraphNodeByDistance(
+                                    node_other,
+                                    1
+                                  );
+                                  for (const node6 of node6Array) {
+                                    const cell6 = board[node6.row][node6.col];
+                                    const pos6 = {
+                                      row: node6.row,
+                                      col: node6.col,
+                                    };
+                                    const commonAffectedCells = getCommonUnits(
+                                      { row, col },
+                                      pos6,
+                                      board
+                                    );
+                                    const positions: Position[] = [];
+                                    for (const pos7 of commonAffectedCells) {
+                                      if (
+                                        board[pos7.row][
+                                          pos7.col
+                                        ].draft.includes(b)
+                                      ) {
+                                        positions.push(pos7);
+                                      }
+                                    }
+                                    const prompt = [
+                                      { row, col },
+                                      { row: pos2.row, col: pos2.col },
+                                      { row: pos3.row, col: pos3.col },
+                                      { row: pos4.row, col: pos4.col },
+                                      { row: pos5.row, col: pos5.col },
+                                      { row: pos6.row, col: pos6.col },
+                                    ];
+                                    const isDuplicatePrompt = prompt.some(
+                                      (p1, i) => {
+                                        return prompt.some((p2, j) => {
+                                          return (
+                                            i !== j &&
+                                            p1.row === p2.row &&
+                                            p1.col === p2.col
+                                          );
+                                        });
+                                      }
+                                    );
+                                    const isOverlap = positions.some((p) =>
+                                      prompt.some(
+                                        (p1) =>
+                                          p1.row === p.row && p1.col === p.col
+                                      )
+                                    );
+                                    const isInSameUnit = areCellsInSameUnit(
+                                      { row, col },
+                                      { row: pos6.row, col: pos6.col }
+                                    );
+                                    const isHasTarget =
+                                      board[pos6.row][pos6.col].draft.includes(
+                                        b
+                                      );
+                                    if (
+                                      isInSameUnit &&
+                                      isHasTarget &&
+                                      b !== g &&
+                                      !isDuplicatePrompt
+                                    ) {
+                                      return {
+                                        isFill: false,
+                                        position: [
+                                          {
+                                            row: prompt[5].row,
+                                            col: prompt[5].col,
+                                          },
+                                        ],
+                                        prompt,
+                                        method: SOLUTION_METHODS.XY_CHAIN,
+                                        target: [a, c, d, e, f, g, b],
+                                        label: "双双强强强2",
+                                        highlightPromts: [
+                                          {
+                                            row: prompt[0].row,
+                                            col: prompt[0].col,
+                                            values: [b, a],
+                                          },
+                                          {
+                                            row: prompt[1].row,
+                                            col: prompt[1].col,
+                                            values: [c],
+                                          },
+                                          {
+                                            row: prompt[2].row,
+                                            col: prompt[2].col,
+                                            values: [d],
+                                          },
+                                          {
+                                            row: prompt[3].row,
+                                            col: prompt[3].col,
+                                            values: [e],
+                                          },
+                                          {
+                                            row: prompt[4].row,
+                                            col: prompt[4].col,
+                                            values: [f],
+                                          },
+                                          {
+                                            row: prompt[5].row,
+                                            col: prompt[5].col,
+                                            values: [g],
+                                          },
+                                        ],
+                                        highlightDeletes: [
+                                          {
+                                            row: pos6.row,
+                                            col: pos6.col,
+                                            values: [b],
+                                          },
+                                        ],
+                                      };
+                                    } else if (
+                                      positions.length &&
+                                      !isDuplicatePrompt &&
+                                      !isOverlap &&
+                                      b === g
+                                    ) {
+                                      return {
+                                        isFill: false,
+                                        position: positions,
+                                        prompt,
+                                        method: SOLUTION_METHODS.XY_CHAIN,
+                                        target: [a, c, d, e, f, b],
+                                        label: "双双强强强",
+                                        highlightPromts: [
+                                          {
+                                            row: prompt[0].row,
+                                            col: prompt[0].col,
+                                            values: [b, a],
+                                          },
+                                          {
+                                            row: prompt[1].row,
+                                            col: prompt[1].col,
+                                            values: [c],
+                                          },
+                                          {
+                                            row: prompt[2].row,
+                                            col: prompt[2].col,
+                                            values: [d],
+                                          },
+                                          {
+                                            row: prompt[3].row,
+                                            col: prompt[3].col,
+                                            values: [e],
+                                          },
+                                          {
+                                            row: prompt[4].row,
+                                            col: prompt[4].col,
+                                            values: [f],
+                                          },
+                                          {
+                                            row: prompt[5].row,
+                                            col: prompt[5].col,
+                                            values: [b],
+                                          },
+                                        ],
+                                      };
+                                    }
+                                  }
+                                }
+                              }
                             }
                           }
                         }
@@ -5022,9 +5313,11 @@ export const XYChain = (
                           );
                         });
                       });
-
-                      // 如果有重复，则跳过当前情况
-                      if (positions.length && e === a && !isDuplicatePrompt) {
+                      if (
+                        positions.length &&
+                        e === a &&
+                        !isDuplicatePrompt
+                      ) {
                         return {
                           isFill: false,
                           position: positions,
@@ -5157,8 +5450,72 @@ export const XYChain = (
                     for (const node4 of node4Array) {
                       const cell4 = board[node4.row][node4.col];
                       const pos4 = { row: node4.row, col: node4.col };
-                      if (cell4.draft.includes(a)) {
-                        const node_other = getGraphNode(pos4, b, graph);
+                      if (true) {
+                        const prompt = [
+                          { row, col },
+                          { row: pos2.row, col: pos2.col },
+                          { row: pos3.row, col: pos3.col },
+                          { row: pos4.row, col: pos4.col },
+                        ];
+                        const isDuplicatePrompt = prompt.some((p1, i) => {
+                          return prompt.some((p2, j) => {
+                            return (
+                              i !== j && p1.row === p2.row && p1.col === p2.col
+                            );
+                          });
+                        });
+                        const isInSameUnit = areCellsInSameUnit(
+                          { row, col },
+                          { row: pos4.row, col: pos4.col }
+                        );
+                        const isHasTarget =
+                          board[pos4.row][pos4.col].draft.includes(a);
+                        if (
+                          isInSameUnit &&
+                          isHasTarget &&
+                          a !== e &&
+                          !isDuplicatePrompt
+                        ) {
+                          return {
+                            isFill: false,
+                            position: [
+                              { row: prompt[3].row, col: prompt[3].col },
+                            ],
+                            prompt,
+                            method: SOLUTION_METHODS.XY_CHAIN,
+                            target: [a, c, d, e, a],
+                            label: "双双强2",
+                            highlightPromts: [
+                              {
+                                row: prompt[0].row,
+                                col: prompt[0].col,
+                                values: [b, a],
+                              },
+                              {
+                                row: prompt[1].row,
+                                col: prompt[1].col,
+                                values: [c],
+                              },
+                              {
+                                row: prompt[2].row,
+                                col: prompt[2].col,
+                                values: [d],
+                              },
+                              {
+                                row: prompt[3].row,
+                                col: prompt[3].col,
+                                values: [e],
+                              },
+                            ],
+                            highlightDeletes: [
+                              { row: pos4.row, col: pos4.col, values: [a] },
+                            ],
+                          };
+                        }
+                      }
+                      for (const f of cell4.draft) {
+                        if (f === e) continue;
+                        const node_other = getGraphNode(pos4, f, graph);
                         if (node_other) {
                           const node5Array = findGraphNodeByDistance(
                             node_other,
@@ -5199,11 +5556,63 @@ export const XYChain = (
                                 (p1) => p1.row === p.row && p1.col === p.col
                               )
                             );
+                            const isInSameUnit = areCellsInSameUnit(
+                              { row, col },
+                              { row: pos5.row, col: pos5.col }
+                            );
+                            const isHasTarget =
+                              board[pos5.row][pos5.col].draft.includes(a);
                             if (
+                              isInSameUnit &&
+                              isHasTarget &&
+                              a !== f &&
+                              !isDuplicatePrompt
+                            ) {
+                              return {
+                                isFill: false,
+                                position: [
+                                  { row: prompt[4].row, col: prompt[4].col },
+                                ],
+                                prompt,
+                                method: SOLUTION_METHODS.XY_CHAIN,
+                                target: [b, c, d, e, f, a],
+                                label: "双双强强2",
+                                highlightPromts: [
+                                  {
+                                    row: prompt[0].row,
+                                    col: prompt[0].col,
+                                    values: [b, a],
+                                  },
+                                  {
+                                    row: prompt[1].row,
+                                    col: prompt[1].col,
+                                    values: [c],
+                                  },
+                                  {
+                                    row: prompt[2].row,
+                                    col: prompt[2].col,
+                                    values: [d],
+                                  },
+                                  {
+                                    row: prompt[3].row,
+                                    col: prompt[3].col,
+                                    values: [e],
+                                  },
+                                  {
+                                    row: prompt[4].row,
+                                    col: prompt[4].col,
+                                    values: [f],
+                                  },
+                                ],
+                                highlightDeletes: [
+                                  { row: pos5.row, col: pos5.col, values: [a] },
+                                ],
+                              };
+                            } else if (
                               positions.length &&
                               !isDuplicatePrompt &&
                               !isOverlap &&
-                              a !== e
+                              a === f
                             ) {
                               return {
                                 isFill: false,
@@ -5240,6 +5649,178 @@ export const XYChain = (
                                   },
                                 ],
                               };
+                            }
+                            if (true) {
+                              for (const g of cell5.draft) {
+                                if (g === f) continue;
+                                const node_other = getGraphNode(pos5, g, graph);
+                                if (node_other) {
+                                  const node6Array = findGraphNodeByDistance(
+                                    node_other,
+                                    1
+                                  );
+                                  for (const node6 of node6Array) {
+                                    const cell6 = board[node6.row][node6.col];
+                                    const pos6 = {
+                                      row: node6.row,
+                                      col: node6.col,
+                                    };
+                                    const commonAffectedCells = getCommonUnits(
+                                      { row, col },
+                                      pos6,
+                                      board
+                                    );
+                                    const positions: Position[] = [];
+                                    for (const pos7 of commonAffectedCells) {
+                                      if (
+                                        board[pos7.row][
+                                          pos7.col
+                                        ].draft.includes(a)
+                                      ) {
+                                        positions.push(pos7);
+                                      }
+                                    }
+                                    const prompt = [
+                                      { row, col },
+                                      { row: pos2.row, col: pos2.col },
+                                      { row: pos3.row, col: pos3.col },
+                                      { row: pos4.row, col: pos4.col },
+                                      { row: pos5.row, col: pos5.col },
+                                      { row: pos6.row, col: pos6.col },
+                                    ];
+                                    const isDuplicatePrompt = prompt.some(
+                                      (p1, i) => {
+                                        return prompt.some((p2, j) => {
+                                          return (
+                                            i !== j &&
+                                            p1.row === p2.row &&
+                                            p1.col === p2.col
+                                          );
+                                        });
+                                      }
+                                    );
+                                    const isOverlap = positions.some((p) =>
+                                      prompt.some(
+                                        (p1) =>
+                                          p1.row === p.row && p1.col === p.col
+                                      )
+                                    );
+                                    const isInSameUnit = areCellsInSameUnit(
+                                      { row, col },
+                                      { row: pos6.row, col: pos6.col }
+                                    );
+                                    const isHasTarget =
+                                      board[pos6.row][pos6.col].draft.includes(
+                                        a
+                                      );
+                                    if (
+                                      isInSameUnit &&
+                                      isHasTarget &&
+                                      a !== g &&
+                                      !isDuplicatePrompt
+                                    ) {
+                                      return {
+                                        isFill: false,
+                                        position: [
+                                          {
+                                            row: prompt[5].row,
+                                            col: prompt[5].col,
+                                          },
+                                        ],
+                                        prompt,
+                                        method: SOLUTION_METHODS.XY_CHAIN,
+                                        target: [b, c, d, e, f, g, a],
+                                        label: "双双强强强2",
+                                        highlightPromts: [
+                                          {
+                                            row: prompt[0].row,
+                                            col: prompt[0].col,
+                                            values: [b, a],
+                                          },
+                                          {
+                                            row: prompt[1].row,
+                                            col: prompt[1].col,
+                                            values: [c],
+                                          },
+                                          {
+                                            row: prompt[2].row,
+                                            col: prompt[2].col,
+                                            values: [d],
+                                          },
+                                          {
+                                            row: prompt[3].row,
+                                            col: prompt[3].col,
+                                            values: [e],
+                                          },
+                                          {
+                                            row: prompt[4].row,
+                                            col: prompt[4].col,
+                                            values: [f],
+                                          },
+                                          {
+                                            row: prompt[5].row,
+                                            col: prompt[5].col,
+                                            values: [g],
+                                          },
+                                        ],
+                                        highlightDeletes: [
+                                          {
+                                            row: pos6.row,
+                                            col: pos6.col,
+                                            values: [a],
+                                          },
+                                        ],
+                                      };
+                                    } else if (
+                                      positions.length &&
+                                      !isDuplicatePrompt &&
+                                      !isOverlap &&
+                                      a === g
+                                    ) {
+                                      return {
+                                        isFill: false,
+                                        position: positions,
+                                        prompt,
+                                        method: SOLUTION_METHODS.XY_CHAIN,
+                                        target: [b, c, d, e, f, a],
+                                        label: "双双强强强",
+                                        highlightPromts: [
+                                          {
+                                            row: prompt[0].row,
+                                            col: prompt[0].col,
+                                            values: [b, a],
+                                          },
+                                          {
+                                            row: prompt[1].row,
+                                            col: prompt[1].col,
+                                            values: [c],
+                                          },
+                                          {
+                                            row: prompt[2].row,
+                                            col: prompt[2].col,
+                                            values: [d],
+                                          },
+                                          {
+                                            row: prompt[3].row,
+                                            col: prompt[3].col,
+                                            values: [e],
+                                          },
+                                          {
+                                            row: prompt[4].row,
+                                            col: prompt[4].col,
+                                            values: [f],
+                                          },
+                                          {
+                                            row: prompt[5].row,
+                                            col: prompt[5].col,
+                                            values: [a],
+                                          },
+                                        ],
+                                      };
+                                    }
+                                  }
+                                }
+                              }
                             }
                           }
                         }
