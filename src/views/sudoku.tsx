@@ -232,9 +232,12 @@ const Sudoku: React.FC = () => {
     const swordfishMap = new Map();
     const jellyfishMap = new Map();
     const xyzWingMap = new Map();
+    const xyChainMap11 = new Map();
+    const xyChainMap12 = new Map();
+    const xyChainMap13 = new Map();
 
     for (let i = 0; i < extreme.length; i++) {
-      // for (let i = 86; i < 87; i++) {
+      // for (let i = 23; i < 24; i++) {
       if (i % 100 === 0) {
         console.log(`正在处理第${i}个数独...`);
       }
@@ -320,6 +323,15 @@ const Sudoku: React.FC = () => {
                   case "双双强强":
                     xyChainMap10.set(i, true);
                     break;
+                  case "弱强强2":
+                    xyChainMap11.set(i, true);
+                    break;
+                  case "弱强强强2":
+                    xyChainMap12.set(i, true);
+                    break;
+                  case "弱强强强强2":
+                    xyChainMap13.set(i, true);
+                    break;
                 }
                 break;
             case SOLUTION_METHODS.SWORDFISH_ROW:
@@ -400,6 +412,9 @@ const Sudoku: React.FC = () => {
     console.log("jellyfishMap", jellyfishMap);
     console.log("xyzWingMap", xyzWingMap);
     console.log("falseSolutionMap", falseSolutionMap);
+    console.log("xyChainMap11 弱强强2", xyChainMap11);
+    console.log("xyChainMap12 弱强强强2", xyChainMap12);
+    console.log("xyChainMap13 弱强强强强2", xyChainMap13);
   };
 
   const generateBoard = () => {
@@ -427,10 +442,10 @@ const Sudoku: React.FC = () => {
       }))
     );
 
-    // newBoard = deepCopyBoard(mockBoard);
+    newBoard = deepCopyBoard(mockBoard);
 
-    // updateBoard(newBoard, "生成新棋盘");
-    updateBoard(convertToBoard(16), "生成新棋盘");
+    updateBoard(newBoard, "生成新棋盘");
+    // updateBoard(convertToBoard(56), "生成新棋盘");
 
     // 生成解决方案
     const solvedBoard = newBoard.map((row) => row.map((cell) => ({ ...cell })));
@@ -1834,15 +1849,15 @@ const Sudoku: React.FC = () => {
               posStr2 = `R${prompt[1].row + 1}C${prompt[1].col + 1}`;
               posStr3 = `R${prompt[2].row + 1}C${prompt[2].col + 1}`;
               posStr4 = `R${prompt[3].row + 1}C${prompt[3].col + 1}`;
-              hintContent = t("hints.XY_CHAIN_rqs", {
-                target1: target[0],
-                target2: target[1],
-                deleteStr,
-                posStr1,
-                posStr2,
-                posStr3,
-                posStr4,
-              });
+              // hintContent = t("hints.XY_CHAIN_rqs", {
+              //   target1: target[0],
+              //   target2: target[1],
+              //   deleteStr,
+              //   posStr1,
+              //   posStr2,
+              //   posStr3,
+              //   posStr4,
+              // });
               break;
             case "弱强强":
               posStr1 = `R${prompt[0].row + 1}C${prompt[0].col + 1}`;
