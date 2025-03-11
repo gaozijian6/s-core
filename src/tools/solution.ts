@@ -4744,11 +4744,7 @@ export const XYChain = (
                           );
                         });
                       });
-                      if (
-                        positions.length &&
-                        e === b &&
-                        !isDuplicatePrompt
-                      ) {
+                      if (positions.length && e === b && !isDuplicatePrompt) {
                         return {
                           isFill: false,
                           position: positions,
@@ -5313,11 +5309,7 @@ export const XYChain = (
                           );
                         });
                       });
-                      if (
-                        positions.length &&
-                        e === a &&
-                        !isDuplicatePrompt
-                      ) {
+                      if (positions.length && e === a && !isDuplicatePrompt) {
                         return {
                           isFill: false,
                           position: positions,
@@ -5847,6 +5839,86 @@ export const XYChain = (
               for (const node3 of node3Array) {
                 const cell3 = board[node3.row][node3.col];
                 for (const c of cell3.draft) {
+                  if (c === a) {
+                    const pos3 = { row: node3.row, col: node3.col };
+                    const affectedCells4 = getAffectedCells(
+                      pos3,
+                      c,
+                      candidateMap
+                    );
+                    for (const pos4 of affectedCells4) {
+                      const cell4 = board[pos4.row][pos4.col];
+                      if (
+                        cell4.draft.includes(b) &&
+                        cell4.draft.includes(c) &&
+                        cell4.draft.length === 2
+                      ) {
+                        const prompt = [
+                          { row, col },
+                          { row: pos2.row, col: pos2.col },
+                          { row: pos3.row, col: pos3.col },
+                          { row: pos4.row, col: pos4.col },
+                        ];
+                        const isDuplicatePrompt = prompt.some((p1, i) => {
+                          return prompt.some((p2, j) => {
+                            return (
+                              i !== j && p1.row === p2.row && p1.col === p2.col
+                            );
+                          });
+                        });
+                        const commonAffectedCells = getCommonUnits(
+                          { row, col },
+                          { row: pos4.row, col: pos4.col },
+                          board
+                        );
+                        const positions: Position[] = [];
+                        for (const pos5 of commonAffectedCells) {
+                          if (board[pos5.row][pos5.col].draft.includes(b)) {
+                            positions.push(pos5);
+                          }
+                        }
+                        if (positions.length && !isDuplicatePrompt) {
+                          return {
+                            isFill: false,
+                            position: positions,
+                            prompt,
+                            method: SOLUTION_METHODS.XY_CHAIN,
+                            target: [a, b],
+                            label: "4",
+                            highlightPromts: [
+                              {
+                                row: prompt[0].row,
+                                col: prompt[0].col,
+                                values: [b, a],
+                              },
+                              {
+                                row: prompt[1].row,
+                                col: prompt[1].col,
+                                values: [],
+                              },
+                              {
+                                row: prompt[2].row,
+                                col: prompt[2].col,
+                                values: [a],
+                              },
+                              {
+                                row: prompt[3].row,
+                                col: prompt[3].col,
+                                values: [b],
+                              },
+                            ],
+                            highlightDeletes: [
+                              {
+                                row: prompt[3].row,
+                                col: prompt[3].col,
+                                values: [b],
+                              },
+                            ],
+                          };
+                        }
+                      }
+                    }
+                  }
                   if (c === a) continue;
                   const pos3 = { row: node3.row, col: node3.col };
                   const node3_other = getGraphNode(pos3, c, graph);
@@ -6370,7 +6442,6 @@ export const XYChain = (
                             };
                           }
                         }
-
                         if (node4_other) {
                           const node5Array = findGraphNodeByDistance(
                             node4_other,
@@ -6666,6 +6737,86 @@ export const XYChain = (
               for (const node3 of node3Array) {
                 const cell3 = board[node3.row][node3.col];
                 for (const c of cell3.draft) {
+                  if (c === b) {
+                    const pos3 = { row: node3.row, col: node3.col };
+                    const affectedCells4 = getAffectedCells(
+                      pos3,
+                      c,
+                      candidateMap
+                    );
+                    for (const pos4 of affectedCells4) {
+                      const cell4 = board[pos4.row][pos4.col];
+                      if (
+                        cell4.draft.includes(a) &&
+                        cell4.draft.includes(c) &&
+                        cell4.draft.length === 2
+                      ) {
+                        const prompt = [
+                          { row, col },
+                          { row: pos2.row, col: pos2.col },
+                          { row: pos3.row, col: pos3.col },
+                          { row: pos4.row, col: pos4.col },
+                        ];
+                        const isDuplicatePrompt = prompt.some((p1, i) => {
+                          return prompt.some((p2, j) => {
+                            return (
+                              i !== j && p1.row === p2.row && p1.col === p2.col
+                            );
+                          });
+                        });
+                        const commonAffectedCells = getCommonUnits(
+                          { row, col },
+                          { row: pos4.row, col: pos4.col },
+                          board
+                        );
+                        const positions: Position[] = [];
+                        for (const pos5 of commonAffectedCells) {
+                          if (board[pos5.row][pos5.col].draft.includes(a)) {
+                            positions.push(pos5);
+                          }
+                        }
+                        if (positions.length && !isDuplicatePrompt) {
+                          return {
+                            isFill: false,
+                            position: positions,
+                            prompt,
+                            method: SOLUTION_METHODS.XY_CHAIN,
+                            target: [b, a],
+                            label: "4",
+                            highlightPromts: [
+                              {
+                                row: prompt[0].row,
+                                col: prompt[0].col,
+                                values: [b, a],
+                              },
+                              {
+                                row: prompt[1].row,
+                                col: prompt[1].col,
+                                values: [],
+                              },
+                              {
+                                row: prompt[2].row,
+                                col: prompt[2].col,
+                                values: [b],
+                              },
+                              {
+                                row: prompt[3].row,
+                                col: prompt[3].col,
+                                values: [a],
+                              },
+                            ],
+                            highlightDeletes: [
+                              {
+                                row: prompt[3].row,
+                                col: prompt[3].col,
+                                values: [a],
+                              },
+                            ],
+                          };
+                        }
+                      }
+                    }
+                  }
                   if (c === b) continue;
                   const pos3 = { row: node3.row, col: node3.col };
                   const node3_other = getGraphNode(pos3, c, graph);
@@ -7714,6 +7865,139 @@ export const jellyfish = (
                         method: SOLUTION_METHODS.JELLYFISH_COLUMN,
                         target: [num],
                       };
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  return null;
+};
+
+const findCommonAffectedPositions_Three = (
+  pos1: Position,
+  pos2: Position,
+  pos3: Position,
+  num: number,
+  board: CellData[][]
+) => {
+  const affectedPositions: Position[] = [];
+
+  for (let row = 0; row < 9; row++) {
+    for (let col = 0; col < 9; col++) {
+      if (
+        (row === pos1.row && col === pos1.col) ||
+        (row === pos2.row && col === pos2.col) ||
+        (row === pos3.row && col === pos3.col)
+      ) {
+        continue;
+      }
+
+      const cell = board[row]?.[col];
+      if (cell?.value === null && cell.draft?.includes(num)) {
+        if (
+          areCellsInSameUnit({ row, col }, pos1) &&
+          areCellsInSameUnit({ row, col }, pos2) &&
+          areCellsInSameUnit({ row, col }, pos3)
+        ) {
+          affectedPositions.push({ row, col });
+        }
+      }
+    }
+  }
+
+  return affectedPositions;
+};
+
+export const wxyzWing = (
+  board: Board,
+  candidateMap: CandidateMap,
+  graph: Graph
+) => {
+  for (let row = 0; row < 9; row++) {
+    for (let col = 0; col < 9; col++) {
+      const cell1 = board[row][col];
+      if (cell1.draft.length === 4) {
+        const [a, b, c, d] = cell1.draft;
+        const affectedCells = getUnits({ row, col }, board);
+        for (const pos2 of affectedCells) {
+          const cell2 = board[pos2.row][pos2.col];
+          if (
+            cell2.draft.length <= 4 &&
+            cell2.draft.every((num) => cell1.draft.includes(num))
+          ) {
+            for (const pos3 of affectedCells) {
+              if (pos3.row === pos2.row && pos3.col === pos2.col) continue;
+              const cell3 = board[pos3.row][pos3.col];
+              if (
+                cell3.draft.length <= 4 &&
+                cell3.draft.every((num) => cell1.draft.includes(num))
+              ) {
+                for (const pos4 of affectedCells) {
+                  if (
+                    (pos4.row === pos3.row && pos4.col === pos3.col) ||
+                    (pos4.row === pos2.row && pos4.col === pos2.col)
+                  )
+                    continue;
+                  const cell4 = board[pos4.row][pos4.col];
+                  if (
+                    cell4.draft.length <= 4 &&
+                    cell4.draft.every((num) => cell1.draft.includes(num))
+                  ) {
+                    const isCell2andCell3inSameUnit = areCellsInSameUnit(
+                      pos2,
+                      pos3
+                    );
+                    const isCell2andCell4inSameUnit = areCellsInSameUnit(
+                      pos2,
+                      pos4
+                    );
+                    const isCell3andCell4inSameUnit = areCellsInSameUnit(
+                      pos3,
+                      pos4
+                    );
+                    if (
+                      isCell2andCell3inSameUnit &&
+                      isCell2andCell4inSameUnit &&
+                      isCell3andCell4inSameUnit
+                    )
+                      continue;
+                    const commonCandidate = cell2.draft.find(
+                      (num) =>
+                        cell3.draft.includes(num) && cell4.draft.includes(num)
+                    );
+                    if (!commonCandidate) continue;
+                    if (
+                      !(
+                        isCell2andCell3inSameUnit &&
+                        isCell2andCell4inSameUnit &&
+                        isCell3andCell4inSameUnit
+                      )
+                    ) {
+                      const affectedPositions =
+                        findCommonAffectedPositions_Three(
+                          pos2,
+                          pos3,
+                          pos4,
+                          commonCandidate,
+                          board
+                        );
+                      const deletedPositions = affectedPositions.filter(
+                        (pos) => !(pos.row === row && pos.col === col)
+                      );
+                      if (deletedPositions.length) {
+                        return {
+                          isFill: false,
+                          position: deletedPositions,
+                          prompt: [{ row, col }, pos2, pos3, pos4],
+                          method: SOLUTION_METHODS.WXYZ_WING,
+                          target: [commonCandidate],
+                        };
+                      }
                     }
                   }
                 }

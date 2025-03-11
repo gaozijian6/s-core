@@ -44,6 +44,7 @@ import {
   uniqueRectangle,
   BinaryUniversalGrave,
   jellyfish,
+  wxyzWing,
 } from "../tools/solution";
 import "./sudoku.less";
 import type {
@@ -104,7 +105,7 @@ const Sudoku: React.FC = () => {
   const [inputValue, setInputValue] = useState<string>("");
 
   const convertToBoard = (index: number): CellData[][] => {
-    const board = hard[index].puzzle;
+    const board = extreme[index].puzzle;
     
     const result: CellData[][] = [];
     for (let i = 0; i < 9; i++) {
@@ -123,7 +124,7 @@ const Sudoku: React.FC = () => {
   };
 
   const convertToAnswer = (index: number): CellData[][] => {
-    const board = hard[index].solution;
+    const board = extreme[index].solution;
     const result: CellData[][] = [];
     for (let i = 0; i < 9; i++) {
       const row: CellData[] = [];
@@ -207,6 +208,7 @@ const Sudoku: React.FC = () => {
       swordfish,
       Loop,
       uniqueRectangle,
+      wxyzWing,
       XYChain,
       jellyfish,
       BinaryUniversalGrave,
@@ -235,16 +237,16 @@ const Sudoku: React.FC = () => {
     const xyChainMap11 = new Map();
     const xyChainMap12 = new Map();
     const xyChainMap13 = new Map();
-    const xyChainMap14 = new Map();
-    const xyChainMap15 = new Map();
     const xyChainMap16 = new Map();
     const xyChainMap17 = new Map();
     const xyChainMap18 = new Map();
     const xyChainMap19 = new Map();
     const skyscraperMap2 = new Map();
+    const xyChainMap20 = new Map();
+    const wxyzWingMap = new Map();
 
     for (let i = 0; i < extreme.length; i++) {
-      // for (let i = 23; i < 24; i++) {
+      // for (let i = 0; i < 9; i++) {
       if (i % 100 === 0) {
         console.log(`正在处理第${i}个数独...`);
       }
@@ -342,12 +344,6 @@ const Sudoku: React.FC = () => {
                   case "弱强强强强2":
                     xyChainMap13.set(i, true);
                     break;
-                  case "双双双2":
-                    xyChainMap14.set(i, true);
-                    break;
-                  case "弱强双双2":
-                    xyChainMap15.set(i, true);
-                    break;
                   case "双双强强2":
                     xyChainMap16.set(i, true);
                     break;
@@ -359,6 +355,9 @@ const Sudoku: React.FC = () => {
                     break;
                   case "双双强强强2":
                     xyChainMap19.set(i, true);
+                    break;
+                  case "4":
+                    xyChainMap20.set(i, true);
                     break;
                 }
                 break;
@@ -372,6 +371,9 @@ const Sudoku: React.FC = () => {
               break;
             case SOLUTION_METHODS.XYZ_WING:
               xyzWingMap.set(i, true);
+              break;
+            case SOLUTION_METHODS.WXYZ_WING:
+              wxyzWingMap.set(i, true);
               break;
           }
           const newBoard = deepCopyBoard(board2);
@@ -436,20 +438,17 @@ const Sudoku: React.FC = () => {
     console.log("xyChainMap8 弱强强强双", xyChainMap8);
     console.log("xyChainMap9 弱强双双", xyChainMap9);
     console.log("xyChainMap10 双双强强", xyChainMap10);
-    console.log("swordfishMap", swordfishMap);
-    console.log("jellyfishMap", jellyfishMap);
-    console.log("xyzWingMap", xyzWingMap);
     console.log("falseSolutionMap", falseSolutionMap);
     console.log("xyChainMap11 弱强强2", xyChainMap11);
     console.log("xyChainMap12 弱强强强2", xyChainMap12);
     console.log("xyChainMap13 弱强强强强2", xyChainMap13);
-    console.log("xyChainMap14 双双双2", xyChainMap14);
-    console.log("xyChainMap15 弱强双双2", xyChainMap15);
     console.log("xyChainMap16 双双强强2", xyChainMap16);
     console.log("xyChainMap17 双双强2", xyChainMap17);
     console.log("xyChainMap18 双双强强强", xyChainMap18);
     console.log("xyChainMap19 双双强强强2", xyChainMap19);
     console.log("skyscraperMap2", skyscraperMap2);
+    console.log("xyChainMap20 4", xyChainMap20);
+    console.log("wxyzWingMap", wxyzWingMap);
   };
 
   const generateBoard = () => {
@@ -480,7 +479,7 @@ const Sudoku: React.FC = () => {
     // newBoard = deepCopyBoard(mockBoard);
 
     // updateBoard(newBoard, "生成新棋盘");
-    updateBoard(convertToBoard(42), "生成新棋盘");
+    updateBoard(convertToBoard(2), "生成新棋盘");
 
     // 生成解决方案
     const solvedBoard = newBoard.map((row) => row.map((cell) => ({ ...cell })));
@@ -930,13 +929,14 @@ const Sudoku: React.FC = () => {
       xWing,
       xWingVarient,
       xyWing,
+      xyzWing,
       skyscraper,
       skyscraper2,
       combinationChain,
       swordfish,
       Loop,
       uniqueRectangle,
-      xyzWing,
+      wxyzWing,
       XYChain,
       jellyfish,
       BinaryUniversalGrave,
@@ -2043,6 +2043,11 @@ const Sudoku: React.FC = () => {
           setPrompts(target);
           break;
         case SOLUTION_METHODS.LOOP:
+          boardWithHighlight = applyHintHighlight(board, result, "both");
+          setPositions(target);
+          setPrompts(target);
+          break;
+        case SOLUTION_METHODS.WXYZ_WING:
           boardWithHighlight = applyHintHighlight(board, result, "both");
           setPositions(target);
           setPrompts(target);
