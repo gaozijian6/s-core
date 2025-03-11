@@ -44,6 +44,7 @@ import {
   uniqueRectangle,
   BinaryUniversalGrave,
   jellyfish,
+  XYChain2,
 } from "../tools/solution";
 import "./sudoku.less";
 import type {
@@ -104,7 +105,7 @@ const Sudoku: React.FC = () => {
   const [inputValue, setInputValue] = useState<string>("");
 
   const convertToBoard = (index: number): CellData[][] => {
-    const board = extreme[index].puzzle;
+    const board = hard[index].puzzle;
     
     const result: CellData[][] = [];
     for (let i = 0; i < 9; i++) {
@@ -123,7 +124,7 @@ const Sudoku: React.FC = () => {
   };
 
   const convertToAnswer = (index: number): CellData[][] => {
-    const board = extreme[index].solution;
+    const board = hard[index].solution;
     const result: CellData[][] = [];
     for (let i = 0; i < 9; i++) {
       const row: CellData[] = [];
@@ -208,6 +209,7 @@ const Sudoku: React.FC = () => {
       Loop,
       uniqueRectangle,
       XYChain,
+      XYChain2,
       jellyfish,
       BinaryUniversalGrave,
     ];
@@ -241,6 +243,13 @@ const Sudoku: React.FC = () => {
     const xyChainMap19 = new Map();
     const skyscraperMap2 = new Map();
     const xyChainMap20 = new Map();
+    const xyChainMap21 = new Map();
+    const xyChainMap22 = new Map();
+    const xyChainMap23 = new Map();
+    const xyChainMap24 = new Map();
+    const xyChainMap25 = new Map();
+    const xyChainMap26 = new Map();
+    const xyChainMap100 = new Map();
 
     for (let i = 0; i < extreme.length; i++) {
       // for (let i = 0; i < 9; i++) {
@@ -356,6 +365,24 @@ const Sudoku: React.FC = () => {
                   case "4":
                     xyChainMap20.set(i, true);
                     break;
+                  case "强强强强强":
+                    xyChainMap21.set(i, true);
+                    break;
+                  case "强强强强强2":
+                    xyChainMap22.set(i, true);
+                    break;
+                  case "强强强强":
+                    xyChainMap23.set(i, true);
+                    break;
+                  case "强强强强2":
+                    xyChainMap24.set(i, true);
+                    break;
+                  case "强强强":
+                    xyChainMap25.set(i, true);
+                    break;
+                  case "强强强2":
+                    xyChainMap26.set(i, true);
+                    break;
                 }
                 break;
             case SOLUTION_METHODS.SWORDFISH_ROW:
@@ -368,6 +395,9 @@ const Sudoku: React.FC = () => {
               break;
             case SOLUTION_METHODS.XYZ_WING:
               xyzWingMap.set(i, true);
+              break;
+            case SOLUTION_METHODS.XY_CHAIN2:
+              xyChainMap100.set(i, true);
               break;
           }
           const newBoard = deepCopyBoard(board2);
@@ -442,6 +472,13 @@ const Sudoku: React.FC = () => {
     console.log("xyChainMap19 双双强强强2", xyChainMap19);
     console.log("skyscraperMap2", skyscraperMap2);
     console.log("xyChainMap20 4", xyChainMap20);
+    console.log("xyChainMap21 强强强强强", xyChainMap21);
+    console.log("xyChainMap22 强强强强强2", xyChainMap22);
+    console.log("xyChainMap23 强强强强", xyChainMap23);
+    console.log("xyChainMap24 强强强强2", xyChainMap24);
+    console.log("xyChainMap25 强强强", xyChainMap25);
+    console.log("xyChainMap26 强强强2", xyChainMap26);
+    console.log("xyChainMap100", xyChainMap100);
   };
 
   const generateBoard = () => {
@@ -469,10 +506,10 @@ const Sudoku: React.FC = () => {
       }))
     );
 
-    // newBoard = deepCopyBoard(mockBoard);
+    newBoard = deepCopyBoard(mockBoard);
 
-    // updateBoard(newBoard, "生成新棋盘");
-    updateBoard(convertToBoard(23), "生成新棋盘");
+    updateBoard(newBoard, "生成新棋盘");
+    // updateBoard(convertToBoard(21), "生成新棋盘");
 
     // 生成解决方案
     const solvedBoard = newBoard.map((row) => row.map((cell) => ({ ...cell })));
@@ -910,26 +947,27 @@ const Sudoku: React.FC = () => {
 
   const handleHint = () => {
     const solveFunctions = [
-      singleCandidate,
-      hiddenSingle,
-      blockElimination,
-      nakedPair,
-      nakedTriple1,
-      nakedTriple2,
-      hiddenPair,
-      hiddenTriple1,
-      hiddenTriple2,
-      xWing,
-      xWingVarient,
-      xyWing,
-      xyzWing,
-      skyscraper,
-      skyscraper2,
-      combinationChain,
-      swordfish,
-      Loop,
-      uniqueRectangle,
-      XYChain,
+      // singleCandidate,
+      // hiddenSingle,
+      // blockElimination,
+      // nakedPair,
+      // nakedTriple1,
+      // nakedTriple2,
+      // hiddenPair,
+      // hiddenTriple1,
+      // hiddenTriple2,
+      // xWing,
+      // xWingVarient,
+      // xyWing,
+      // xyzWing,
+      // skyscraper,
+      // skyscraper2,
+      // combinationChain,
+      // swordfish,
+      // Loop,
+      // uniqueRectangle,
+      // XYChain,
+      XYChain2,
       jellyfish,
       BinaryUniversalGrave,
       trialAndErrorDIY,

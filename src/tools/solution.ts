@@ -4698,6 +4698,658 @@ export const XYChain = (
   for (let row = 0; row < 9; row++) {
     for (let col = 0; col < 9; col++) {
       const cell1 = board[row][col];
+      if (cell1.draft.length === 2) {
+        const [a, b] = cell1.draft;
+        const node_a1 = getGraphNode({ row, col }, a, graph);
+        const node2Array = findGraphNodeByDistance(node_a1, 1);
+        for (const node2 of node2Array) {
+          const cell2 = board[node2.row][node2.col];
+          for (const c of cell2.draft) {
+            if (c === a) continue;
+            const node_c2 = getGraphNode(node2, c, graph);
+            const node3Array = findGraphNodeByDistance(node_c2, 1);
+            for (const node3 of node3Array) {
+              const cell3 = board[node3.row][node3.col];
+              for (const d of cell3.draft) {
+                if (d === c) continue;
+                const node_d3 = getGraphNode(node3, d, graph);
+                const node4Array = findGraphNodeByDistance(node_d3, 1);
+                for (const node4 of node4Array) {
+                  const cell4 = board[node4.row][node4.col];
+                  const prompt = [
+                    { row, col },
+                    { row: node2.row, col: node2.col },
+                    { row: node3.row, col: node3.col },
+                    { row: node4.row, col: node4.col },
+                  ];
+                  const isDuplicatePrompt = prompt.some((p1, i) => {
+                    return prompt.some((p2, j) => {
+                      return i !== j && p1.row === p2.row && p1.col === p2.col;
+                    });
+                  });
+                  const commonAffectedCells = getCommonUnits(
+                    { row, col },
+                    { row: node4.row, col: node4.col },
+                    board
+                  );
+                  const positions: Position[] = [];
+                  for (const pos of commonAffectedCells) {
+                    if (board[pos.row][pos.col].draft.includes(a)) {
+                      positions.push(pos);
+                    }
+                  }
+                  const pos4 = { row: prompt[3].row, col: prompt[3].col };
+                  const isInSameUnit = areCellsInSameUnit({ row, col }, pos4);
+                  const isHasTarget =
+                    board[pos4.row][pos4.col].draft.includes(a);
+                  if (
+                    isInSameUnit &&
+                    isHasTarget &&
+                    a !== d &&
+                    !isDuplicatePrompt
+                  ) {
+                    return {
+                      isFill: false,
+                      position: [{ row: prompt[3].row, col: prompt[3].col }],
+                      prompt,
+                      method: SOLUTION_METHODS.XY_CHAIN,
+                      target: [b, a, c, d, a],
+                      label: "强强强2",
+                      highlightPromts: [
+                        {
+                          row: prompt[0].row,
+                          col: prompt[0].col,
+                          values: [b, a],
+                        },
+                        {
+                          row: prompt[1].row,
+                          col: prompt[1].col,
+                          values: [a],
+                        },
+                        {
+                          row: prompt[2].row,
+                          col: prompt[2].col,
+                          values: [c],
+                        },
+                        {
+                          row: prompt[3].row,
+                          col: prompt[3].col,
+                          values: [d],
+                        },
+                      ],
+                      highlightDeletes: [
+                        {
+                          row: prompt[3].row,
+                          col: prompt[3].col,
+                          values: [a],
+                        },
+                      ],
+                    };
+                  } else if (
+                    positions.length &&
+                    !isDuplicatePrompt &&
+                    d === a
+                  ) {
+                    return {
+                      isFill: false,
+                      position: positions,
+                      prompt,
+                      method: SOLUTION_METHODS.XY_CHAIN,
+                      target: [b, a, c, d],
+                      label: "强强强",
+                    };
+                  }
+                  for (const e of cell4.draft) {
+                    if (e === d) continue;
+                    const node_e4 = getGraphNode(node4, e, graph);
+                    const node5Array = findGraphNodeByDistance(node_e4, 1);
+                    for (const node5 of node5Array) {
+                      const cell5 = board[node5.row][node5.col];
+                      const prompt = [
+                        { row, col },
+                        { row: node2.row, col: node2.col },
+                        { row: node3.row, col: node3.col },
+                        { row: node4.row, col: node4.col },
+                        { row: node5.row, col: node5.col },
+                      ];
+                      const isDuplicatePrompt = prompt.some((p1, i) => {
+                        return prompt.some((p2, j) => {
+                          return (
+                            i !== j && p1.row === p2.row && p1.col === p2.col
+                          );
+                        });
+                      });
+                      const commonAffectedCells = getCommonUnits(
+                        { row, col },
+                        { row: node5.row, col: node5.col },
+                        board
+                      );
+                      const positions: Position[] = [];
+                      for (const pos of commonAffectedCells) {
+                        if (board[pos.row][pos.col].draft.includes(a)) {
+                          positions.push(pos);
+                        }
+                      }
+                      const pos5 = { row: prompt[4].row, col: prompt[4].col };
+                      const isInSameUnit = areCellsInSameUnit(
+                        { row, col },
+                        pos5
+                      );
+                      const isHasTarget =
+                        board[pos5.row][pos5.col].draft.includes(a);
+                      if (
+                        isInSameUnit &&
+                        isHasTarget &&
+                        a !== e &&
+                        !isDuplicatePrompt
+                      ) {
+                        return {
+                          isFill: false,
+                          position: [
+                            { row: prompt[4].row, col: prompt[4].col },
+                          ],
+                          prompt,
+                          method: SOLUTION_METHODS.XY_CHAIN,
+                          target: [b, a, c, d, e, a],
+                          label: "强强强强2",
+                          highlightPromts: [
+                            {
+                              row: prompt[0].row,
+                              col: prompt[0].col,
+                              values: [b, a],
+                            },
+                            {
+                              row: prompt[1].row,
+                              col: prompt[1].col,
+                              values: [a],
+                            },
+                            {
+                              row: prompt[2].row,
+                              col: prompt[2].col,
+                              values: [c],
+                            },
+                            {
+                              row: prompt[3].row,
+                              col: prompt[3].col,
+                              values: [d],
+                            },
+                            {
+                              row: prompt[4].row,
+                              col: prompt[4].col,
+                              values: [e],
+                            },
+                          ],
+                          highlightDeletes: [
+                            {
+                              row: prompt[4].row,
+                              col: prompt[4].col,
+                              values: [a],
+                            },
+                          ],
+                        };
+                      } else if (
+                        positions.length &&
+                        !isDuplicatePrompt &&
+                        e === a
+                      ) {
+                        return {
+                          isFill: false,
+                          position: positions,
+                          prompt,
+                          method: SOLUTION_METHODS.XY_CHAIN,
+                          target: [b, a, c, d, e],
+                          label: "强强强强",
+                        };
+                      }
+                      for (const f of cell5.draft) {
+                        if (f === e) continue;
+                        const node_f5 = getGraphNode(node5, f, graph);
+                        const node6Array = findGraphNodeByDistance(node_f5, 1);
+                        for (const node6 of node6Array) {
+                          const cell6 = board[node6.row][node6.col];
+                          const prompt = [
+                            { row, col },
+                            { row: node2.row, col: node2.col },
+                            { row: node3.row, col: node3.col },
+                            { row: node4.row, col: node4.col },
+                            { row: node5.row, col: node5.col },
+                            { row: node6.row, col: node6.col },
+                          ];
+                          const isDuplicatePrompt = prompt.some((p1, i) => {
+                            return prompt.some((p2, j) => {
+                              return (
+                                i !== j &&
+                                p1.row === p2.row &&
+                                p1.col === p2.col
+                              );
+                            });
+                          });
+                          const commonAffectedCells = getCommonUnits(
+                            { row, col },
+                            { row: node6.row, col: node6.col },
+                            board
+                          );
+                          const positions: Position[] = [];
+                          for (const pos of commonAffectedCells) {
+                            if (board[pos.row][pos.col].draft.includes(a)) {
+                              positions.push(pos);
+                            }
+                          }
+                          const pos6 = {
+                            row: prompt[5].row,
+                            col: prompt[5].col,
+                          };
+                          const isInSameUnit = areCellsInSameUnit(
+                            { row, col },
+                            pos6
+                          );
+                          const isHasTarget =
+                            board[pos6.row][pos6.col].draft.includes(a);
+                          if (
+                            isInSameUnit &&
+                            isHasTarget &&
+                            a !== f &&
+                            !isDuplicatePrompt
+                          ) {
+                            return {
+                              isFill: false,
+                              position: [
+                                { row: prompt[5].row, col: prompt[5].col },
+                              ],
+                              prompt,
+                              method: SOLUTION_METHODS.XY_CHAIN,
+                              target: [b, a, c, d, e, f, a],
+                              label: "强强强强强2",
+                              highlightPromts: [
+                                {
+                                  row: prompt[0].row,
+                                  col: prompt[0].col,
+                                  values: [b, a],
+                                },
+                                {
+                                  row: prompt[1].row,
+                                  col: prompt[1].col,
+                                  values: [a],
+                                },
+                                {
+                                  row: prompt[2].row,
+                                  col: prompt[2].col,
+                                  values: [c],
+                                },
+                                {
+                                  row: prompt[3].row,
+                                  col: prompt[3].col,
+                                  values: [d],
+                                },
+                                {
+                                  row: prompt[4].row,
+                                  col: prompt[4].col,
+                                  values: [e],
+                                },
+                                {
+                                  row: prompt[5].row,
+                                  col: prompt[5].col,
+                                  values: [f],
+                                },
+                              ],
+                              highlightDeletes: [
+                                {
+                                  row: prompt[5].row,
+                                  col: prompt[5].col,
+                                  values: [a],
+                                },
+                              ],
+                            };
+                          } else if (
+                            positions.length &&
+                            !isDuplicatePrompt &&
+                            f === a
+                          ) {
+                            return {
+                              isFill: false,
+                              position: positions,
+                              prompt,
+                              method: SOLUTION_METHODS.XY_CHAIN,
+                              target: [b, a, c, d, e, f],
+                              label: "强强强强强",
+                            };
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      if (cell1.draft.length === 2) {
+        const [a, b] = cell1.draft;
+        const node_b1 = getGraphNode({ row, col }, b, graph);
+        const node2Array = findGraphNodeByDistance(node_b1, 1);
+        for (const node2 of node2Array) {
+          const cell2 = board[node2.row][node2.col];
+          for (const c of cell2.draft) {
+            if (c === b) continue;
+            const node_c2 = getGraphNode(node2, c, graph);
+            const node3Array = findGraphNodeByDistance(node_c2, 1);
+            for (const node3 of node3Array) {
+              const cell3 = board[node3.row][node3.col];
+              for (const d of cell3.draft) {
+                if (d === c) continue;
+                const node_d3 = getGraphNode(node3, d, graph);
+                const node4Array = findGraphNodeByDistance(node_d3, 1);
+                for (const node4 of node4Array) {
+                  const cell4 = board[node4.row][node4.col];
+                  const prompt = [
+                    { row, col },
+                    { row: node2.row, col: node2.col },
+                    { row: node3.row, col: node3.col },
+                    { row: node4.row, col: node4.col },
+                  ];
+                  const isDuplicatePrompt = prompt.some((p1, i) => {
+                    return prompt.some((p2, j) => {
+                      return i !== j && p1.row === p2.row && p1.col === p2.col;
+                    });
+                  });
+                  const commonAffectedCells = getCommonUnits(
+                    { row, col },
+                    { row: node4.row, col: node4.col },
+                    board
+                  );
+                  const positions: Position[] = [];
+                  for (const pos of commonAffectedCells) {
+                    if (board[pos.row][pos.col].draft.includes(b)) {
+                      positions.push(pos);
+                    }
+                  }
+                  const pos4 = { row: prompt[3].row, col: prompt[3].col };
+                  const isInSameUnit = areCellsInSameUnit({ row, col }, pos4);
+                  const isHasTarget =
+                    board[pos4.row][pos4.col].draft.includes(b);
+                  if (
+                    isInSameUnit &&
+                    isHasTarget &&
+                    b !== d &&
+                    !isDuplicatePrompt
+                  ) {
+                    return {
+                      isFill: false,
+                      position: [{ row: prompt[3].row, col: prompt[3].col }],
+                      prompt,
+                      method: SOLUTION_METHODS.XY_CHAIN,
+                      target: [a, b, c, d, b],
+                      label: "强强强2",
+                      highlightPromts: [
+                        {
+                          row: prompt[0].row,
+                          col: prompt[0].col,
+                          values: [b, a],
+                        },
+                        {
+                          row: prompt[1].row,
+                          col: prompt[1].col,
+                          values: [b],
+                        },
+                        {
+                          row: prompt[2].row,
+                          col: prompt[2].col,
+                          values: [c],
+                        },
+                        {
+                          row: prompt[3].row,
+                          col: prompt[3].col,
+                          values: [d],
+                        },
+                      ],
+                      highlightDeletes: [
+                        {
+                          row: prompt[3].row,
+                          col: prompt[3].col,
+                          values: [b],
+                        },
+                      ],
+                    };
+                  } else if (
+                    positions.length &&
+                    !isDuplicatePrompt &&
+                    d === b
+                  ) {
+                    return {
+                      isFill: false,
+                      position: positions,
+                      prompt,
+                      method: SOLUTION_METHODS.XY_CHAIN,
+                      target: [a, b, c, d],
+                      label: "强强强",
+                    };
+                  }
+                  for (const e of cell4.draft) {
+                    if (e === d) continue;
+                    const node_e4 = getGraphNode(node4, e, graph);
+                    const node5Array = findGraphNodeByDistance(node_e4, 1);
+                    for (const node5 of node5Array) {
+                      const cell5 = board[node5.row][node5.col];
+                      const prompt = [
+                        { row, col },
+                        { row: node2.row, col: node2.col },
+                        { row: node3.row, col: node3.col },
+                        { row: node4.row, col: node4.col },
+                        { row: node5.row, col: node5.col },
+                      ];
+                      const isDuplicatePrompt = prompt.some((p1, i) => {
+                        return prompt.some((p2, j) => {
+                          return (
+                            i !== j && p1.row === p2.row && p1.col === p2.col
+                          );
+                        });
+                      });
+                      const commonAffectedCells = getCommonUnits(
+                        { row, col },
+                        { row: node5.row, col: node5.col },
+                        board
+                      );
+                      const positions: Position[] = [];
+                      for (const pos of commonAffectedCells) {
+                        if (board[pos.row][pos.col].draft.includes(b)) {
+                          positions.push(pos);
+                        }
+                      }
+                      const pos5 = { row: prompt[4].row, col: prompt[4].col };
+                      const isInSameUnit = areCellsInSameUnit(
+                        { row, col },
+                        pos5
+                      );
+                      const isHasTarget =
+                        board[pos5.row][pos5.col].draft.includes(b);
+                      if (
+                        isInSameUnit &&
+                        isHasTarget &&
+                        b !== e &&
+                        !isDuplicatePrompt
+                      ) {
+                        return {
+                          isFill: false,
+                          position: [
+                            { row: prompt[4].row, col: prompt[4].col },
+                          ],
+                          prompt,
+                          method: SOLUTION_METHODS.XY_CHAIN,
+                          target: [a, b, c, d, e, b],
+                          label: "强强强强2",
+                          highlightPromts: [
+                            {
+                              row: prompt[0].row,
+                              col: prompt[0].col,
+                              values: [b, a],
+                            },
+                            {
+                              row: prompt[1].row,
+                              col: prompt[1].col,
+                              values: [b],
+                            },
+                            {
+                              row: prompt[2].row,
+                              col: prompt[2].col,
+                              values: [c],
+                            },
+                            {
+                              row: prompt[3].row,
+                              col: prompt[3].col,
+                              values: [d],
+                            },
+                            {
+                              row: prompt[4].row,
+                              col: prompt[4].col,
+                              values: [e],
+                            },
+                          ],
+                          highlightDeletes: [
+                            {
+                              row: prompt[4].row,
+                              col: prompt[4].col,
+                              values: [b],
+                            },
+                          ],
+                        };
+                      } else if (
+                        positions.length &&
+                        !isDuplicatePrompt &&
+                        e === b
+                      ) {
+                        return {
+                          isFill: false,
+                          position: positions,
+                          prompt,
+                          method: SOLUTION_METHODS.XY_CHAIN,
+                          target: [a, b, c, d, e],
+                          label: "强强强强",
+                        };
+                      }
+                      for (const f of cell5.draft) {
+                        if (f === e) continue;
+                        const node_f5 = getGraphNode(node5, f, graph);
+                        const node6Array = findGraphNodeByDistance(node_f5, 1);
+                        for (const node6 of node6Array) {
+                          const cell6 = board[node6.row][node6.col];
+                          const prompt = [
+                            { row, col },
+                            { row: node2.row, col: node2.col },
+                            { row: node3.row, col: node3.col },
+                            { row: node4.row, col: node4.col },
+                            { row: node5.row, col: node5.col },
+                            { row: node6.row, col: node6.col },
+                          ];
+                          const isDuplicatePrompt = prompt.some((p1, i) => {
+                            return prompt.some((p2, j) => {
+                              return (
+                                i !== j &&
+                                p1.row === p2.row &&
+                                p1.col === p2.col
+                              );
+                            });
+                          });
+                          const commonAffectedCells = getCommonUnits(
+                            { row, col },
+                            { row: node6.row, col: node6.col },
+                            board
+                          );
+                          const positions: Position[] = [];
+                          for (const pos of commonAffectedCells) {
+                            if (board[pos.row][pos.col].draft.includes(b)) {
+                              positions.push(pos);
+                            }
+                          }
+                          const pos6 = {
+                            row: prompt[5].row,
+                            col: prompt[5].col,
+                          };
+                          const isInSameUnit = areCellsInSameUnit(
+                            { row, col },
+                            pos6
+                          );
+                          const isHasTarget =
+                            board[pos6.row][pos6.col].draft.includes(b);
+                          if (
+                            isInSameUnit &&
+                            isHasTarget &&
+                            b !== f &&
+                            !isDuplicatePrompt
+                          ) {
+                            return {
+                              isFill: false,
+                              position: [
+                                { row: prompt[5].row, col: prompt[5].col },
+                              ],
+                              prompt,
+                              method: SOLUTION_METHODS.XY_CHAIN,
+                              target: [a, b, c, d, e, f, b],
+                              label: "强强强强强2",
+                              highlightPromts: [
+                                {
+                                  row: prompt[0].row,
+                                  col: prompt[0].col,
+                                  values: [b, a],
+                                },
+                                {
+                                  row: prompt[1].row,
+                                  col: prompt[1].col,
+                                  values: [b],
+                                },
+                                {
+                                  row: prompt[2].row,
+                                  col: prompt[2].col,
+                                  values: [c],
+                                },
+                                {
+                                  row: prompt[3].row,
+                                  col: prompt[3].col,
+                                  values: [d],
+                                },
+                                {
+                                  row: prompt[4].row,
+                                  col: prompt[4].col,
+                                  values: [e],
+                                },
+                                {
+                                  row: prompt[5].row,
+                                  col: prompt[5].col,
+                                  values: [f],
+                                },
+                              ],
+                              highlightDeletes: [
+                                {
+                                  row: prompt[5].row,
+                                  col: prompt[5].col,
+                                  values: [b],
+                                },
+                              ],
+                            };
+                          } else if (
+                            positions.length &&
+                            !isDuplicatePrompt &&
+                            f === b
+                          ) {
+                            return {
+                              isFill: false,
+                              position: positions,
+                              prompt,
+                              method: SOLUTION_METHODS.XY_CHAIN,
+                              target: [a, b, c, d, e, f],
+                              label: "强强强强强",
+                            };
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
       // 找a的连接
       if (cell1.draft.length === 2) {
         const [a, b] = cell1.draft;
@@ -7619,6 +8271,214 @@ export const XYChain = (
       }
     }
   }
+
+  return null;
+};
+
+export const XYChain2 = (
+  board: Board,
+  candidateMap: CandidateMap,
+  graph: Graph
+) => {
+  class Node {
+    row: number;
+    col: number;
+    value: number | null;
+    sons: Node[];
+    father: Node | null;
+  }
+  for (let row = 0; row < 9; row++) {
+    for (let col = 0; col < 9; col++) {
+      const cell1 = board[row][col];
+      if (cell1.draft.length === 2) {
+        const [a, b] = cell1.draft;
+        const path_a: Node | null = {
+          row,
+          col,
+          value: b,
+          sons: [],
+          father: null,
+        };
+
+        const node_a1 = getGraphNode({ row, col }, a, graph);
+        let node2Array = findGraphNodeByDistance(node_a1, 1);
+        for (const node2 of node2Array) {
+          const son1: Node = {
+            row: node2.row,
+            col: node2.col,
+            value: a,
+            sons: [],
+            father: path_a,
+          };
+          path_a.sons.push(son1);
+          const cell2 = board[node2.row][node2.col];
+          for (const c of cell2.draft) {
+            if (c === a) continue;
+            const node_c2 = getGraphNode(node2, c, graph);
+            const node3Array = findGraphNodeByDistance(node_c2, 1);
+            for (const node3 of node3Array) {
+              const son2: Node = {
+                row: node3.row,
+                col: node3.col,
+                value: c,
+                sons: [],
+                father: son1,
+              };
+              son1.sons.push(son2);
+              const cell3 = board[node3.row][node3.col];
+              for (const d of cell3.draft) {
+                if (d === c) continue;
+                const node_d3 = getGraphNode(node3, d, graph);
+                const node4Array = findGraphNodeByDistance(node_d3, 1);
+                for (const node4 of node4Array) {
+                  const son3: Node = {
+                    row: node4.row,
+                    col: node4.col,
+                    value: c,
+                    sons: [],
+                    father: son2,
+                  };
+                  son2.sons.push(son3);
+                }
+              }
+            }
+          }
+        }
+
+        const path_b: Node | null = {
+          row,
+          col,
+          value: a,
+          sons: [],
+          father: null,
+        };
+
+        const node_b1 = getGraphNode({ row, col }, b, graph);
+        node2Array = findGraphNodeByDistance(node_b1, 1);
+        for (const node2 of node2Array) {
+          const son1: Node = {
+            row: node2.row,
+            col: node2.col,
+            value: b,
+            sons: [],
+            father: path_b,
+          };
+          path_b.sons.push(son1);
+          const cell2 = board[node2.row][node2.col];
+          for (const c of cell2.draft) {
+            if (c === b) continue;
+            const node_c2 = getGraphNode(node2, c, graph);
+            const node3Array = findGraphNodeByDistance(node_c2, 1);
+            for (const node3 of node3Array) {
+              const son2: Node = {
+                row: node3.row,
+                col: node3.col,
+                value: c,
+                sons: [],
+                father: son1,
+              };
+              son1.sons.push(son2);
+              const cell3 = board[node3.row][node3.col];
+              for (const d of cell3.draft) {
+                if (d === c) continue;
+                const node_d3 = getGraphNode(node3, d, graph);
+                const node4Array = findGraphNodeByDistance(node_d3, 1);
+                for (const node4 of node4Array) {
+                  const son3: Node = {
+                    row: node4.row,
+                    col: node4.col,
+                    value: c,
+                    sons: [],
+                    father: son2,
+                  };
+                  son2.sons.push(son3);
+                }
+              }
+            }
+          }
+        }
+
+        const findNodesAtDepth2And3And4 = (root: Node): Node[] => {
+          const nodes: Node[] = [];
+          const dfs = (node: Node, depth: number) => {
+            if (depth === 2 || depth === 3 || depth === 4) {
+              nodes.push(node);
+              return;
+            }
+            if (depth > 4) return;
+            for (const son of node.sons) {
+              dfs(son, depth + 1);
+            }
+          };
+          dfs(root, 1);
+          return nodes;
+        };
+
+        const nodesA = findNodesAtDepth2And3And4(path_a);
+        const nodesB = findNodesAtDepth2And3And4(path_b);
+
+        if (a === 3 && b === 7) {
+          console.log(path_a);
+          console.log(path_b);
+        }
+
+        for (const nodeA of nodesA) {
+          for (const nodeB of nodesB) {
+            if (nodeA.row === nodeB.row && nodeA.col === nodeB.col) {
+              // 找到相同位置的节点
+              const cell = board[nodeA.row][nodeA.col];
+              const valuesToKeep = new Set([nodeA.value, nodeB.value]);
+              const valuesToRemove = cell.draft.filter(
+                (v) => !valuesToKeep.has(v)
+              );
+
+              const getAllAncestors = (
+                node: Node
+              ): { ancestors: Position[]; depth: number } => {
+                const ancestors: Position[] = [];
+                let depth = 0;
+                let current = node;
+                while (current.father) {
+                  ancestors.push({
+                    row: current.father.row,
+                    col: current.father.col,
+                  });
+                  depth++;
+                  current = current.father;
+                }
+                return {
+                  ancestors: ancestors.reverse(), // 从根节点开始的顺序
+                  depth,
+                };
+              };
+
+              if (valuesToRemove.length > 0) {
+                // 获取两个节点的所有祖先
+                const { ancestors: ancestorsA, depth: depthA } =
+                  getAllAncestors(nodeA);
+                const { ancestors: ancestorsB, depth: depthB } =
+                  getAllAncestors(nodeB);
+
+                return {
+                  isFill: false,
+                  position: [
+                    {
+                      row: nodeA.row,
+                      col: nodeA.col,
+                    },
+                  ],
+                  target: valuesToRemove,
+                  method: SOLUTION_METHODS.XY_CHAIN2,
+                  prompt: [...ancestorsA, ...ancestorsB], // 先放A的祖先，再放B的祖先
+                  label: `${depthA}-${depthB}`,
+                };
+              }
+            }
+          }
+        }
+      }
+    }
+  }
   return null;
 };
 
@@ -7948,7 +8808,11 @@ export const wxyzWing = (
                     cell4.draft.length === 2 &&
                     cell4.draft.every((num) => cell1.draft.includes(num))
                   ) {
-                    const set = new Set([...cell2.draft, ...cell3.draft, ...cell4.draft]);
+                    const set = new Set([
+                      ...cell2.draft,
+                      ...cell3.draft,
+                      ...cell4.draft,
+                    ]);
                     if (set.size !== 4) continue;
                     const isCell2andCell3inSameUnit = areCellsInSameUnit(
                       pos2,
