@@ -7927,14 +7927,14 @@ export const wxyzWing = (
         for (const pos2 of affectedCells) {
           const cell2 = board[pos2.row][pos2.col];
           if (
-            cell2.draft.length <= 4 &&
+            cell2.draft.length === 2 &&
             cell2.draft.every((num) => cell1.draft.includes(num))
           ) {
             for (const pos3 of affectedCells) {
               if (pos3.row === pos2.row && pos3.col === pos2.col) continue;
               const cell3 = board[pos3.row][pos3.col];
               if (
-                cell3.draft.length <= 4 &&
+                cell3.draft.length === 2 &&
                 cell3.draft.every((num) => cell1.draft.includes(num))
               ) {
                 for (const pos4 of affectedCells) {
@@ -7945,9 +7945,11 @@ export const wxyzWing = (
                     continue;
                   const cell4 = board[pos4.row][pos4.col];
                   if (
-                    cell4.draft.length <= 4 &&
+                    cell4.draft.length === 2 &&
                     cell4.draft.every((num) => cell1.draft.includes(num))
                   ) {
+                    const set = new Set([...cell2.draft, ...cell3.draft, ...cell4.draft]);
+                    if (set.size !== 4) continue;
                     const isCell2andCell3inSameUnit = areCellsInSameUnit(
                       pos2,
                       pos3
