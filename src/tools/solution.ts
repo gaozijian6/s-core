@@ -8284,7 +8284,12 @@ export const XYChain2 = (
     row: number;
     col: number;
     value: number | null;
-    sons: Node[];
+    // 双
+    sons1: Node[];
+    // 弱
+    sons2: Node[];
+    // 强
+    sons3: Node[];
     father: Node | null;
   }
   for (let row = 0; row < 9; row++) {
@@ -8296,7 +8301,9 @@ export const XYChain2 = (
           row,
           col,
           value: b,
-          sons: [],
+          sons1: [],
+          sons2: [],
+          sons3: [],
           father: null,
         };
 
@@ -8307,10 +8314,12 @@ export const XYChain2 = (
             row: node2.row,
             col: node2.col,
             value: a,
-            sons: [],
+            sons1: [],
+            sons2: [],
+            sons3: [],
             father: path_a,
           };
-          path_a.sons.push(son1);
+          path_a.sons1.push(son1);
           const cell2 = board[node2.row][node2.col];
           for (const c of cell2.draft) {
             if (c === a) continue;
@@ -8321,10 +8330,12 @@ export const XYChain2 = (
                 row: node3.row,
                 col: node3.col,
                 value: c,
-                sons: [],
+                sons1: [],
+                sons2: [],
+                sons3: [],
                 father: son1,
               };
-              son1.sons.push(son2);
+              son1.sons1.push(son2);
               const cell3 = board[node3.row][node3.col];
               for (const d of cell3.draft) {
                 if (d === c) continue;
@@ -8335,63 +8346,12 @@ export const XYChain2 = (
                     row: node4.row,
                     col: node4.col,
                     value: c,
-                    sons: [],
+                    sons1: [],
+                    sons2: [],
+                    sons3: [],
                     father: son2,
                   };
-                  son2.sons.push(son3);
-                }
-              }
-            }
-          }
-        }
-
-        const path_b: Node | null = {
-          row,
-          col,
-          value: a,
-          sons: [],
-          father: null,
-        };
-
-        const node_b1 = getGraphNode({ row, col }, b, graph);
-        node2Array = findGraphNodeByDistance(node_b1, 1);
-        for (const node2 of node2Array) {
-          const son1: Node = {
-            row: node2.row,
-            col: node2.col,
-            value: b,
-            sons: [],
-            father: path_b,
-          };
-          path_b.sons.push(son1);
-          const cell2 = board[node2.row][node2.col];
-          for (const c of cell2.draft) {
-            if (c === b) continue;
-            const node_c2 = getGraphNode(node2, c, graph);
-            const node3Array = findGraphNodeByDistance(node_c2, 1);
-            for (const node3 of node3Array) {
-              const son2: Node = {
-                row: node3.row,
-                col: node3.col,
-                value: c,
-                sons: [],
-                father: son1,
-              };
-              son1.sons.push(son2);
-              const cell3 = board[node3.row][node3.col];
-              for (const d of cell3.draft) {
-                if (d === c) continue;
-                const node_d3 = getGraphNode(node3, d, graph);
-                const node4Array = findGraphNodeByDistance(node_d3, 1);
-                for (const node4 of node4Array) {
-                  const son3: Node = {
-                    row: node4.row,
-                    col: node4.col,
-                    value: c,
-                    sons: [],
-                    father: son2,
-                  };
-                  son2.sons.push(son3);
+                  son2.sons1.push(son3);
                 }
               }
             }
@@ -8479,6 +8439,202 @@ export const XYChain2 = (
       }
     }
   }
+  return null;
+};
+
+export const XYChain3 = (
+  board: Board,
+  candidateMap: CandidateMap,
+  graph: Graph
+): Result | null => {
+  class Node {
+    row: number;
+    col: number;
+    value: number; // 尝试向当前方格填入的值
+    noValue: number[]; // 当前方格不能填入的值
+    sons1: Node[] = []; // 双数置换的下一方格
+    sons2: Node[] = []; // 被消除候选数的方格
+    sons3: Node[] = []; // 强链关系导致填入候选数的方格
+    father: Node | null = null;
+    depth: number;
+    label: "双" | "弱" | "强" | '';
+
+    constructor(
+      row: number,
+      col: number,
+      value: number,
+      depth: number,
+      father: Node | null = null,
+      noValue: number[] = [],
+      label: "双" | "弱" | "强" | '' = ''
+    ) {
+      this.row = row;
+      this.col = col;
+      this.value = value;
+      this.depth = depth;
+      this.father = father;
+      this.noValue = noValue;
+      this.label = label;
+    }
+  }
+
+  // 获取节点的所有祖先节点
+  const getAncestors = (node: Node): Position[] => {
+    const ancestors: Position[] = [];
+    let current: Node | null = node;
+
+    while (current) {
+      ancestors.push({ row: current.row, col: current.col });
+      current = current.father;
+    }
+
+    return ancestors;
+  };
+
+  // 检查位置是否已经在祖先链中
+  const isInAncestors = (node: Node, row: number, col: number): boolean => {
+    let current: Node | null = node;
+    while (current) {
+      if (current.row === row && current.col === col) {
+        return true;
+      }
+      current = current.father;
+    }
+    return false;
+  };
+
+  // 递归构建连锁反应树
+  const buildChainTree = (node: Node): void => {
+    if (node.depth >= 9) return; // 最大深度为8
+
+    const pos: Position = { row: node.row, col: node.col };
+
+    // 1. 处理双数置换 (sons1)
+    const affectedCells1 = getAffectedCells(pos, node.value, candidateMap);
+
+    for (const pos of affectedCells1) {
+      // 检查是否已经在祖先链中，避免循环
+      if (isInAncestors(node, pos.row, pos.col)) continue;
+
+      // 如果单元格包含当前节点的值作为候选数
+      if (board[pos.row][pos.col].draft.length === 2) {
+        const other =
+          node.value === board[pos.row][pos.col].draft[0]
+            ? board[pos.row][pos.col].draft[1]
+            : board[pos.row][pos.col].draft[0];
+        const son = new Node(pos.row, pos.col, other, node.depth + 1, node, [
+          node.value,
+        ],'双');
+        node.sons1.push(son);
+        buildChainTree(son);
+      }
+    }
+
+    // 2. 处理消除候选数 (sons2)
+    const affectedCells2 = getAffectedCells(
+      { row: node.row, col: node.col },
+      node.value,
+      candidateMap
+    );
+
+    for (const pos of affectedCells2) {
+      // 检查是否已经在祖先链中，避免循环
+      if (isInAncestors(node, pos.row, pos.col)) continue;
+
+      const son = new Node(pos.row, pos.col, 0, node.depth + 1, node, [
+        node.value,
+      ],'弱');
+      node.sons2.push(son);
+      buildChainTree(son);
+    }
+
+    // 3. 处理强链关系 (sons3)
+    for (const candidate of node.noValue) {
+      const graphNode_candidate = getGraphNode(pos, candidate, graph);
+      const nodesArray = findGraphNodeByDistance(graphNode_candidate, 1);
+      for (const graphNode of nodesArray) {
+        // 检查是否已经在祖先链中，避免循环
+        if (isInAncestors(node, graphNode.row, graphNode.col)) continue;
+        const restCandidates = board[graphNode.row][graphNode.col].draft.filter(
+          (v) => v !== candidate
+        );
+        const son = new Node(
+          graphNode.row,
+          graphNode.col,
+          node.value,
+          node.depth + 1,
+          node,
+          restCandidates,
+          "强"
+        );
+        node.sons3.push(son);
+        buildChainTree(son);
+      }
+    }
+  };
+
+  // 寻找可能的起始点
+  for (let row = 0; row < 9; row++) {
+    for (let col = 0; col < 9; col++) {
+      const cell = board[row][col];
+      if (cell.draft.length === 2) {
+        const [a, b] = cell.draft;
+
+        // 单独对 a 构建
+        const rootA = new Node(row, col, a, 1, null, [b]);
+        buildChainTree(rootA);
+
+        // 单独对 b 构建
+        const rootB = new Node(row, col, b, 1, null, [a]);
+        buildChainTree(rootB);
+
+        const findDeepNodes = (node: Node, targetDepth: number): Node[] => {
+          if (node.depth === targetDepth) return [node];
+
+          let result: Node[] = [];
+          for (const son of [...node.sons1, ...node.sons2, ...node.sons3]) {
+            result = [...result, ...findDeepNodes(son, targetDepth)];
+          }
+          return result;
+        };
+
+        // 先检查 a 的结果
+        const deepNodesA = findDeepNodes(rootA, 4);
+        if (deepNodesA.length > 0) {
+          // 找到了有效的链，构建结果
+          const node = deepNodesA[0];
+          const ancestors = getAncestors(node);
+
+          return {
+            isFill: false,
+            position: [{ row: node.row, col: node.col }],
+            target: [node.value],
+            method: "XY Chain 3",
+            prompt: ancestors,
+            label: `深度: ${node.depth}`,
+          };
+        }
+
+        // 再检查 b 的结果
+        const deepNodesB = findDeepNodes(rootB, 4);
+        if (deepNodesB.length > 0) {
+          // 找到了有效的链，构建结果
+          const node = deepNodesB[0];
+          const ancestors = getAncestors(node);
+
+          return {
+            isFill: false,
+            position: [{ row: node.row, col: node.col }],
+            target: [node.value],
+            method: "XY Chain 3",
+            prompt: ancestors,
+            label: `深度: ${node.depth}`,
+          };
+        }
+      }
+    }
+  }
+
   return null;
 };
 
