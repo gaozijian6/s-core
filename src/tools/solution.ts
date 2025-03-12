@@ -4653,6 +4653,9 @@ const getAffectedCells = (
   num: number,
   candidateMap: CandidateMap
 ): Position[] => {
+  if (num === 0) {
+    return [];
+  }
   let affectedCells: Position[] = [];
   for (const pos of candidateMap[num].row.get(position.row)?.positions || []) {
     if (pos.row === position.row && pos.col === position.col) continue;
@@ -8457,7 +8460,7 @@ export const XYChain3 = (
     sons3: Node[] = []; // 强链关系导致填入候选数的方格
     father: Node | null = null;
     depth: number;
-    label: "双" | "弱" | "强" | '';
+    label: "双" | "弱" | "强" | "";
 
     constructor(
       row: number,
@@ -8466,7 +8469,7 @@ export const XYChain3 = (
       depth: number,
       father: Node | null = null,
       noValue: number[] = [],
-      label: "双" | "弱" | "强" | '' = ''
+      label: "双" | "弱" | "强" | "" = ""
     ) {
       this.row = row;
       this.col = col;
@@ -8522,9 +8525,15 @@ export const XYChain3 = (
           node.value === board[pos.row][pos.col].draft[0]
             ? board[pos.row][pos.col].draft[1]
             : board[pos.row][pos.col].draft[0];
-        const son = new Node(pos.row, pos.col, other, node.depth + 1, node, [
-          node.value,
-        ],'双');
+        const son = new Node(
+          pos.row,
+          pos.col,
+          other,
+          node.depth + 1,
+          node,
+          [node.value],
+          "双"
+        );
         node.sons1.push(son);
         buildChainTree(son);
       }
@@ -8541,9 +8550,15 @@ export const XYChain3 = (
       // 检查是否已经在祖先链中，避免循环
       if (isInAncestors(node, pos.row, pos.col)) continue;
 
-      const son = new Node(pos.row, pos.col, 0, node.depth + 1, node, [
-        node.value,
-      ],'弱');
+      const son = new Node(
+        pos.row,
+        pos.col,
+        0,
+        node.depth + 1,
+        node,
+        [node.value],
+        "弱"
+      );
       node.sons2.push(son);
       buildChainTree(son);
     }
@@ -8588,48 +8603,133 @@ export const XYChain3 = (
         const rootB = new Node(row, col, b, 1, null, [a]);
         buildChainTree(rootB);
 
-        const findDeepNodes = (node: Node, targetDepth: number): Node[] => {
-          if (node.depth === targetDepth) return [node];
-
-          let result: Node[] = [];
-          for (const son of [...node.sons1, ...node.sons2, ...node.sons3]) {
-            result = [...result, ...findDeepNodes(son, targetDepth)];
-          }
-          return result;
+        // 将rootA的所有节点放入数组
+        const nodesA: Node[] = [];
+        const collectNodesA = (node: Node) => {
+          nodesA.push(node);
+          for (const son of node.sons1) collectNodesA(son);
+          for (const son of node.sons2) collectNodesA(son);
+          for (const son of node.sons3) collectNodesA(son);
         };
+        collectNodesA(rootA);
 
-        // 先检查 a 的结果
-        const deepNodesA = findDeepNodes(rootA, 4);
-        if (deepNodesA.length > 0) {
-          // 找到了有效的链，构建结果
-          const node = deepNodesA[0];
-          const ancestors = getAncestors(node);
+        // 将rootB的所有节点放入数组
+        const nodesB: Node[] = [];
+        const collectNodesB = (node: Node) => {
+          nodesB.push(node);
+          for (const son of node.sons1) collectNodesB(son);
+          for (const son of node.sons2) collectNodesB(son);
+          for (const son of node.sons3) collectNodesB(son);
+        };
+        collectNodesB(rootB);
 
-          return {
-            isFill: false,
-            position: [{ row: node.row, col: node.col }],
-            target: [node.value],
-            method: "XY Chain 3",
-            prompt: ancestors,
-            label: `深度: ${node.depth}`,
-          };
-        }
+        for (const nodeA of nodesA) {
+          for (const nodeB of nodesB) {
+            // 情况一：如果存在两个方格里填入的数字相同，那么检查他们的共同影响区
+            if (
+              nodeA.value === nodeB.value &&
+              nodeA.row !== nodeB.row &&
+              nodeA.col !== nodeB.col
+            ) {
+              // 检查是否有共同影响区域
+              const commonUnits = getCommonUnits(
+                { row: nodeA.row, col: nodeA.col },
+                { row: nodeB.row, col: nodeB.col },
+                board
+              );
 
-        // 再检查 b 的结果
-        const deepNodesB = findDeepNodes(rootB, 4);
-        if (deepNodesB.length > 0) {
-          // 找到了有效的链，构建结果
-          const node = deepNodesB[0];
-          const ancestors = getAncestors(node);
+              if (commonUnits.length > 0) {
+                // 检查共同影响区域内是否有相同的候选数
+                for (const unit of commonUnits) {
+                  for (const pos of unit) {
+                    // 跳过nodeA和nodeB本身
+                    if (
+                      (pos.row === nodeA.row && pos.col === nodeA.col) ||
+                      (pos.row === nodeB.row && pos.col === nodeB.col)
+                    ) {
+                      continue;
+                    }
 
-          return {
-            isFill: false,
-            position: [{ row: node.row, col: node.col }],
-            target: [node.value],
-            method: "XY Chain 3",
-            prompt: ancestors,
-            label: `深度: ${node.depth}`,
-          };
+                    const cell = board[pos.row][pos.col];
+                    if (cell.draft.includes(nodeA.value)) {
+                      // 获取两个节点的所有祖先
+                      const ancestorsA = getAncestors(nodeA);
+                      const ancestorsB = getAncestors(nodeB);
+
+                      return {
+                        isFill: false,
+                        position: [pos],
+                        target: [nodeA.value],
+                        method: SOLUTION_METHODS.XY_CHAIN2,
+                        prompt: [...ancestorsA, ...ancestorsB],
+                        label: `${nodeA.depth}-${nodeB.depth}`,
+                      };
+                    }
+                  }
+                }
+              }
+            }
+            // 情况二：如果两个方格填入的数字不同，但是其中一个方格的候选数是另一个方格填入的数字
+            else if (
+              nodeA.value !== nodeB.value &&
+              nodeA.row !== nodeB.row &&
+              nodeA.col !== nodeB.col
+            ) {
+              // 检查nodeA的候选数是否包含nodeB的值
+              if (board[nodeA.row][nodeA.col].draft.includes(nodeB.value)) {
+                // 获取两个节点的所有祖先
+                const ancestorsA = getAncestors(nodeA);
+                const ancestorsB = getAncestors(nodeB);
+
+                return {
+                  isFill: false,
+                  position: [{ row: nodeA.row, col: nodeA.col }],
+                  target: [nodeB.value],
+                  method: SOLUTION_METHODS.XY_CHAIN2,
+                  prompt: [...ancestorsA, ...ancestorsB],
+                  label: `${nodeA.depth}-${nodeB.depth}`,
+                };
+              }
+
+              // 检查nodeB的候选数是否包含nodeA的值
+              if (board[nodeB.row][nodeB.col].draft.includes(nodeA.value)) {
+                // 获取两个节点的所有祖先
+                const ancestorsA = getAncestors(nodeA);
+                const ancestorsB = getAncestors(nodeB);
+
+                return {
+                  isFill: false,
+                  position: [{ row: nodeB.row, col: nodeB.col }],
+                  target: [nodeA.value],
+                  method: SOLUTION_METHODS.XY_CHAIN2,
+                  prompt: [...ancestorsA, ...ancestorsB],
+                  label: `${nodeA.depth}-${nodeB.depth}`,
+                };
+              }
+            } else if (nodeA.row === nodeB.row && nodeA.col === nodeB.col) {
+              // 获取该位置的所有候选数
+              const cell = board[nodeA.row][nodeA.col];
+              // 找出除了nodeA和nodeB填入的值以外的其他候选数
+              const otherCandidates = cell.draft.filter(
+                (value) => value !== nodeA.value && value !== nodeB.value
+              );
+
+              if (otherCandidates.length > 0) {
+                // 获取两个节点的所有祖先
+                const ancestorsA = getAncestors(nodeA);
+                const ancestorsB = getAncestors(nodeB);
+
+                return {
+                  isFill: false,
+                  position: [{ row: nodeA.row, col: nodeA.col }],
+                  target: otherCandidates,
+                  method: SOLUTION_METHODS.XY_CHAIN2,
+                  prompt: [...ancestorsA, ...ancestorsB],
+                  label: `${nodeA.depth}-${nodeB.depth}`,
+                };
+              }
+            }
+          }
         }
       }
     }

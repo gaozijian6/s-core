@@ -44,7 +44,7 @@ import {
   uniqueRectangle,
   BinaryUniversalGrave,
   jellyfish,
-  XYChain2,
+  XYChain3,
 } from "../tools/solution";
 import "./sudoku.less";
 import type {
@@ -105,7 +105,7 @@ const Sudoku: React.FC = () => {
   const [inputValue, setInputValue] = useState<string>("");
 
   const convertToBoard = (index: number): CellData[][] => {
-    const board = hard[index].puzzle;
+    const board = extreme[index].puzzle;
     
     const result: CellData[][] = [];
     for (let i = 0; i < 9; i++) {
@@ -124,7 +124,7 @@ const Sudoku: React.FC = () => {
   };
 
   const convertToAnswer = (index: number): CellData[][] => {
-    const board = hard[index].solution;
+    const board = extreme[index].solution;
     const result: CellData[][] = [];
     for (let i = 0; i < 9; i++) {
       const row: CellData[] = [];
@@ -209,7 +209,7 @@ const Sudoku: React.FC = () => {
       Loop,
       uniqueRectangle,
       XYChain,
-      XYChain2,
+      XYChain3,
       jellyfish,
       BinaryUniversalGrave,
     ];
@@ -967,7 +967,7 @@ const Sudoku: React.FC = () => {
       // Loop,
       // uniqueRectangle,
       // XYChain,
-      XYChain2,
+      XYChain3,
       jellyfish,
       BinaryUniversalGrave,
       trialAndErrorDIY,
@@ -2078,6 +2078,11 @@ const Sudoku: React.FC = () => {
           setPrompts(target);
           break;
         case SOLUTION_METHODS.WXYZ_WING:
+          boardWithHighlight = applyHintHighlight(board, result, "both");
+          setPositions(target);
+          setPrompts(target);
+          break;
+        case SOLUTION_METHODS.XY_CHAIN2:
           boardWithHighlight = applyHintHighlight(board, result, "both");
           setPositions(target);
           setPrompts(target);
