@@ -217,7 +217,10 @@ const Sudoku: React.FC = () => {
     const failureMap = new Map();
     const falseSolutionMap = new Map();
     const xyChainMap100 = new Map();
-    const labelArray = [];
+    const labelArray: string[] = [];
+    const skyscraperMap_4 = new Map();
+    const skyscraperMap_6 = new Map();
+    const skyscraperMap2 = new Map();
 
     for (let i = 0; i < extreme.length; i++) {
       // for (let i = 0; i < 100; i++) {
@@ -266,6 +269,19 @@ const Sudoku: React.FC = () => {
               if (!labelArray.includes(result.label)) {
                 labelArray.push(result.label);
               }
+              break;
+            case SOLUTION_METHODS.SKYSCRAPER:
+              switch (result.label) {
+                case "4":
+                  skyscraperMap_4.set(i, result.label);
+                  break;
+                case "6":
+                  skyscraperMap_6.set(i, result.label);
+                  break;
+              }
+              break;
+            case SOLUTION_METHODS.SKYSCRAPER2:
+              skyscraperMap2.set(i, result.label);
               break;
           }
           const newBoard = deepCopyBoard(board2);
@@ -322,6 +338,9 @@ const Sudoku: React.FC = () => {
     console.log("falseSolutionMap", falseSolutionMap);
     console.log("xyChainMap100", xyChainMap100);
     console.log("labelArray", labelArray);
+    console.log("skyscraperMap_4", skyscraperMap_4);
+    console.log("skyscraperMap_6", skyscraperMap_6);
+    console.log("skyscraperMap2", skyscraperMap2);
   };
 
   const generateBoard = () => {
