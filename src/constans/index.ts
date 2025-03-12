@@ -53,7 +53,6 @@ export const SOLUTION_METHODS = {
   JELLYFISH_ROW: "四阶鱼(行)",
   JELLYFISH_COLUMN: "四阶鱼(列)",
   COLOR_CHAIN: "颜色链",
-  XY_CHAIN2: "XY-Chain2",
 };
 
 export const STRONG_LINK_TYPE = {

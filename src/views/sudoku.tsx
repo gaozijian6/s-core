@@ -43,7 +43,7 @@ import {
   uniqueRectangle,
   BinaryUniversalGrave,
   jellyfish,
-  XYChain3,
+  XYChain,
 } from "../tools/solution";
 import "./sudoku.less";
 import type {
@@ -207,7 +207,7 @@ const Sudoku: React.FC = () => {
       swordfish,
       Loop,
       uniqueRectangle,
-      XYChain3,
+      XYChain,
       jellyfish,
       BinaryUniversalGrave,
     ];
@@ -349,10 +349,10 @@ const Sudoku: React.FC = () => {
       }))
     );
 
-    newBoard = deepCopyBoard(mockBoard);
+    // newBoard = deepCopyBoard(mockBoard);
 
-    updateBoard(newBoard, "生成新棋盘");
-    // updateBoard(convertToBoard(20), "生成新棋盘");
+    // updateBoard(newBoard, "生成新棋盘");
+    updateBoard(convertToBoard(1379), "生成新棋盘");
 
     // 生成解决方案
     const solvedBoard = newBoard.map((row) => row.map((cell) => ({ ...cell })));
@@ -809,7 +809,7 @@ const Sudoku: React.FC = () => {
       swordfish,
       Loop,
       uniqueRectangle,
-      XYChain3,
+      XYChain,
       jellyfish,
       BinaryUniversalGrave,
       trialAndErrorDIY,
