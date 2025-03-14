@@ -44,6 +44,7 @@ import {
   BinaryUniversalGrave,
   jellyfish,
   XYChain,
+  XYChain2,
 } from "../tools/solution";
 import "./sudoku.less";
 import type {
@@ -208,6 +209,7 @@ const Sudoku: React.FC = () => {
       Loop,
       uniqueRectangle,
       XYChain,
+      XYChain2,
       jellyfish,
       BinaryUniversalGrave,
     ];
@@ -221,6 +223,7 @@ const Sudoku: React.FC = () => {
     const skyscraperMap_4 = new Map();
     const skyscraperMap_6 = new Map();
     const skyscraperMap2 = new Map();
+    const xyChain2Map = new Map();
 
     for (let i = 0; i < extreme.length; i++) {
       // for (let i = 0; i < 100; i++) {
@@ -283,6 +286,9 @@ const Sudoku: React.FC = () => {
             case SOLUTION_METHODS.SKYSCRAPER2:
               skyscraperMap2.set(i, result.label);
               break;
+            case SOLUTION_METHODS.XY_CHAIN2:
+              xyChain2Map.set(i, result.label);
+              break;
           }
           const newBoard = deepCopyBoard(board2);
           let isFalse = false;
@@ -341,6 +347,7 @@ const Sudoku: React.FC = () => {
     console.log("skyscraperMap_4", skyscraperMap_4);
     console.log("skyscraperMap_6", skyscraperMap_6);
     console.log("skyscraperMap2", skyscraperMap2);
+    console.log("xyChain2Map", xyChain2Map);
   };
 
   const generateBoard = () => {
@@ -371,7 +378,7 @@ const Sudoku: React.FC = () => {
     newBoard = deepCopyBoard(mockBoard);
 
     updateBoard(newBoard, "生成新棋盘");
-    // updateBoard(convertToBoard(1103), "生成新棋盘");
+    // updateBoard(convertToBoard(285), "生成新棋盘");
 
     // 生成解决方案
     const solvedBoard = newBoard.map((row) => row.map((cell) => ({ ...cell })));
@@ -829,6 +836,7 @@ const Sudoku: React.FC = () => {
       Loop,
       uniqueRectangle,
       XYChain,
+      XYChain2,
       jellyfish,
       BinaryUniversalGrave,
       trialAndErrorDIY,

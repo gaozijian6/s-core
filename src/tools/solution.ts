@@ -4769,7 +4769,12 @@ const isInAncestors = (node: Node, row: number, col: number): boolean => {
 };
 
 // 递归构建连锁反应树
-const buildChainTree = (node: Node): void => {
+const buildChainTree = (
+  node: Node,
+  board: Board,
+  candidateMap: CandidateMap,
+  graph: Graph
+): void => {
   if (node.depth >= 6) return;
 
   const pos: Position = { row: node.row, col: node.col };
@@ -4797,7 +4802,7 @@ const buildChainTree = (node: Node): void => {
         "双"
       );
       node.sons1.push(son);
-      buildChainTree(son);
+      buildChainTree(son, board, candidateMap, graph);
     }
   }
 
@@ -4822,7 +4827,7 @@ const buildChainTree = (node: Node): void => {
       "弱"
     );
     node.sons2.push(son);
-    buildChainTree(son);
+    buildChainTree(son, board, candidateMap, graph);
   }
 
   // 3. 处理强链关系 (sons3)
@@ -4845,7 +4850,7 @@ const buildChainTree = (node: Node): void => {
         "强"
       );
       node.sons3.push(son);
-      buildChainTree(son);
+      buildChainTree(son, board, candidateMap, graph);
     }
   }
 };
@@ -4864,11 +4869,11 @@ export const XYChain = (
 
         // 单独对 a 构建
         const rootA = new Node(row, col, a, 1, null, [b], "");
-        buildChainTree(rootA);
+        buildChainTree(rootA, board, candidateMap, graph);
 
         // 单独对 b 构建
         const rootB = new Node(row, col, b, 1, null, [a], "");
-        buildChainTree(rootB);
+        buildChainTree(rootB, board, candidateMap, graph);
 
         // 将rootA的所有节点放入数组
         const nodesA: Node[] = [];
@@ -5094,15 +5099,15 @@ export const XYChain2 = (
 
         // 单独对 a 构建
         const rootA = new Node(row, col, a, 1, null, [b], "");
-        buildChainTree(rootA);
+        buildChainTree(rootA, board, candidateMap, graph);
 
         // 单独对 b 构建
         const rootB = new Node(row, col, b, 1, null, [a], "");
-        buildChainTree(rootB);
+        buildChainTree(rootB, board, candidateMap, graph);
 
         // 单独对 c 构建
         const rootC = new Node(row, col, c, 1, null, [a, b], "");
-        buildChainTree(rootC);
+        buildChainTree(rootC, board, candidateMap, graph);
 
         // 将rootA的所有节点放入数组
         const nodesA: Node[] = [];
@@ -5259,8 +5264,8 @@ export const XYChain2 = (
 
                   return {
                     isFill: false,
-                    position: [{ row: nodeA.row, col: nodeA.col }],
-                    target: [nodeB.value],
+                    position: [{ row: nodeB.row, col: nodeB.col }],
+                    target: [nodeA.value],
                     method: SOLUTION_METHODS.XY_CHAIN2,
                     prompt: [...ancestorsA, ...ancestorsB, ...ancestorsC],
                     label: `②${labelA}-${labelB}-${labelC}`,
@@ -5269,9 +5274,9 @@ export const XYChain2 = (
                     highlightPromts3: ancestorsC,
                     highlightDeletes: [
                       {
-                        row: nodeA.row,
-                        col: nodeA.col,
-                        value: [nodeB.value],
+                        row: nodeB.row,
+                        col: nodeB.col,
+                        value: [nodeA.value],
                       },
                     ],
                   };
@@ -5315,7 +5320,7 @@ export const XYChain2 = (
                     target: [nodeB.value],
                     method: SOLUTION_METHODS.XY_CHAIN2,
                     prompt: [...ancestorsA, ...ancestorsB, ...ancestorsC],
-                    label: `②${labelA}-${labelB}-${labelC}`,
+                    label: `③${labelA}-${labelB}-${labelC}`,
                     highlightPromts1: ancestorsA,
                     highlightPromts2: ancestorsB,
                     highlightPromts3: ancestorsC,
@@ -5363,19 +5368,19 @@ export const XYChain2 = (
 
                   return {
                     isFill: false,
-                    position: [{ row: nodeA.row, col: nodeA.col }],
-                    target: [nodeB.value],
+                    position: [{ row: nodeC.row, col: nodeC.col }],
+                    target: [nodeA.value],
                     method: SOLUTION_METHODS.XY_CHAIN2,
                     prompt: [...ancestorsA, ...ancestorsB, ...ancestorsC],
-                    label: `②${labelA}-${labelB}-${labelC}`,
+                    label: `④${labelA}-${labelB}-${labelC}`,
                     highlightPromts1: ancestorsA,
                     highlightPromts2: ancestorsB,
                     highlightPromts3: ancestorsC,
                     highlightDeletes: [
                       {
-                        row: nodeA.row,
-                        col: nodeA.col,
-                        value: [nodeB.value],
+                        row: nodeC.row,
+                        col: nodeC.col,
+                        value: [nodeA.value],
                       },
                     ],
                   };
@@ -5394,7 +5399,7 @@ export const XYChain2 = (
                 !(nodeA.row === nodeC.row && nodeA.col === nodeC.col) &&
                 !(nodeB.row === nodeC.row && nodeB.col === nodeC.col)
               ) {
-                if (board[nodeA.row][nodeA.col].draft.includes(nodeB.value)) {
+                if (board[nodeA.row][nodeA.col].draft.includes(nodeC.value)) {
                   // 获取两个节点的所有祖先
                   const {
                     ancestors: ancestorsA,
@@ -5414,19 +5419,19 @@ export const XYChain2 = (
 
                   return {
                     isFill: false,
-                    position: [{ row: nodeA.row, col: nodeA.col }],
-                    target: [nodeB.value],
+                    position: [{ row: nodeC.row, col: nodeC.col }],
+                    target: [nodeA.value],
                     method: SOLUTION_METHODS.XY_CHAIN2,
                     prompt: [...ancestorsA, ...ancestorsB, ...ancestorsC],
-                    label: `②${labelA}-${labelB}-${labelC}`,
+                    label: `⑤${labelA}-${labelB}-${labelC}`,
                     highlightPromts1: ancestorsA,
                     highlightPromts2: ancestorsB,
                     highlightPromts3: ancestorsC,
                     highlightDeletes: [
                       {
-                        row: nodeA.row,
-                        col: nodeA.col,
-                        value: [nodeB.value],
+                        row: nodeC.row,
+                        col: nodeC.col,
+                        value: [nodeA.value],
                       },
                     ],
                   };
@@ -5465,19 +5470,19 @@ export const XYChain2 = (
 
                   return {
                     isFill: false,
-                    position: [{ row: nodeA.row, col: nodeA.col }],
-                    target: [nodeB.value],
+                    position: [{ row: nodeB.row, col: nodeB.col }],
+                    target: [nodeC.value],
                     method: SOLUTION_METHODS.XY_CHAIN2,
                     prompt: [...ancestorsA, ...ancestorsB, ...ancestorsC],
-                    label: `②${labelA}-${labelB}-${labelC}`,
+                    label: `⑥${labelA}-${labelB}-${labelC}`,
                     highlightPromts1: ancestorsA,
                     highlightPromts2: ancestorsB,
                     highlightPromts3: ancestorsC,
                     highlightDeletes: [
                       {
-                        row: nodeA.row,
-                        col: nodeA.col,
-                        value: [nodeB.value],
+                        row: nodeB.row,
+                        col: nodeB.col,
+                        value: [nodeC.value],
                       },
                     ],
                   };
@@ -5496,7 +5501,7 @@ export const XYChain2 = (
                 nodeA.col === nodeC.col &&
                 !(nodeB.row === nodeC.row && nodeB.col === nodeC.col)
               ) {
-                if (board[nodeC.row][nodeC.col].draft.includes(nodeA.value)) {
+                if (board[nodeC.row][nodeC.col].draft.includes(nodeB.value)) {
                   // 获取两个节点的所有祖先
                   const {
                     ancestors: ancestorsA,
@@ -5516,19 +5521,19 @@ export const XYChain2 = (
 
                   return {
                     isFill: false,
-                    position: [{ row: nodeA.row, col: nodeA.col }],
-                    target: [nodeB.value],
+                    position: [{ row: nodeB.row, col: nodeB.col }],
+                    target: [nodeC.value],
                     method: SOLUTION_METHODS.XY_CHAIN2,
                     prompt: [...ancestorsA, ...ancestorsB, ...ancestorsC],
-                    label: `②${labelA}-${labelB}-${labelC}`,
+                    label: `⑦${labelA}-${labelB}-${labelC}`,
                     highlightPromts1: ancestorsA,
                     highlightPromts2: ancestorsB,
                     highlightPromts3: ancestorsC,
                     highlightDeletes: [
                       {
-                        row: nodeA.row,
-                        col: nodeA.col,
-                        value: [nodeB.value],
+                        row: nodeB.row,
+                        col: nodeB.col,
+                        value: [nodeC.value],
                       },
                     ],
                   };
@@ -5577,7 +5582,7 @@ export const XYChain2 = (
                     target: otherCandidates,
                     method: SOLUTION_METHODS.XY_CHAIN2,
                     prompt: [...ancestorsA, ...ancestorsB, ...ancestorsC],
-                    label: `④${labelA}-${labelB}-${labelC}`,
+                    label: `⑧${labelA}-${labelB}-${labelC}`,
                     highlightPromts1: ancestorsA,
                     highlightPromts2: ancestorsB,
                     highlightPromts3: ancestorsC,
