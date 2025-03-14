@@ -264,7 +264,7 @@ const Sudoku: React.FC = () => {
             counts++;
           }
           switch (result.method) {
-            case SOLUTION_METHODS.XY_CHAIN2:
+            case SOLUTION_METHODS.XY_CHAIN:
               xyChainMap100.set(i, result.label);
               if (!labelArray.includes(result.label)) {
                 labelArray.push(result.label);
@@ -368,10 +368,10 @@ const Sudoku: React.FC = () => {
       }))
     );
 
-    // newBoard = deepCopyBoard(mockBoard);
+    newBoard = deepCopyBoard(mockBoard);
 
-    // updateBoard(newBoard, "生成新棋盘");
-    updateBoard(convertToBoard(1379), "生成新棋盘");
+    updateBoard(newBoard, "生成新棋盘");
+    // updateBoard(convertToBoard(1103), "生成新棋盘");
 
     // 生成解决方案
     const solvedBoard = newBoard.map((row) => row.map((cell) => ({ ...cell })));
