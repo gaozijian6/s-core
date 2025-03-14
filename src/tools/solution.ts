@@ -4698,163 +4698,168 @@ const getAffectedCells = (
   return affectedCells;
 };
 
+class Node {
+  row: number;
+  col: number;
+  value: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | null; // 尝试向当前方格填入的值
+  noValue: number[]; // 当前方格不能填入的值
+  sons1: Node[] = []; // 双数置换的下一方格
+  sons2: Node[] = []; // 被消除候选数的方格
+  sons3: Node[] = []; // 强链关系导致填入候选数的方格
+  father: Node | null = null;
+  depth: number;
+  label: "双" | "弱" | "强" | "";
+
+  constructor(
+    row: number,
+    col: number,
+    value: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | null,
+    depth: number,
+    father: Node | null = null,
+    noValue: number[] = [],
+    label: "双" | "弱" | "强" | "" = ""
+  ) {
+    this.row = row;
+    this.col = col;
+    this.value = value;
+    this.depth = depth;
+    this.father = father;
+    this.noValue = noValue;
+    this.label = label;
+  }
+}
+
+// 获取节点的所有祖先节点
+const getAncestors = (
+  node: Node
+): {
+  ancestors: { row: number; col: number; value: number | null }[];
+  root: Node | null;
+  label: string;
+} => {
+  const ancestors: { row: number; col: number; value: number | null }[] = [];
+  let current: Node | null = node;
+  let lastCurrent: Node | null = null;
+  let label: string = "";
+
+  while (current) {
+    ancestors.unshift({
+      row: current.row,
+      col: current.col,
+      value: current.value,
+    });
+    label = current?.label + label;
+    lastCurrent = current;
+    current = current.father;
+  }
+
+  return { ancestors, root: lastCurrent, label };
+};
+
+// 检查位置是否已经在祖先链中
+const isInAncestors = (node: Node, row: number, col: number): boolean => {
+  let current: Node | null = node;
+  while (current) {
+    if (current.row === row && current.col === col) {
+      return true;
+    }
+    current = current.father;
+  }
+  return false;
+};
+
+// 递归构建连锁反应树
+const buildChainTree = (
+  node: Node,
+  board: Board,
+  candidateMap: CandidateMap,
+  graph: Graph
+): void => {
+  if (node.depth >= 6) return;
+
+  const pos: Position = { row: node.row, col: node.col };
+
+  // 1. 处理双数置换 (sons1)
+  const affectedCells1 = getAffectedCells(pos, node.value, candidateMap);
+
+  for (const pos of affectedCells1) {
+    // 检查是否已经在祖先链中，避免循环
+    if (isInAncestors(node, pos.row, pos.col)) continue;
+
+    // 如果单元格包含当前节点的值作为候选数
+    if (board[pos.row][pos.col].draft.length === 2) {
+      const other =
+        node.value === board[pos.row][pos.col].draft[0]
+          ? board[pos.row][pos.col].draft[1]
+          : board[pos.row][pos.col].draft[0];
+      const son = new Node(
+        pos.row,
+        pos.col,
+        other,
+        node.depth + 1,
+        node,
+        [node.value],
+        "双"
+      );
+      node.sons1.push(son);
+      buildChainTree(son, board, candidateMap, graph);
+    }
+  }
+
+  // 2. 处理消除候选数 (sons2)
+  const affectedCells2 = getAffectedCells(
+    { row: node.row, col: node.col },
+    node.value,
+    candidateMap
+  );
+
+  for (const pos of affectedCells2) {
+    // 检查是否已经在祖先链中，避免循环
+    if (isInAncestors(node, pos.row, pos.col)) continue;
+
+    const son = new Node(
+      pos.row,
+      pos.col,
+      null,
+      node.depth + 1,
+      node,
+      [node.value],
+      "弱"
+    );
+    node.sons2.push(son);
+    buildChainTree(son, board, candidateMap, graph);
+  }
+
+  // 3. 处理强链关系 (sons3)
+  for (const noValue of node.noValue) {
+    const graphNode_noValue = getGraphNode(pos, noValue, graph);
+    const nodesArray = findGraphNodeByDistance(graphNode_noValue, 1);
+    for (const graphNode of nodesArray) {
+      // 检查是否已经在祖先链中，避免循环
+      if (isInAncestors(node, graphNode.row, graphNode.col)) continue;
+      const restCandidates = board[graphNode.row][graphNode.col].draft.filter(
+        (v) => v !== noValue
+      );
+      const son = new Node(
+        graphNode.row,
+        graphNode.col,
+        noValue,
+        node.depth + 1,
+        node,
+        restCandidates,
+        "强"
+      );
+      node.sons3.push(son);
+      buildChainTree(son, board, candidateMap, graph);
+    }
+  }
+};
+
 export const XYChain = (
   board: Board,
   candidateMap: CandidateMap,
   graph: Graph
 ): Result | null => {
-  class Node {
-    row: number;
-    col: number;
-    value: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | null; // 尝试向当前方格填入的值
-    noValue: number[]; // 当前方格不能填入的值
-    sons1: Node[] = []; // 双数置换的下一方格
-    sons2: Node[] = []; // 被消除候选数的方格
-    sons3: Node[] = []; // 强链关系导致填入候选数的方格
-    father: Node | null = null;
-    depth: number;
-    label: "双" | "弱" | "强" | "";
-
-    constructor(
-      row: number,
-      col: number,
-      value: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | null,
-      depth: number,
-      father: Node | null = null,
-      noValue: number[] = [],
-      label: "双" | "弱" | "强" | "" = ""
-    ) {
-      this.row = row;
-      this.col = col;
-      this.value = value;
-      this.depth = depth;
-      this.father = father;
-      this.noValue = noValue;
-      this.label = label;
-    }
-  }
-
-  // 获取节点的所有祖先节点
-  const getAncestors = (
-    node: Node
-  ): {
-    ancestors: { row: number; col: number; value: number | null }[];
-    root: Node | null;
-    label: string;
-  } => {
-    const ancestors: { row: number; col: number; value: number | null }[] = [];
-    let current: Node | null = node;
-    let lastCurrent: Node | null = null;
-    let label: string = "";
-
-    while (current) {
-      ancestors.unshift({
-        row: current.row,
-        col: current.col,
-        value: current.value,
-      });
-      label = current?.label + label;
-      lastCurrent = current;
-      current = current.father;
-    }
-
-    return { ancestors, root: lastCurrent, label };
-  };
-
-  // 检查位置是否已经在祖先链中
-  const isInAncestors = (node: Node, row: number, col: number): boolean => {
-    let current: Node | null = node;
-    while (current) {
-      if (current.row === row && current.col === col) {
-        return true;
-      }
-      current = current.father;
-    }
-    return false;
-  };
-
-  // 递归构建连锁反应树
-  const buildChainTree = (node: Node): void => {
-    if (node.depth >= 6) return;
-
-    const pos: Position = { row: node.row, col: node.col };
-
-    // 1. 处理双数置换 (sons1)
-    const affectedCells1 = getAffectedCells(pos, node.value, candidateMap);
-
-    for (const pos of affectedCells1) {
-      // 检查是否已经在祖先链中，避免循环
-      if (isInAncestors(node, pos.row, pos.col)) continue;
-
-      // 如果单元格包含当前节点的值作为候选数
-      if (board[pos.row][pos.col].draft.length === 2) {
-        const other =
-          node.value === board[pos.row][pos.col].draft[0]
-            ? board[pos.row][pos.col].draft[1]
-            : board[pos.row][pos.col].draft[0];
-        const son = new Node(
-          pos.row,
-          pos.col,
-          other,
-          node.depth + 1,
-          node,
-          [node.value],
-          "双"
-        );
-        node.sons1.push(son);
-        buildChainTree(son);
-      }
-    }
-
-    // 2. 处理消除候选数 (sons2)
-    const affectedCells2 = getAffectedCells(
-      { row: node.row, col: node.col },
-      node.value,
-      candidateMap
-    );
-
-    for (const pos of affectedCells2) {
-      // 检查是否已经在祖先链中，避免循环
-      if (isInAncestors(node, pos.row, pos.col)) continue;
-
-      const son = new Node(
-        pos.row,
-        pos.col,
-        null,
-        node.depth + 1,
-        node,
-        [node.value],
-        "弱"
-      );
-      node.sons2.push(son);
-      buildChainTree(son);
-    }
-
-    // 3. 处理强链关系 (sons3)
-    for (const noValue of node.noValue) {
-      const graphNode_noValue = getGraphNode(pos, noValue, graph);
-      const nodesArray = findGraphNodeByDistance(graphNode_noValue, 1);
-      for (const graphNode of nodesArray) {
-        // 检查是否已经在祖先链中，避免循环
-        if (isInAncestors(node, graphNode.row, graphNode.col)) continue;
-        const restCandidates = board[graphNode.row][graphNode.col].draft.filter(
-          (v) => v !== noValue
-        );
-        const son = new Node(
-          graphNode.row,
-          graphNode.col,
-          noValue,
-          node.depth + 1,
-          node,
-          restCandidates,
-          "强"
-        );
-        node.sons3.push(son);
-        buildChainTree(son);
-      }
-    }
-  };
-
   // 寻找可能的起始点
   for (let row = 0; row < 9; row++) {
     for (let col = 0; col < 9; col++) {
@@ -4864,11 +4869,11 @@ export const XYChain = (
 
         // 单独对 a 构建
         const rootA = new Node(row, col, a, 1, null, [b], "");
-        buildChainTree(rootA);
+        buildChainTree(rootA, board, candidateMap, graph);
 
         // 单独对 b 构建
         const rootB = new Node(row, col, b, 1, null, [a], "");
-        buildChainTree(rootB);
+        buildChainTree(rootB, board, candidateMap, graph);
 
         // 将rootA的所有节点放入数组
         const nodesA: Node[] = [];
@@ -5069,6 +5074,527 @@ export const XYChain = (
                     },
                   ],
                 };
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return null;
+};
+
+export const XYChain2 = (
+  board: Board,
+  candidateMap: CandidateMap,
+  graph: Graph
+): Result | null => {
+  // 寻找可能的起始点
+  for (let row = 0; row < 9; row++) {
+    for (let col = 0; col < 9; col++) {
+      const cell = board[row][col];
+      if (cell.draft.length === 3) {
+        const [a, b, c] = cell.draft;
+
+        // 单独对 a 构建
+        const rootA = new Node(row, col, a, 1, null, [b], "");
+        buildChainTree(rootA, board, candidateMap, graph);
+
+        // 单独对 b 构建
+        const rootB = new Node(row, col, b, 1, null, [a], "");
+        buildChainTree(rootB, board, candidateMap, graph);
+
+        // 单独对 c 构建
+        const rootC = new Node(row, col, c, 1, null, [a, b], "");
+        buildChainTree(rootC, board, candidateMap, graph);
+
+        // 将rootA的所有节点放入数组
+        const nodesA: Node[] = [];
+        const collectNodesA = (root: Node) => {
+          const queue: Node[] = [root];
+          let index = 0;
+
+          while (index < queue.length) {
+            const node = queue[index++];
+            nodesA.push(node);
+
+            queue.push(...node.sons1, ...node.sons2, ...node.sons3);
+          }
+        };
+        collectNodesA(rootA);
+
+        // 将rootB的所有节点放入数组
+        const nodesB: Node[] = [];
+        const collectNodesB = (root: Node) => {
+          const queue: Node[] = [root];
+          let index = 0;
+
+          while (index < queue.length) {
+            const node = queue[index++];
+            nodesB.push(node);
+
+            queue.push(...node.sons1, ...node.sons2, ...node.sons3);
+          }
+        };
+        collectNodesB(rootB);
+
+        // 将rootC的所有节点放入数组
+        const nodesC: Node[] = [];
+        const collectNodesC = (root: Node) => {
+          const queue: Node[] = [root];
+          let index = 0;
+
+          while (index < queue.length) {
+            const node = queue[index++];
+            nodesC.push(node);
+
+            queue.push(...node.sons1, ...node.sons2, ...node.sons3);
+          }
+        };
+        collectNodesC(rootC);
+
+        for (const nodeA of nodesA) {
+          for (const nodeB of nodesB) {
+            for (const nodeC of nodesC) {
+              if (nodeA.depth === 2 && nodeB.depth === 2) continue;
+              if (nodeA.depth === 1 && nodeB.depth === 2) continue;
+              if (nodeA.depth === 2 && nodeB.depth === 1) continue;
+              if (nodeA.depth === 3 && nodeB.depth === 1) continue;
+              if (nodeA.depth === 1 && nodeB.depth === 3) continue;
+              const isInSameUnitAB = areCellsInSameUnit(
+                { row: nodeA.row, col: nodeA.col },
+                { row: nodeB.row, col: nodeB.col }
+              );
+              const isInSameUnitAC = areCellsInSameUnit(
+                { row: nodeA.row, col: nodeA.col },
+                { row: nodeC.row, col: nodeC.col }
+              );
+              const isInSameUnitBC = areCellsInSameUnit(
+                { row: nodeB.row, col: nodeB.col },
+                { row: nodeC.row, col: nodeC.col }
+              );
+              // 情况一：如果存在两个方格里填入的数字相同，那么检查他们的共同影响区
+              if (
+                nodeA.value &&
+                nodeB.value &&
+                nodeC.value &&
+                nodeA.value === nodeB.value &&
+                nodeA.value === nodeC.value &&
+                !(nodeA.row === nodeB.row && nodeA.col === nodeB.col) &&
+                !(nodeA.row === nodeC.row && nodeA.col === nodeC.col) &&
+                !(nodeB.row === nodeC.row && nodeB.col === nodeC.col)
+              ) {
+                // 检查是否有共同影响区域
+                const commonUnits = findCommonAffectedPositions_Three(
+                  { row: nodeA.row, col: nodeA.col },
+                  { row: nodeB.row, col: nodeB.col },
+                  { row: nodeC.row, col: nodeC.col },
+                  nodeA.value,
+                  board
+                );
+
+                if (commonUnits.length > 0) {
+                  // 获取两个节点的所有祖先
+                  const {
+                    ancestors: ancestorsA,
+                    root: rootA,
+                    label: labelA,
+                  } = getAncestors(nodeA);
+                  const {
+                    ancestors: ancestorsB,
+                    root: rootB,
+                    label: labelB,
+                  } = getAncestors(nodeB);
+                  const {
+                    ancestors: ancestorsC,
+                    root: rootC,
+                    label: labelC,
+                  } = getAncestors(nodeC);
+
+                  return {
+                    isFill: false,
+                    position: commonUnits,
+                    target: [nodeA.value],
+                    method: SOLUTION_METHODS.XY_CHAIN2,
+                    prompt: [...ancestorsA, ...ancestorsB, ...ancestorsC],
+                    label: `①${labelA}-${labelB}-${labelC}`,
+                    highlightPromts1: ancestorsA,
+                    highlightPromts2: ancestorsB,
+                    highlightPromts3: ancestorsC,
+                    highlightDeletes: commonUnits.map((pos) => ({
+                      row: pos.row,
+                      col: pos.col,
+                      value: [nodeA.value],
+                    })),
+                  };
+                }
+              }
+              // 情况二：B占据了被删除点且看得到A、C
+              else if (
+                isInSameUnitAB &&
+                isInSameUnitBC &&
+                nodeA.value &&
+                nodeB.value &&
+                nodeC.value &&
+                nodeA.value !== nodeB.value &&
+                nodeB.value !== nodeC.value &&
+                nodeA.value === nodeC.value &&
+                !(nodeA.row === nodeB.row && nodeA.col === nodeB.col) &&
+                !(nodeA.row === nodeC.row && nodeA.col === nodeC.col) &&
+                !(nodeB.row === nodeC.row && nodeB.col === nodeC.col)
+              ) {
+                if (board[nodeB.row][nodeB.col].draft.includes(nodeA.value)) {
+                  // 获取两个节点的所有祖先
+                  const {
+                    ancestors: ancestorsA,
+                    root: rootA,
+                    label: labelA,
+                  } = getAncestors(nodeA);
+                  const {
+                    ancestors: ancestorsB,
+                    root: rootB,
+                    label: labelB,
+                  } = getAncestors(nodeB);
+                  const {
+                    ancestors: ancestorsC,
+                    root: rootC,
+                    label: labelC,
+                  } = getAncestors(nodeC);
+
+                  return {
+                    isFill: false,
+                    position: [{ row: nodeB.row, col: nodeB.col }],
+                    target: [nodeA.value],
+                    method: SOLUTION_METHODS.XY_CHAIN2,
+                    prompt: [...ancestorsA, ...ancestorsB, ...ancestorsC],
+                    label: `②${labelA}-${labelB}-${labelC}`,
+                    highlightPromts1: ancestorsA,
+                    highlightPromts2: ancestorsB,
+                    highlightPromts3: ancestorsC,
+                    highlightDeletes: [
+                      {
+                        row: nodeB.row,
+                        col: nodeB.col,
+                        value: [nodeA.value],
+                      },
+                    ],
+                  };
+                }
+              }
+              // 情况三：A占据了被删除点且看得到B、C
+              else if (
+                isInSameUnitAB &&
+                isInSameUnitAC &&
+                nodeA.value &&
+                nodeB.value &&
+                nodeC.value &&
+                nodeA.value !== nodeB.value &&
+                nodeA.value !== nodeC.value &&
+                nodeB.value === nodeC.value &&
+                !(nodeA.row === nodeB.row && nodeA.col === nodeB.col) &&
+                !(nodeA.row === nodeC.row && nodeA.col === nodeC.col) &&
+                !(nodeB.row === nodeC.row && nodeB.col === nodeC.col)
+              ) {
+                if (board[nodeA.row][nodeA.col].draft.includes(nodeB.value)) {
+                  // 获取两个节点的所有祖先
+                  const {
+                    ancestors: ancestorsA,
+                    root: rootA,
+                    label: labelA,
+                  } = getAncestors(nodeA);
+                  const {
+                    ancestors: ancestorsB,
+                    root: rootB,
+                    label: labelB,
+                  } = getAncestors(nodeB);
+                  const {
+                    ancestors: ancestorsC,
+                    root: rootC,
+                    label: labelC,
+                  } = getAncestors(nodeC);
+
+                  return {
+                    isFill: false,
+                    position: [{ row: nodeA.row, col: nodeA.col }],
+                    target: [nodeB.value],
+                    method: SOLUTION_METHODS.XY_CHAIN2,
+                    prompt: [...ancestorsA, ...ancestorsB, ...ancestorsC],
+                    label: `③${labelA}-${labelB}-${labelC}`,
+                    highlightPromts1: ancestorsA,
+                    highlightPromts2: ancestorsB,
+                    highlightPromts3: ancestorsC,
+                    highlightDeletes: [
+                      {
+                        row: nodeA.row,
+                        col: nodeA.col,
+                        value: [nodeB.value],
+                      },
+                    ],
+                  };
+                }
+              }
+              // 情况四：C占据了被删除点且看得到A、B
+              else if (
+                isInSameUnitAC &&
+                isInSameUnitBC &&
+                nodeA.value &&
+                nodeB.value &&
+                nodeC.value &&
+                nodeB.value !== nodeC.value &&
+                nodeA.value !== nodeC.value &&
+                nodeB.value === nodeA.value &&
+                !(nodeA.row === nodeB.row && nodeA.col === nodeB.col) &&
+                !(nodeA.row === nodeC.row && nodeA.col === nodeC.col) &&
+                !(nodeB.row === nodeC.row && nodeB.col === nodeC.col)
+              ) {
+                if (board[nodeC.row][nodeC.col].draft.includes(nodeA.value)) {
+                  // 获取两个节点的所有祖先
+                  const {
+                    ancestors: ancestorsA,
+                    root: rootA,
+                    label: labelA,
+                  } = getAncestors(nodeA);
+                  const {
+                    ancestors: ancestorsB,
+                    root: rootB,
+                    label: labelB,
+                  } = getAncestors(nodeB);
+                  const {
+                    ancestors: ancestorsC,
+                    root: rootC,
+                    label: labelC,
+                  } = getAncestors(nodeC);
+
+                  return {
+                    isFill: false,
+                    position: [{ row: nodeC.row, col: nodeC.col }],
+                    target: [nodeA.value],
+                    method: SOLUTION_METHODS.XY_CHAIN2,
+                    prompt: [...ancestorsA, ...ancestorsB, ...ancestorsC],
+                    label: `④${labelA}-${labelB}-${labelC}`,
+                    highlightPromts1: ancestorsA,
+                    highlightPromts2: ancestorsB,
+                    highlightPromts3: ancestorsC,
+                    highlightDeletes: [
+                      {
+                        row: nodeC.row,
+                        col: nodeC.col,
+                        value: [nodeA.value],
+                      },
+                    ],
+                  };
+                }
+              }
+              // 情况五：AB占据了被删除点且看得到C
+              else if (
+                isInSameUnitAC &&
+                nodeA.value &&
+                nodeB.value &&
+                nodeC.value &&
+                nodeC.value !== nodeA.value &&
+                nodeC.value !== nodeB.value &&
+                nodeA.row === nodeB.row &&
+                nodeA.col === nodeB.col &&
+                !(nodeA.row === nodeC.row && nodeA.col === nodeC.col) &&
+                !(nodeB.row === nodeC.row && nodeB.col === nodeC.col)
+              ) {
+                if (board[nodeA.row][nodeA.col].draft.includes(nodeC.value)) {
+                  // 获取两个节点的所有祖先
+                  const {
+                    ancestors: ancestorsA,
+                    root: rootA,
+                    label: labelA,
+                  } = getAncestors(nodeA);
+                  const {
+                    ancestors: ancestorsB,
+                    root: rootB,
+                    label: labelB,
+                  } = getAncestors(nodeB);
+                  const {
+                    ancestors: ancestorsC,
+                    root: rootC,
+                    label: labelC,
+                  } = getAncestors(nodeC);
+
+                  return {
+                    isFill: false,
+                    position: [{ row: nodeC.row, col: nodeC.col }],
+                    target: [nodeA.value],
+                    method: SOLUTION_METHODS.XY_CHAIN2,
+                    prompt: [...ancestorsA, ...ancestorsB, ...ancestorsC],
+                    label: `⑤${labelA}-${labelB}-${labelC}`,
+                    highlightPromts1: ancestorsA,
+                    highlightPromts2: ancestorsB,
+                    highlightPromts3: ancestorsC,
+                    highlightDeletes: [
+                      {
+                        row: nodeC.row,
+                        col: nodeC.col,
+                        value: [nodeA.value],
+                      },
+                    ],
+                  };
+                }
+              }
+              // 情况六：BC占据了被删除点且看得到A
+              else if (
+                isInSameUnitAB &&
+                nodeA.value &&
+                nodeB.value &&
+                nodeC.value &&
+                nodeC.value !== nodeA.value &&
+                nodeC.value !== nodeB.value &&
+                !(nodeA.row === nodeB.row && nodeA.col === nodeB.col) &&
+                !(nodeA.row === nodeC.row && nodeA.col === nodeC.col) &&
+                nodeB.row === nodeC.row &&
+                nodeB.col === nodeC.col
+              ) {
+                if (board[nodeC.row][nodeC.col].draft.includes(nodeA.value)) {
+                  // 获取两个节点的所有祖先
+                  const {
+                    ancestors: ancestorsA,
+                    root: rootA,
+                    label: labelA,
+                  } = getAncestors(nodeA);
+                  const {
+                    ancestors: ancestorsB,
+                    root: rootB,
+                    label: labelB,
+                  } = getAncestors(nodeB);
+                  const {
+                    ancestors: ancestorsC,
+                    root: rootC,
+                    label: labelC,
+                  } = getAncestors(nodeC);
+
+                  return {
+                    isFill: false,
+                    position: [{ row: nodeB.row, col: nodeB.col }],
+                    target: [nodeC.value],
+                    method: SOLUTION_METHODS.XY_CHAIN2,
+                    prompt: [...ancestorsA, ...ancestorsB, ...ancestorsC],
+                    label: `⑥${labelA}-${labelB}-${labelC}`,
+                    highlightPromts1: ancestorsA,
+                    highlightPromts2: ancestorsB,
+                    highlightPromts3: ancestorsC,
+                    highlightDeletes: [
+                      {
+                        row: nodeB.row,
+                        col: nodeB.col,
+                        value: [nodeC.value],
+                      },
+                    ],
+                  };
+                }
+              }
+              // 情况七：AC占据了被删除点且看得到B
+              else if (
+                isInSameUnitAB &&
+                nodeA.value &&
+                nodeB.value &&
+                nodeC.value &&
+                nodeC.value !== nodeA.value &&
+                nodeC.value !== nodeB.value &&
+                !(nodeA.row === nodeB.row && nodeA.col === nodeB.col) &&
+                nodeA.row === nodeC.row &&
+                nodeA.col === nodeC.col &&
+                !(nodeB.row === nodeC.row && nodeB.col === nodeC.col)
+              ) {
+                if (board[nodeC.row][nodeC.col].draft.includes(nodeB.value)) {
+                  // 获取两个节点的所有祖先
+                  const {
+                    ancestors: ancestorsA,
+                    root: rootA,
+                    label: labelA,
+                  } = getAncestors(nodeA);
+                  const {
+                    ancestors: ancestorsB,
+                    root: rootB,
+                    label: labelB,
+                  } = getAncestors(nodeB);
+                  const {
+                    ancestors: ancestorsC,
+                    root: rootC,
+                    label: labelC,
+                  } = getAncestors(nodeC);
+
+                  return {
+                    isFill: false,
+                    position: [{ row: nodeB.row, col: nodeB.col }],
+                    target: [nodeC.value],
+                    method: SOLUTION_METHODS.XY_CHAIN2,
+                    prompt: [...ancestorsA, ...ancestorsB, ...ancestorsC],
+                    label: `⑦${labelA}-${labelB}-${labelC}`,
+                    highlightPromts1: ancestorsA,
+                    highlightPromts2: ancestorsB,
+                    highlightPromts3: ancestorsC,
+                    highlightDeletes: [
+                      {
+                        row: nodeB.row,
+                        col: nodeB.col,
+                        value: [nodeC.value],
+                      },
+                    ],
+                  };
+                }
+              }
+              // 情况八：ABC占据了被删除点
+              else if (
+                nodeA.value &&
+                nodeB.value &&
+                nodeC.value &&
+                (nodeA.row === nodeB.row && nodeA.col === nodeB.col) &&
+                (nodeA.row === nodeC.row && nodeA.col === nodeC.col) &&
+                (nodeB.row === nodeC.row && nodeB.col === nodeC.col)
+              ) {
+                // 获取该位置的所有候选数
+                const cell = board[nodeA.row][nodeA.col];
+                // 找出除了nodeA和nodeB填入的值以外的其他候选数
+                const otherCandidates = cell.draft.filter(
+                  (value) =>
+                    value !== nodeA.value &&
+                    value !== nodeB.value &&
+                    value !== nodeC.value
+                );
+
+                if (otherCandidates.length > 0) {
+                  // 获取两个节点的所有祖先
+                  const {
+                    ancestors: ancestorsA,
+                    root: rootA,
+                    label: labelA,
+                  } = getAncestors(nodeA);
+                  const {
+                    ancestors: ancestorsB,
+                    root: rootB,
+                    label: labelB,
+                  } = getAncestors(nodeB);
+                  const {
+                    ancestors: ancestorsC,
+                    root: rootC,
+                    label: labelC,
+                  } = getAncestors(nodeC);
+
+                  return {
+                    isFill: false,
+                    position: [{ row: nodeA.row, col: nodeA.col }],
+                    target: otherCandidates,
+                    method: SOLUTION_METHODS.XY_CHAIN2,
+                    prompt: [...ancestorsA, ...ancestorsB, ...ancestorsC],
+                    label: `⑧${labelA}-${labelB}-${labelC}`,
+                    highlightPromts1: ancestorsA,
+                    highlightPromts2: ancestorsB,
+                    highlightPromts3: ancestorsC,
+                    highlightDeletes: [
+                      {
+                        row: nodeA.row,
+                        col: nodeA.col,
+                        value: otherCandidates,
+                      },
+                    ],
+                  };
+                }
               }
             }
           }

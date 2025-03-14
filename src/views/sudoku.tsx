@@ -44,6 +44,7 @@ import {
   BinaryUniversalGrave,
   jellyfish,
   XYChain,
+  XYChain2,
 } from "../tools/solution";
 import "./sudoku.less";
 import type {
@@ -208,6 +209,7 @@ const Sudoku: React.FC = () => {
       Loop,
       uniqueRectangle,
       XYChain,
+      XYChain2,
       jellyfish,
       BinaryUniversalGrave,
     ];
@@ -218,10 +220,10 @@ const Sudoku: React.FC = () => {
     const falseSolutionMap = new Map();
     const xyChainMap100 = new Map();
     const labelArray: string[] = [];
-    const xwingMap = new Map();
-    const xwingVarientMap = new Map();
-    const swordfishMap = new Map();
-
+    const skyscraperMap_4 = new Map();
+    const skyscraperMap_6 = new Map();
+    const skyscraperMap2 = new Map();
+    const xyChain2Map = new Map();
 
     for (let i = 0; i < extreme.length; i++) {
       // for (let i = 0; i < 100; i++) {
@@ -265,9 +267,11 @@ const Sudoku: React.FC = () => {
             counts++;
           }
           switch (result.method) {
-            case SOLUTION_METHODS.X_WING_COLUMN:
-            case SOLUTION_METHODS.X_WING_ROW:
-              xwingMap.set(i, result.label);
+            case SOLUTION_METHODS.XY_CHAIN:
+              xyChainMap100.set(i, result.label);
+              if (!labelArray.includes(result.label)) {
+                labelArray.push(result.label);
+              }
               break;
             case SOLUTION_METHODS.X_WING_VARIENT_COLUMN:
             case SOLUTION_METHODS.X_WING_VARIENT_ROW:
@@ -276,6 +280,9 @@ const Sudoku: React.FC = () => {
             case SOLUTION_METHODS.SWORDFISH_ROW:
             case SOLUTION_METHODS.SWORDFISH_COLUMN:
               swordfishMap.set(i, result.label);
+              break;
+            case SOLUTION_METHODS.XY_CHAIN2:
+              xyChain2Map.set(i, result.label);
               break;
           }
           const newBoard = deepCopyBoard(board2);
@@ -332,9 +339,10 @@ const Sudoku: React.FC = () => {
     console.log("falseSolutionMap", falseSolutionMap);
     console.log("xyChainMap100", xyChainMap100);
     console.log("labelArray", labelArray);
-    console.log("xwingMap", xwingMap);
-    console.log("xwingVarientMap", xwingVarientMap);
-    console.log("swordfishMap", swordfishMap);
+    console.log("skyscraperMap_4", skyscraperMap_4);
+    console.log("skyscraperMap_6", skyscraperMap_6);
+    console.log("skyscraperMap2", skyscraperMap2);
+    console.log("xyChain2Map", xyChain2Map);
   };
 
   const generateBoard = () => {
@@ -362,10 +370,10 @@ const Sudoku: React.FC = () => {
       }))
     );
 
-    // newBoard = deepCopyBoard(mockBoard);
+    newBoard = deepCopyBoard(mockBoard);
 
-    // updateBoard(newBoard, "生成新棋盘");
-    updateBoard(convertToBoard(1379), "生成新棋盘");
+    updateBoard(newBoard, "生成新棋盘");
+    // updateBoard(convertToBoard(285), "生成新棋盘");
 
     // 生成解决方案
     const solvedBoard = newBoard.map((row) => row.map((cell) => ({ ...cell })));
@@ -823,6 +831,7 @@ const Sudoku: React.FC = () => {
       Loop,
       uniqueRectangle,
       XYChain,
+      XYChain2,
       jellyfish,
       BinaryUniversalGrave,
       trialAndErrorDIY,
