@@ -1,4 +1,4 @@
-import { SOLUTION_METHODS } from "../constans";
+import { SOLUTION_METHODS } from '../constans';
 import type {
   CandidateMap,
   CandidateStats,
@@ -7,7 +7,7 @@ import type {
   GraphNode,
   Position,
   Candidate,
-} from "./index";
+} from './index';
 
 export interface Result {
   // 是否填入数字,true:在position[0]位置填入target数字,false:删除position里所有的值为target的候选数字
@@ -32,6 +32,11 @@ export interface Result {
     value: number | null;
   }[];
   highlightPromts2?: {
+    row: number;
+    col: number;
+    value: number | null;
+  }[];
+  highlightPromts3?: {
     row: number;
     col: number;
     value: number | null;
@@ -72,10 +77,8 @@ export const findDifferenceDraft = (
     for (let col = 0; col < 9; col++) {
       const beforeDraft = beforeBoard[row]?.[col]?.draft || [];
       const afterDraft = afterBoard[row]?.[col]?.draft || [];
-      const newCandidates = afterDraft.filter(
-        (num) => !beforeDraft.includes(num)
-      );
-      afterDraft.forEach((num) => {
+      const newCandidates = afterDraft.filter(num => !beforeDraft.includes(num));
+      afterDraft.forEach(num => {
         if (!beforeDraft.includes(num)) {
           newCandidates.push(num);
         }
@@ -122,7 +125,7 @@ export const hiddenSingle = (
     const rowCandidates: { [key: number]: number[] } = {};
     for (let col = 0; col < 9; col++) {
       if (board[row][col].value === null) {
-        board[row][col].draft?.forEach((num) => {
+        board[row][col].draft?.forEach(num => {
           rowCandidates[num] = rowCandidates[num] || [];
           rowCandidates[num].push(col);
         });
@@ -132,7 +135,7 @@ export const hiddenSingle = (
       if (cols.length === 1) {
         return {
           position: [{ row, col: cols[0] }],
-          prompt: cols.map((col) => ({ row, col })), // 添加 prompt
+          prompt: cols.map(col => ({ row, col })), // 添加 prompt
           method: SOLUTION_METHODS.HIDDEN_SINGLE_ROW,
           target: [Number(num)],
           isFill: true,
@@ -146,7 +149,7 @@ export const hiddenSingle = (
     const colCandidates: { [key: number]: number[] } = {};
     for (let row = 0; row < 9; row++) {
       if (board[row][col].value === null) {
-        board[row][col].draft?.forEach((num) => {
+        board[row][col].draft?.forEach(num => {
           colCandidates[num] = colCandidates[num] || [];
           colCandidates[num].push(row);
         });
@@ -156,7 +159,7 @@ export const hiddenSingle = (
       if (rows.length === 1) {
         return {
           position: [{ row: rows[0], col }],
-          prompt: rows.map((row) => ({ row, col })), // 添加 prompt
+          prompt: rows.map(row => ({ row, col })), // 添加 prompt
           method: SOLUTION_METHODS.HIDDEN_SINGLE_COLUMN,
           target: [Number(num)],
           isFill: true,
@@ -168,14 +171,13 @@ export const hiddenSingle = (
   // 检查每一宫
   for (let boxRow = 0; boxRow < 3; boxRow++) {
     for (let boxCol = 0; boxCol < 3; boxCol++) {
-      const boxCandidates: { [key: number]: { row: number; col: number }[] } =
-        {};
+      const boxCandidates: { [key: number]: { row: number; col: number }[] } = {};
       for (let i = 0; i < 3; i++) {
         for (let j = 0; j < 3; j++) {
           const row = boxRow * 3 + i;
           const col = boxCol * 3 + j;
           if (board[row][col].value === null) {
-            board[row][col].draft?.forEach((num) => {
+            board[row][col].draft?.forEach(num => {
               boxCandidates[num] = boxCandidates[num] || [];
               boxCandidates[num].push({ row, col });
             });
@@ -208,8 +210,7 @@ export const blockElimination = (
   // 检查每个3x3宫格
   for (let boxRow = 0; boxRow < 3; boxRow++) {
     for (let boxCol = 0; boxCol < 3; boxCol++) {
-      const boxCandidates: { [key: number]: { row: number; col: number }[] } =
-        {};
+      const boxCandidates: { [key: number]: { row: number; col: number }[] } = {};
 
       // 收集宫内每个数字的候选位置
       for (let i = 0; i < 3; i++) {
@@ -217,7 +218,7 @@ export const blockElimination = (
           const row = boxRow * 3 + i;
           const col = boxCol * 3 + j;
           if (board[row][col].value === null) {
-            board[row][col].draft?.forEach((num) => {
+            board[row][col].draft?.forEach(num => {
               boxCandidates[num] = boxCandidates[num] || [];
               boxCandidates[num].push({ row, col });
             });
@@ -227,8 +228,8 @@ export const blockElimination = (
 
       // 检查每个候选数字
       for (const [num, cells] of Object.entries(boxCandidates)) {
-        const rows = new Set(cells.map((cell) => cell.row));
-        const cols = new Set(cells.map((cell) => cell.col));
+        const rows = new Set(cells.map(cell => cell.row));
+        const cols = new Set(cells.map(cell => cell.col));
 
         // 区块摒除法（行）
         if (rows.size === 1) {
@@ -237,10 +238,7 @@ export const blockElimination = (
           for (let i = 0; i < 9; i++) {
             if (Math.floor(i / 3) !== boxCol) {
               const cell = board[targetRow]?.[i];
-              if (
-                cell?.value === null &&
-                cell?.draft?.includes?.(Number(num))
-              ) {
+              if (cell?.value === null && cell?.draft?.includes?.(Number(num))) {
                 positionsToRemove.push({ row: targetRow, col: i });
               }
             }
@@ -264,10 +262,7 @@ export const blockElimination = (
           for (let i = 0; i < 9; i++) {
             if (Math.floor(i / 3) !== boxRow) {
               const cell = board[i]?.[targetCol];
-              if (
-                cell?.value === null &&
-                cell?.draft?.includes?.(Number(num))
-              ) {
+              if (cell?.value === null && cell?.draft?.includes?.(Number(num))) {
                 positionsToRemove.push({ row: i, col: targetCol });
               }
             }
@@ -292,7 +287,7 @@ export const blockElimination = (
     const rowCandidates: { [key: number]: { col: number }[] } = {};
     for (let col = 0; col < 9; col++) {
       if (board[row]?.[col]?.value === null) {
-        board[row]?.[col]?.draft?.forEach((num) => {
+        board[row]?.[col]?.draft?.forEach(num => {
           rowCandidates[num] = rowCandidates[num] || [];
           rowCandidates[num].push({ col });
         });
@@ -302,7 +297,7 @@ export const blockElimination = (
     for (const [num, cells] of Object.entries(rowCandidates)) {
       if (cells.length >= 2 && cells.length <= 3) {
         const boxCol = Math.floor(cells[0].col / 3);
-        if (cells.every((cell) => Math.floor(cell.col / 3) === boxCol)) {
+        if (cells.every(cell => Math.floor(cell.col / 3) === boxCol)) {
           const positionsToRemove: { row: number; col: number }[] = [];
           for (let i = 0; i < 3; i++) {
             for (let j = 0; j < 3; j++) {
@@ -310,10 +305,7 @@ export const blockElimination = (
               const checkCol = boxCol * 3 + j;
               if (checkRow !== row) {
                 const cell = board[checkRow]?.[checkCol];
-                if (
-                  cell?.value === null &&
-                  cell?.draft?.includes?.(Number(num))
-                ) {
+                if (cell?.value === null && cell?.draft?.includes?.(Number(num))) {
                   positionsToRemove.push({ row: checkRow, col: checkCol });
                 }
               }
@@ -322,7 +314,7 @@ export const blockElimination = (
           if (positionsToRemove.length > 0) {
             return {
               position: positionsToRemove,
-              prompt: cells.map((cell) => ({ row, col: cell.col })),
+              prompt: cells.map(cell => ({ row, col: cell.col })),
               method: SOLUTION_METHODS.BLOCK_ELIMINATION_BOX_ROW,
               target: [Number(num)],
               isFill: false,
@@ -339,7 +331,7 @@ export const blockElimination = (
     const colCandidates: { [key: number]: { row: number }[] } = {};
     for (let row = 0; row < 9; row++) {
       if (board[row]?.[col]?.value === null) {
-        board[row]?.[col]?.draft?.forEach((num) => {
+        board[row]?.[col]?.draft?.forEach(num => {
           colCandidates[num] = colCandidates[num] || [];
           colCandidates[num].push({ row });
         });
@@ -349,7 +341,7 @@ export const blockElimination = (
     for (const [num, cells] of Object.entries(colCandidates)) {
       if (cells.length >= 2 && cells.length <= 3) {
         const boxRow = Math.floor(cells[0].row / 3);
-        if (cells.every((cell) => Math.floor(cell.row / 3) === boxRow)) {
+        if (cells.every(cell => Math.floor(cell.row / 3) === boxRow)) {
           const positionsToRemove: { row: number; col: number }[] = [];
           for (let i = 0; i < 3; i++) {
             for (let j = 0; j < 3; j++) {
@@ -357,10 +349,7 @@ export const blockElimination = (
               const checkCol = Math.floor(col / 3) * 3 + j;
               if (checkCol !== col) {
                 const cell = board[checkRow]?.[checkCol];
-                if (
-                  cell?.value === null &&
-                  cell?.draft?.includes?.(Number(num))
-                ) {
+                if (cell?.value === null && cell?.draft?.includes?.(Number(num))) {
                   positionsToRemove.push({ row: checkRow, col: checkCol });
                 }
               }
@@ -369,7 +358,7 @@ export const blockElimination = (
           if (positionsToRemove.length > 0) {
             return {
               position: positionsToRemove,
-              prompt: cells.map((cell) => ({ row: cell.row, col })),
+              prompt: cells.map(cell => ({ row: cell.row, col })),
               method: SOLUTION_METHODS.BLOCK_ELIMINATION_BOX_COLUMN,
               target: [Number(num)],
               isFill: false,
@@ -395,9 +384,7 @@ export const nakedPair = (
     const candidates = candidateMap[num]?.all ?? [];
 
     // 找到只有两个候选数的方格
-    const pairCandidates = candidates.filter(
-      (cell) => cell.candidates.length === 2
-    );
+    const pairCandidates = candidates.filter(cell => cell.candidates.length === 2);
 
     for (let i = 0; i < pairCandidates.length; i++) {
       const cell1 = pairCandidates[i];
@@ -405,10 +392,10 @@ export const nakedPair = (
 
       // 检查行、列、宫
       const units = [
-        { type: "row", value: cell1.row },
-        { type: "col", value: cell1.col },
+        { type: 'row', value: cell1.row },
+        { type: 'col', value: cell1.col },
         {
-          type: "box",
+          type: 'box',
           value: Math.floor(cell1.row / 3) * 3 + Math.floor(cell1.col / 3),
         },
       ];
@@ -416,13 +403,14 @@ export const nakedPair = (
       for (const unit of units) {
         const unitCells =
           (
-            candidateMap[num][
-              unit.type as keyof (typeof candidateMap)[number]
-            ] as Map<number, CandidateStats>
+            candidateMap[num][unit.type as keyof (typeof candidateMap)[number]] as Map<
+              number,
+              CandidateStats
+            >
           )?.get?.(unit.value)?.positions ?? [];
         // 在同一单元中找到另一个具有相同候选数的方格
         const cell2 = unitCells.find(
-          (c) =>
+          c =>
             (c.row !== cell1.row || c.col !== cell1.col) &&
             c.candidates.length === 2 &&
             c.candidates.includes(num1) &&
@@ -437,9 +425,9 @@ export const nakedPair = (
               if (
                 (i !== cell1.row || j !== cell1.col) &&
                 (i !== cell2.row || j !== cell2.col) &&
-                ((unit.type === "row" && i === cell1.row) ||
-                  (unit.type === "col" && j === cell1.col) ||
-                  (unit.type === "box" &&
+                ((unit.type === 'row' && i === cell1.row) ||
+                  (unit.type === 'col' && j === cell1.col) ||
+                  (unit.type === 'box' &&
                     Math.floor(i / 3) === Math.floor(cell1.row / 3) &&
                     Math.floor(j / 3) === Math.floor(cell1.col / 3)))
               ) {
@@ -459,7 +447,7 @@ export const nakedPair = (
           }
 
           if (affectedCells.length > 0) {
-            const position = affectedCells.map((c) => ({
+            const position = affectedCells.map(c => ({
               row: c.row,
               col: c.col,
             }));
@@ -469,21 +457,19 @@ export const nakedPair = (
             ];
             const getMethodKey = (unitType: string): string => {
               switch (unitType) {
-                case "row":
-                  return "ROW";
-                case "col":
-                  return "COLUMN";
-                case "box":
-                  return "BOX";
+                case 'row':
+                  return 'ROW';
+                case 'col':
+                  return 'COLUMN';
+                case 'box':
+                  return 'BOX';
                 default:
                   return unitType.toUpperCase();
               }
             };
             const method =
               SOLUTION_METHODS[
-                `NAKED_PAIR_${getMethodKey(
-                  unit.type
-                )}` as keyof typeof SOLUTION_METHODS
+                `NAKED_PAIR_${getMethodKey(unit.type)}` as keyof typeof SOLUTION_METHODS
               ];
             const target = [num1, num2];
 
@@ -513,44 +499,34 @@ export const nakedTriple1 = (
   graph: Graph
 ): Result | null => {
   // 检查行
-  const rowResult = checkNakedTriple1(board, "row");
+  const rowResult = checkNakedTriple1(board, 'row');
   if (rowResult) return rowResult;
 
   // 检查列
-  const colResult = checkNakedTriple1(board, "col");
+  const colResult = checkNakedTriple1(board, 'col');
   if (colResult) return colResult;
 
   // 检查宫
-  const boxResult = checkNakedTriple1(board, "box");
+  const boxResult = checkNakedTriple1(board, 'box');
   if (boxResult) return boxResult;
 
   return null;
 };
 
-const checkNakedTriple1 = (
-  board: CellData[][],
-  unitType: "row" | "col" | "box"
-): Result | null => {
+const checkNakedTriple1 = (board: CellData[][], unitType: 'row' | 'col' | 'box'): Result | null => {
   for (let unit = 0; unit < 9; unit++) {
     const cellsWithCandidates: { pos: Position; candidates: number[] }[] = [];
 
     // 收集单元内的候选数和位置
     for (let i = 0; i < 9; i++) {
       const [row, col] =
-        unitType === "row"
+        unitType === 'row'
           ? [unit, i]
-          : unitType === "col"
-          ? [i, unit]
-          : [
-              Math.floor(unit / 3) * 3 + Math.floor(i / 3),
-              (unit % 3) * 3 + (i % 3),
-            ];
+          : unitType === 'col'
+            ? [i, unit]
+            : [Math.floor(unit / 3) * 3 + Math.floor(i / 3), (unit % 3) * 3 + (i % 3)];
       const cell = board[row]?.[col];
-      if (
-        cell?.value === null &&
-        cell.draft?.length >= 2 &&
-        cell.draft?.length <= 3
-      ) {
+      if (cell?.value === null && cell.draft?.length >= 2 && cell.draft?.length <= 3) {
         cellsWithCandidates.push({ pos: { row, col }, candidates: cell.draft });
       }
     }
@@ -564,11 +540,7 @@ const checkNakedTriple1 = (
           const cellC = cellsWithCandidates[k];
 
           const uniqueCandidates = [
-            ...new Set([
-              ...cellA.candidates,
-              ...cellB.candidates,
-              ...cellC.candidates,
-            ]),
+            ...new Set([...cellA.candidates, ...cellB.candidates, ...cellC.candidates]),
           ];
 
           if (uniqueCandidates.length === 3) {
@@ -582,49 +554,37 @@ const checkNakedTriple1 = (
             const hasTwoDifferentPairs =
               (cellA.candidates.length === 2 &&
                 cellB.candidates.length === 2 &&
-                !cellA.candidates.every((num) =>
-                  cellB.candidates.includes(num)
-                )) ||
+                !cellA.candidates.every(num => cellB.candidates.includes(num))) ||
               (cellA.candidates.length === 2 &&
                 cellC.candidates.length === 2 &&
-                !cellA.candidates.every((num) =>
-                  cellC.candidates.includes(num)
-                )) ||
+                !cellA.candidates.every(num => cellC.candidates.includes(num))) ||
               (cellB.candidates.length === 2 &&
                 cellC.candidates.length === 2 &&
-                !cellB.candidates.every((num) =>
-                  cellC.candidates.includes(num)
-                ));
+                !cellB.candidates.every(num => cellC.candidates.includes(num)));
 
             // 三个候选方格里都只有abc候选数
             const allHaveThreeCandidates =
               cellA.candidates.length === 3 &&
               cellB.candidates.length === 3 &&
               cellC.candidates.length === 3 &&
-              cellA.candidates.every((num) => uniqueCandidates.includes(num)) &&
-              cellB.candidates.every((num) => uniqueCandidates.includes(num)) &&
-              cellC.candidates.every((num) => uniqueCandidates.includes(num));
+              cellA.candidates.every(num => uniqueCandidates.includes(num)) &&
+              cellB.candidates.every(num => uniqueCandidates.includes(num)) &&
+              cellC.candidates.every(num => uniqueCandidates.includes(num));
 
             // 新增条件：两个候选方格有abc候选数，另一个有其中两个
             const twoFullOnePartial =
               (cellA.candidates.length === 3 &&
                 cellB.candidates.length === 3 &&
                 cellC.candidates.length === 2 &&
-                cellC.candidates.every((num) =>
-                  uniqueCandidates.includes(num)
-                )) ||
+                cellC.candidates.every(num => uniqueCandidates.includes(num))) ||
               (cellA.candidates.length === 3 &&
                 cellC.candidates.length === 3 &&
                 cellB.candidates.length === 2 &&
-                cellB.candidates.every((num) =>
-                  uniqueCandidates.includes(num)
-                )) ||
+                cellB.candidates.every(num => uniqueCandidates.includes(num))) ||
               (cellB.candidates.length === 3 &&
                 cellC.candidates.length === 3 &&
                 cellA.candidates.length === 2 &&
-                cellA.candidates.every((num) =>
-                  uniqueCandidates.includes(num)
-                ));
+                cellA.candidates.every(num => uniqueCandidates.includes(num)));
 
             if (
               (hasThreeCandidates && hasTwoDifferentPairs) ||
@@ -637,19 +597,16 @@ const checkNakedTriple1 = (
               // 检查其他格子是否受影响
               for (let m = 0; m < 9; m++) {
                 const [row, col] =
-                  unitType === "row"
+                  unitType === 'row'
                     ? [unit, m]
-                    : unitType === "col"
-                    ? [m, unit]
-                    : [
-                        Math.floor(unit / 3) * 3 + Math.floor(m / 3),
-                        (unit % 3) * 3 + (m % 3),
-                      ];
+                    : unitType === 'col'
+                      ? [m, unit]
+                      : [Math.floor(unit / 3) * 3 + Math.floor(m / 3), (unit % 3) * 3 + (m % 3)];
                 const cell = board[row]?.[col];
                 if (
                   cell?.value === null &&
-                  !prompt.some((p) => p.row === row && p.col === col) &&
-                  cell.draft?.some((num) => [a, b, c].includes(num))
+                  !prompt.some(p => p.row === row && p.col === col) &&
+                  cell.draft?.some(num => [a, b, c].includes(num))
                 ) {
                   affectedPositions.push({ row, col });
                 }
@@ -658,12 +615,12 @@ const checkNakedTriple1 = (
               if (affectedPositions.length > 0) {
                 const getMethodKey = (unitType: string): string => {
                   switch (unitType) {
-                    case "row":
-                      return "ROW1";
-                    case "col":
-                      return "COLUMN1";
-                    case "box":
-                      return "BOX1";
+                    case 'row':
+                      return 'ROW1';
+                    case 'col':
+                      return 'COLUMN1';
+                    case 'box':
+                      return 'BOX1';
                     default:
                       return unitType.toUpperCase();
                   }
@@ -671,9 +628,7 @@ const checkNakedTriple1 = (
 
                 const method =
                   SOLUTION_METHODS[
-                    `NAKED_TRIPLE_${getMethodKey(
-                      unitType
-                    )}` as keyof typeof SOLUTION_METHODS
+                    `NAKED_TRIPLE_${getMethodKey(unitType)}` as keyof typeof SOLUTION_METHODS
                   ];
 
                 return {
@@ -684,9 +639,7 @@ const checkNakedTriple1 = (
                   isFill: false,
                   row: cellA.pos.row,
                   col: cellA.pos.col,
-                  box:
-                    Math.floor(cellA.pos.row / 3) * 3 +
-                    Math.floor(cellA.pos.col / 3),
+                  box: Math.floor(cellA.pos.row / 3) * 3 + Math.floor(cellA.pos.col / 3),
                 };
               }
             }
@@ -705,35 +658,29 @@ export const nakedTriple2 = (
   candidateMap: CandidateMap,
   graph: Graph
 ): Result | null => {
-  const rowResult = checkNakedTriple2(board, "row");
+  const rowResult = checkNakedTriple2(board, 'row');
   if (rowResult) return rowResult;
 
-  const colResult = checkNakedTriple2(board, "col");
+  const colResult = checkNakedTriple2(board, 'col');
   if (colResult) return colResult;
 
-  const boxResult = checkNakedTriple2(board, "box");
+  const boxResult = checkNakedTriple2(board, 'box');
   if (boxResult) return boxResult;
 
   return null;
 };
 
-const checkNakedTriple2 = (
-  board: CellData[][],
-  unitType: "row" | "col" | "box"
-): Result | null => {
+const checkNakedTriple2 = (board: CellData[][], unitType: 'row' | 'col' | 'box'): Result | null => {
   for (let unit = 0; unit < 9; unit++) {
     const cellsWithCandidates: { pos: Position; candidates: number[] }[] = [];
 
     for (let i = 0; i < 9; i++) {
       const [row, col] =
-        unitType === "row"
+        unitType === 'row'
           ? [unit, i]
-          : unitType === "col"
-          ? [i, unit]
-          : [
-              Math.floor(unit / 3) * 3 + Math.floor(i / 3),
-              (unit % 3) * 3 + (i % 3),
-            ];
+          : unitType === 'col'
+            ? [i, unit]
+            : [Math.floor(unit / 3) * 3 + Math.floor(i / 3), (unit % 3) * 3 + (i % 3)];
       const cell = board[row]?.[col];
       if (cell?.value === null && cell.draft?.length === 2) {
         cellsWithCandidates.push({ pos: { row, col }, candidates: cell.draft });
@@ -748,11 +695,7 @@ const checkNakedTriple2 = (
           const cellC = cellsWithCandidates[k];
 
           const uniqueCandidates = [
-            ...new Set([
-              ...cellA.candidates,
-              ...cellB.candidates,
-              ...cellC.candidates,
-            ]),
+            ...new Set([...cellA.candidates, ...cellB.candidates, ...cellC.candidates]),
           ];
 
           if (uniqueCandidates.length === 3) {
@@ -762,19 +705,16 @@ const checkNakedTriple2 = (
 
             for (let m = 0; m < 9; m++) {
               const [row, col] =
-                unitType === "row"
+                unitType === 'row'
                   ? [unit, m]
-                  : unitType === "col"
-                  ? [m, unit]
-                  : [
-                      Math.floor(unit / 3) * 3 + Math.floor(m / 3),
-                      (unit % 3) * 3 + (m % 3),
-                    ];
+                  : unitType === 'col'
+                    ? [m, unit]
+                    : [Math.floor(unit / 3) * 3 + Math.floor(m / 3), (unit % 3) * 3 + (m % 3)];
               const cell = board[row]?.[col];
               if (
                 cell?.value === null &&
-                !prompt.some((p) => p.row === row && p.col === col) &&
-                cell.draft?.some((num) => [a, b, c].includes(num))
+                !prompt.some(p => p.row === row && p.col === col) &&
+                cell.draft?.some(num => [a, b, c].includes(num))
               ) {
                 affectedPositions.push({ row, col });
               }
@@ -783,21 +723,19 @@ const checkNakedTriple2 = (
             if (affectedPositions.length > 0) {
               const getMethodKey = (unitType: string): string => {
                 switch (unitType) {
-                  case "row":
-                    return "ROW2";
-                  case "col":
-                    return "COLUMN2";
-                  case "box":
-                    return "BOX2";
+                  case 'row':
+                    return 'ROW2';
+                  case 'col':
+                    return 'COLUMN2';
+                  case 'box':
+                    return 'BOX2';
                   default:
                     return unitType.toUpperCase();
                 }
               };
               const method =
                 SOLUTION_METHODS[
-                  `NAKED_TRIPLE_${getMethodKey(
-                    unitType
-                  )}` as keyof typeof SOLUTION_METHODS
+                  `NAKED_TRIPLE_${getMethodKey(unitType)}` as keyof typeof SOLUTION_METHODS
                 ];
 
               return {
@@ -808,9 +746,7 @@ const checkNakedTriple2 = (
                 isFill: false,
                 row: cellA.pos.row,
                 col: cellA.pos.col,
-                box:
-                  Math.floor(cellA.pos.row / 3) * 3 +
-                  Math.floor(cellA.pos.col / 3),
+                box: Math.floor(cellA.pos.row / 3) * 3 + Math.floor(cellA.pos.col / 3),
               };
             }
           }
@@ -822,92 +758,36 @@ const checkNakedTriple2 = (
   return null;
 };
 
-// 隐形数对法
-export const hiddenPair = (
-  board: CellData[][],
-  candidateMap: CandidateMap,
-  graph: Graph
-): Result | null => {
-  // 检查行
-  const rowResult = checkHiddenPair(board, candidateMap, "row");
-  if (rowResult) return rowResult;
-
-  // 检查列
-  const colResult = checkHiddenPair(board, candidateMap, "col");
-  if (colResult) return colResult;
-
-  // 检查宫
-  const boxResult = checkHiddenPair(board, candidateMap, "box");
-  if (boxResult) return boxResult;
-
-  return null;
-};
-
-const checkHiddenPair = (
-  board: CellData[][],
-  candidateMap: CandidateMap,
-  unitType: "row" | "col" | "box"
-): Result | null => {
-  for (let unit = 0; unit < 9; unit++) {
+export const hiddenPair = (board: CellData[][], candidateMap: CandidateMap, graph: Graph) => {
+  for (let row = 0; row < 9; row++) {
     for (let num1 = 1; num1 <= 8; num1++) {
       for (let num2 = num1 + 1; num2 <= 9; num2++) {
-        const positions1 =
-          candidateMap[num1][unitType].get(unit)?.positions ?? [];
-        const positions2 =
-          candidateMap[num2][unitType].get(unit)?.positions ?? [];
-
-        if (positions1.length === 2 && positions2.length === 2) {
-          const pair = positions1.filter((pos1) =>
-            positions2.some(
-              (pos2) => pos1.row === pos2.row && pos1.col === pos2.col
-            )
-          );
-
-          if (pair.length === 2) {
-            const affectedPositions: Position[] = [];
-            const prompt: Position[] = [];
-            const targetNumbers: number[] = [];
-
-            pair.forEach((pos) => {
-              const cell = board[pos.row][pos.col];
-              const otherCandidates =
-                cell.draft?.filter((n) => n !== num1 && n !== num2) ?? [];
-              if (otherCandidates.length > 0) {
-                affectedPositions.push(pos);
-                targetNumbers.push(...otherCandidates);
-              }
-              prompt.push(pos);
-            });
-
-            if (affectedPositions.length > 0) {
-              const getMethodKey = (unitType: string): string => {
-                switch (unitType) {
-                  case "row":
-                    return "ROW";
-                  case "col":
-                    return "COLUMN";
-                  case "box":
-                    return "BOX";
-                  default:
-                    return unitType.toUpperCase();
-                }
-              };
-
+        const { count: count1, positions: positions1 } = candidateMap[num1].row.get(row) || {
+          count1: 0,
+          positions1: [],
+        };
+        const { count: count2, positions: positions2 } = candidateMap[num2].row.get(row) || {
+          count2: 0,
+          positions2: [],
+        };
+        if (count1 === 2 && count2 === 2) {
+          const positionsArray = [...(positions1 || []), ...(positions2 || [])].map(pos => ({
+            row: pos.row,
+            col: pos.col,
+          }));
+          const uniquePositions = Array.from(
+            new Set(positionsArray.map(pos => JSON.stringify(pos)))
+          ).map(str => JSON.parse(str));
+          if (uniquePositions.length === 2) {
+            const allCandidates = uniquePositions.map(pos => board[pos.row][pos.col].draft);
+            const allCandidatesSet = new Set(allCandidates.flat());
+            if (allCandidatesSet.size !== 2) {
               return {
-                position: affectedPositions,
-                prompt,
-                method:
-                  SOLUTION_METHODS[
-                    `HIDDEN_PAIR_${getMethodKey(
-                      unitType
-                    )}` as keyof typeof SOLUTION_METHODS
-                  ],
-                target: [...new Set(targetNumbers)],
                 isFill: false,
-                row: pair[0].row,
-                col: pair[0].col,
-                box:
-                  Math.floor(pair[0].row / 3) * 3 + Math.floor(pair[0].col / 3),
+                position: uniquePositions,
+                prompt: uniquePositions,
+                method: SOLUTION_METHODS.HIDDEN_PAIR_ROW,
+                target: Array.from(allCandidatesSet).filter(num => num !== num1 && num !== num2),
               };
             }
           }
@@ -915,288 +795,120 @@ const checkHiddenPair = (
       }
     }
   }
-
-  return null;
-};
-
-// 隐形三数对1
-export const hiddenTriple1 = (
-  board: CellData[][],
-  candidateMap: CandidateMap,
-  graph: Graph
-): Result | null => {
-  // 检查行
-  const rowResult = checkHiddenTriple1(board, candidateMap, "row");
-  if (rowResult) return rowResult;
-
-  // 检查列
-  const colResult = checkHiddenTriple1(board, candidateMap, "col");
-  if (colResult) return colResult;
-
-  // 检查宫
-  const boxResult = checkHiddenTriple1(board, candidateMap, "box");
-  if (boxResult) return boxResult;
-
-  return null;
-};
-
-const checkHiddenTriple1 = (
-  board: CellData[][],
-  candidateMap: CandidateMap,
-  unitType: "row" | "col" | "box"
-): Result | null => {
-  if (unitType === "row") {
-    for (let num = 1; num <= 9; num++) {
-      for (let row = 0; row < 9; row++) {
-        const CandidateStats = candidateMap[num][unitType].get(row);
-        if (CandidateStats?.count === 3) {
-          const candidateCells = CandidateStats.positions;
-          const candidates: number[] = [];
-          candidateCells.forEach((cell) => {
-            candidates.push(...board[cell.row][cell.col].draft);
-          });
-          const uniqueCandidates = [...new Set(candidates)];
-          let n = 0;
-          let target: number[] = [num];
-          if (uniqueCandidates.length <= 3) continue;
-          uniqueCandidates.forEach((candidate) => {
-            if (candidate === num) return;
-            if (
-              candidateMap[candidate][unitType].get(row)?.count === 2 &&
-              candidateMap[candidate][unitType]
-                .get(row)
-                ?.positions.every((pos) => {
-                  if (
-                    CandidateStats.positions.some(
-                      (p) => p.row === pos.row && p.col === pos.col
-                    )
-                  ) {
-                    return true;
-                  }
-                  return false;
-                })
-            ) {
-              n++;
-              target.push(candidate);
+  for (let col = 0; col < 9; col++) {
+    for (let num1 = 1; num1 <= 8; num1++) {
+      for (let num2 = num1 + 1; num2 <= 9; num2++) {
+        const { count: count1, positions: positions1 } = candidateMap[num1].col.get(col) || {
+          count1: 0,
+          positions1: [],
+        };
+        const { count: count2, positions: positions2 } = candidateMap[num2].col.get(col) || {
+          count2: 0,
+          positions2: [],
+        };
+        if (count1 === 2 && count2 === 2) {
+          const positionsArray = [...(positions1 || []), ...(positions2 || [])].map(pos => ({
+            col: pos.col,
+            row: pos.row,
+          }));
+          const uniquePositions = Array.from(
+            new Set(positionsArray.map(pos => JSON.stringify(pos)))
+          ).map(str => JSON.parse(str));
+          if (uniquePositions.length === 2) {
+            const allCandidates = uniquePositions.map(pos => board[pos.row][pos.col].draft);
+            const allCandidatesSet = new Set(allCandidates.flat());
+            if (allCandidatesSet.size !== 2) {
+              return {
+                isFill: false,
+                position: uniquePositions,
+                prompt: uniquePositions,
+                method: SOLUTION_METHODS.HIDDEN_PAIR_COLUMN,
+                target: Array.from(allCandidatesSet).filter(num => num !== num1 && num !== num2),
+              };
             }
-          });
-          if (n === 2) {
-            return {
-              position: CandidateStats.positions,
-              prompt: CandidateStats.positions,
-              target: candidates.filter((c) => !target.includes(c)),
-              method: SOLUTION_METHODS.HIDDEN_TRIPLE_ROW1,
-              isFill: false,
-              row: candidateCells[0].row,
-            };
           }
         }
       }
     }
   }
-
-  if (unitType === "col") {
-    for (let num = 1; num <= 9; num++) {
-      for (let col = 0; col < 9; col++) {
-        const CandidateStats = candidateMap[num][unitType].get(col);
-        if (CandidateStats?.count === 3) {
-          const candidateCells = CandidateStats.positions;
-          const candidates: number[] = [];
-          candidateCells.forEach((cell) => {
-            candidates.push(...board[cell.row][cell.col].draft);
-          });
-          const uniqueCandidates = [...new Set(candidates)];
-          let n = 0;
-          let target: number[] = [num];
-          if (uniqueCandidates.length <= 3) continue;
-          uniqueCandidates.forEach((candidate) => {
-            if (candidate === num) return;
-            if (
-              candidateMap[candidate][unitType].get(col)?.count === 2 &&
-              candidateMap[candidate][unitType]
-                .get(col)
-                ?.positions.every((pos) => {
-                  if (
-                    CandidateStats.positions.some(
-                      (p) => p.row === pos.row && p.col === pos.col
-                    )
-                  ) {
-                    return true;
-                  }
-                  return false;
-                })
-            ) {
-              n++;
-              target.push(candidate);
+  for (let box = 0; box < 9; box++) {
+    for (let num1 = 1; num1 <= 8; num1++) {
+      for (let num2 = num1 + 1; num2 <= 9; num2++) {
+        const { count: count1, positions: positions1 } = candidateMap[num1].box.get(box) || {
+          count1: 0,
+          positions1: [],
+        };
+        const { count: count2, positions: positions2 } = candidateMap[num2].box.get(box) || {
+          count2: 0,
+          positions2: [],
+        };
+        if (count1 === 2 && count2 === 2) {
+          const positionsArray = [...(positions1 || []), ...(positions2 || [])].map(pos => ({
+            col: pos.col,
+            row: pos.row,
+          }));
+          const uniquePositions = Array.from(
+            new Set(positionsArray.map(pos => JSON.stringify(pos)))
+          ).map(str => JSON.parse(str));
+          if (uniquePositions.length === 2) {
+            const allCandidates = uniquePositions.map(pos => board[pos.row][pos.col].draft);
+            const allCandidatesSet = new Set(allCandidates.flat());
+            if (allCandidatesSet.size !== 2) {
+              return {
+                isFill: false,
+                position: uniquePositions,
+                prompt: uniquePositions,
+                method: SOLUTION_METHODS.HIDDEN_PAIR_BOX,
+                target: Array.from(allCandidatesSet).filter(num => num !== num1 && num !== num2),
+              };
             }
-          });
-          if (n === 2) {
-            return {
-              position: CandidateStats.positions,
-              prompt: CandidateStats.positions,
-              target: candidates.filter((c) => !target.includes(c)),
-              method: SOLUTION_METHODS.HIDDEN_TRIPLE_COLUMN1,
-              isFill: false,
-              col: candidateCells[0].col,
-            };
           }
         }
       }
     }
   }
-
-  if (unitType === "box") {
-    for (let num = 1; num <= 9; num++) {
-      for (let box = 0; box < 9; box++) {
-        const CandidateStats = candidateMap[num][unitType].get(box);
-        if (CandidateStats?.count === 3) {
-          const candidateCells = CandidateStats.positions;
-          const candidates: number[] = [];
-          candidateCells.forEach((cell) => {
-            candidates.push(...board[cell.row][cell.col].draft);
-          });
-          const uniqueCandidates = [...new Set(candidates)];
-          let n = 0;
-          let target: number[] = [num];
-          if (uniqueCandidates.length <= 3) continue;
-          uniqueCandidates.forEach((candidate) => {
-            if (candidate === num) return;
-            if (
-              candidateMap[candidate][unitType].get(box)?.count === 2 &&
-              candidateMap[candidate][unitType]
-                .get(box)
-                ?.positions.every((pos) => {
-                  if (
-                    CandidateStats.positions.some(
-                      (p) => p.row === pos.row && p.col === pos.col
-                    )
-                  ) {
-                    return true;
-                  }
-                  return false;
-                })
-            ) {
-              n++;
-              target.push(candidate);
-            }
-          });
-          if (n === 2) {
-            return {
-              position: CandidateStats.positions,
-              prompt: CandidateStats.positions,
-              target: candidates.filter((c) => !target.includes(c)),
-              method: SOLUTION_METHODS.HIDDEN_TRIPLE_BOX1,
-              isFill: false,
-              box,
-            };
-          }
-        }
-      }
-    }
-  }
-
   return null;
 };
 
-// 隐形三数对2
-export const hiddenTriple2 = (
-  board: CellData[][],
-  candidateMap: CandidateMap,
-  graph: Graph
-): Result | null => {
-  // 检查行
-  const rowResult = checkHiddenTriple2(board, candidateMap, "row");
-  if (rowResult) return rowResult;
-
-  // 检查列
-  const colResult = checkHiddenTriple2(board, candidateMap, "col");
-  if (colResult) return colResult;
-
-  // 检查宫
-  const boxResult = checkHiddenTriple2(board, candidateMap, "box");
-  if (boxResult) return boxResult;
-
-  return null;
-};
-
-const checkHiddenTriple2 = (
-  board: CellData[][],
-  candidateMap: CandidateMap,
-  unitType: "row" | "col" | "box"
-): Result | null => {
-  for (let unit = 0; unit < 9; unit++) {
-    const candidates = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-    const candidatePairs: [number, number, CandidateStats][] = [];
-
-    candidates.forEach((candidate) => {
-      const stats = candidateMap[candidate][unitType].get(unit);
-      if (stats?.count === 2) {
-        candidatePairs.push([candidate, stats.count, stats]);
-      }
-    });
-
-    if (candidatePairs.length >= 3) {
-      for (let i = 0; i < candidatePairs.length - 2; i++) {
-        for (let j = i + 1; j < candidatePairs.length - 1; j++) {
-          for (let k = j + 1; k < candidatePairs.length; k++) {
-            const [a, , statsA] = candidatePairs[i];
-            const [b, , statsB] = candidatePairs[j];
-            const [c, , statsC] = candidatePairs[k];
-
-            const allPositions = new Set([
-              ...statsA.positions,
-              ...statsB.positions,
-              ...statsC.positions,
-            ]);
-
-            if (allPositions.size === 3) {
-              const positionsArray = Array.from(allPositions);
-              if (
-                positionsArray.every((pos) => {
-                  const cell = board[pos.row][pos.col];
-                  const candidatesInCell = [a, b, c].filter((num) =>
-                    cell.draft.includes(num)
-                  );
-                  return candidatesInCell.length === 2;
-                })
-              ) {
-                const otherCandidates = positionsArray.flatMap((pos) => {
-                  const cell = board[pos.row][pos.col];
-                  return cell.draft.filter((num) => ![a, b, c].includes(num));
-                });
-
-                if (otherCandidates.length > 0) {
-                  const getMethodKey = (unitType: string): string => {
-                    switch (unitType) {
-                      case "row":
-                        return "ROW";
-                      case "col":
-                        return "COLUMN";
-                      case "box":
-                        return "BOX";
-                      default:
-                        return unitType.toUpperCase();
-                    }
-                  };
-                  const method =
-                    SOLUTION_METHODS[
-                      `HIDDEN_TRIPLE_${getMethodKey(
-                        unitType
-                      )}2` as keyof typeof SOLUTION_METHODS
-                    ];
-                  return {
-                    position: positionsArray,
-                    prompt: positionsArray,
-                    target: otherCandidates,
-                    method,
-                    isFill: false,
-                    row: positionsArray[0].row,
-                    col: positionsArray[0].col,
-                    box:
-                      Math.floor(positionsArray[0].row / 3) * 3 +
-                      Math.floor(positionsArray[0].col / 3),
-                  };
-                }
+export const hiddenTriple = (board: CellData[][], candidateMap: CandidateMap, graph: Graph) => {
+  for (let row = 0; row < 9; row++) {
+    for (let num1 = 1; num1 <= 7; num1++) {
+      for (let num2 = num1 + 1; num2 <= 8; num2++) {
+        for (let num3 = num2 + 1; num3 <= 9; num3++) {
+          const { count: count1, positions: positions1 } = candidateMap[num1].row.get(row) || {
+            count1: 0,
+            positions1: [],
+          };
+          const { count: count2, positions: positions2 } = candidateMap[num2].row.get(row) || {
+            count2: 0,
+            positions2: [],
+          };
+          const { count: count3, positions: positions3 } = candidateMap[num3].row.get(row) || {
+            count3: 0,
+            positions3: [],
+          };
+          if (count1 <= 3 && count2 <= 3 && count3 <= 3) {
+            const positionsArray = [
+              ...(positions1 || []),
+              ...(positions2 || []),
+              ...(positions3 || []),
+            ].map(pos => ({ row: pos.row, col: pos.col }));
+            const uniquePositions = Array.from(
+              new Set(positionsArray.map(pos => JSON.stringify(pos)))
+            ).map(str => JSON.parse(str));
+            if (uniquePositions.length === 3) {
+              const allCandidates = uniquePositions.map(pos => board[pos.row][pos.col].draft);
+              const allCandidatesSet = new Set(allCandidates.flat());
+              if (allCandidatesSet.size !== 3) {
+                return {
+                  isFill: false,
+                  position: uniquePositions,
+                  prompt: uniquePositions,
+                  method: SOLUTION_METHODS.HIDDEN_TRIPLE_ROW,
+                  target: Array.from(allCandidatesSet).filter(
+                    num => num !== num1 && num !== num2 && num !== num3
+                  ),
+                };
               }
             }
           }
@@ -1204,9 +916,99 @@ const checkHiddenTriple2 = (
       }
     }
   }
-
+  for (let col = 0; col < 9; col++) {
+    for (let num1 = 1; num1 <= 7; num1++) {
+      for (let num2 = num1 + 1; num2 <= 8; num2++) {
+        for (let num3 = num2 + 1; num3 <= 9; num3++) {
+          const { count1, positions: positions1 } = candidateMap[num1].col.get(col) || {
+            count1: 0,
+            positions1: [],
+          };
+          const { count2, positions: positions2 } = candidateMap[num2].col.get(col) || {
+            count2: 0,
+            positions2: [],
+          };
+          const { count3, positions: positions3 } = candidateMap[num3].col.get(col) || {
+            count3: 0,
+            positions3: [],
+          };
+          if (count1 <= 3 && count2 <= 3 && count3 <= 3) {
+            const positionsArray = [
+              ...(positions1 || []),
+              ...(positions2 || []),
+              ...(positions3 || []),
+            ].map(pos => ({ col: pos.col, row: pos.row }));
+            const uniquePositions = Array.from(
+              new Set(positionsArray.map(pos => JSON.stringify(pos)))
+            ).map(str => JSON.parse(str));
+            if (uniquePositions.length === 3) {
+              const allCandidates = uniquePositions.map(pos => board[pos.row][pos.col].draft);
+              const allCandidatesSet = new Set(allCandidates.flat());
+              if (allCandidatesSet.size !== 3) {
+                return {
+                  isFill: false,
+                  position: uniquePositions,
+                  prompt: uniquePositions,
+                  method: SOLUTION_METHODS.HIDDEN_TRIPLE_COLUMN,
+                  target: Array.from(allCandidatesSet).filter(
+                    num => num !== num1 && num !== num2 && num !== num3
+                  ),
+                };
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  for (let box = 0; box < 9; box++) {
+    for (let num1 = 1; num1 <= 7; num1++) {
+      for (let num2 = num1 + 1; num2 <= 8; num2++) {
+        for (let num3 = num2 + 1; num3 <= 9; num3++) {
+          const { count1, positions: positions1 } = candidateMap[num1].box.get(box) || {
+            count1: 0,
+            positions1: [],
+          };
+          const { count2, positions: positions2 } = candidateMap[num2].box.get(box) || {
+            count2: 0,
+            positions2: [],
+          };
+          const { count3, positions: positions3 } = candidateMap[num3].box.get(box) || {
+            count3: 0,
+            positions3: [],
+          };
+          if (count1 <= 3 && count2 <= 3 && count3 <= 3) {
+            const positionsArray = [
+              ...(positions1 || []),
+              ...(positions2 || []),
+              ...(positions3 || []),
+            ].map(pos => ({ col: pos.col, row: pos.row }));
+            const uniquePositions = Array.from(
+              new Set(positionsArray.map(pos => JSON.stringify(pos)))
+            ).map(str => JSON.parse(str));
+            if (uniquePositions.length === 3) {
+              const allCandidates = uniquePositions.map(pos => board[pos.row][pos.col].draft);
+              const allCandidatesSet = new Set(allCandidates.flat());
+              if (allCandidatesSet.size !== 3) {
+                return {
+                  isFill: false,
+                  position: uniquePositions,
+                  prompt: uniquePositions,
+                  method: SOLUTION_METHODS.HIDDEN_TRIPLE_BOX,
+                  target: Array.from(allCandidatesSet).filter(
+                    num => num !== num1 && num !== num2 && num !== num3
+                  ),
+                };
+              }
+            }
+          }
+        }
+      }
+    }
+  }
   return null;
 };
+
 // X-Wing
 export const xWing = (
   board: CellData[][],
@@ -1246,21 +1048,14 @@ const checkXWing = (board: CellData[][], isRow: boolean): Result | null => {
           const [pos1, pos2] = candidatePositions[i];
           const [pos3, pos4] = candidatePositions[j];
 
-          const index = isRow ? "col" : "row";
+          const index = isRow ? 'col' : 'row';
           if (pos1[index] === pos3[index] && pos2[index] === pos4[index]) {
             const affectedPositions: Position[] = [];
 
             for (let k = 0; k < 9; k++) {
-              if (
-                k !== pos1[isRow ? "row" : "col"] &&
-                k !== pos3[isRow ? "row" : "col"]
-              ) {
-                const checkPos1 = isRow
-                  ? { row: k, col: pos1.col }
-                  : { row: pos1.row, col: k };
-                const checkPos2 = isRow
-                  ? { row: k, col: pos2.col }
-                  : { row: pos2.row, col: k };
+              if (k !== pos1[isRow ? 'row' : 'col'] && k !== pos3[isRow ? 'row' : 'col']) {
+                const checkPos1 = isRow ? { row: k, col: pos1.col } : { row: pos1.row, col: k };
+                const checkPos2 = isRow ? { row: k, col: pos2.col } : { row: pos2.row, col: k };
 
                 const cell1 = board[checkPos1.row]?.[checkPos1.col];
                 const cell2 = board[checkPos2.row]?.[checkPos2.col];
@@ -1278,9 +1073,7 @@ const checkXWing = (board: CellData[][], isRow: boolean): Result | null => {
               return {
                 position: affectedPositions,
                 prompt: [pos1, pos2, pos3, pos4],
-                method: isRow
-                  ? SOLUTION_METHODS.X_WING_ROW
-                  : SOLUTION_METHODS.X_WING_COLUMN,
+                method: isRow ? SOLUTION_METHODS.X_WING_ROW : SOLUTION_METHODS.X_WING_COLUMN,
                 target: [num],
                 isFill: false,
                 rows: [pos1.row, pos3.row],
@@ -1334,17 +1127,17 @@ const checkXWingVarient = (
             : candidateMap[num]?.col?.get(j)?.positions;
 
           if (otherPositions?.length === 3 || otherPositions?.length === 4) {
-            const posC = otherPositions.find((pos) =>
+            const posC = otherPositions.find(pos =>
               isRow
                 ? pos.col === posA.col || pos.col === posB.col
                 : pos.row === posA.row || pos.row === posB.row
             );
 
             if (posC) {
-              const groupD = otherPositions.filter((pos) => pos !== posC);
+              const groupD = otherPositions.filter(pos => pos !== posC);
 
               const isGroupDInSameBox = groupD.every(
-                (pos) =>
+                pos =>
                   Math.floor(pos.row / 3) === Math.floor(groupD[0].row / 3) &&
                   Math.floor(pos.col / 3) === Math.floor(groupD[0].col / 3)
               );
@@ -1376,7 +1169,7 @@ const checkXWingVarient = (
                   !(r === posA.row && c === posA.col) &&
                   !(r === posB.row && c === posB.col) &&
                   !(r === posC.row && c === posC.col) &&
-                  !groupD.some((pos) => pos.row === r && pos.col === c);
+                  !groupD.some(pos => pos.row === r && pos.col === c);
 
                 if (abInSameBox) {
                   // AB 在同一宫，排除 CD 所属宫内其他方格
@@ -1390,24 +1183,16 @@ const checkXWingVarient = (
                 } else {
                   // AB 不在同一宫
                   if (isRow) {
-                    const targetCol =
-                      posC.col === posA.col ? posB.col : posA.col;
+                    const targetCol = posC.col === posA.col ? posB.col : posA.col;
                     for (let r = cdBoxRow * 3; r < cdBoxRow * 3 + 3; r++) {
-                      if (
-                        isNotABCD(r, targetCol) &&
-                        board[r][targetCol].draft?.includes(num)
-                      ) {
+                      if (isNotABCD(r, targetCol) && board[r][targetCol].draft?.includes(num)) {
                         positionsToExclude.push({ row: r, col: targetCol });
                       }
                     }
                   } else {
-                    const targetRow =
-                      posC.row === posA.row ? posB.row : posA.row;
+                    const targetRow = posC.row === posA.row ? posB.row : posA.row;
                     for (let c = cdBoxCol * 3; c < cdBoxCol * 3 + 3; c++) {
-                      if (
-                        isNotABCD(targetRow, c) &&
-                        board[targetRow][c].draft?.includes(num)
-                      ) {
+                      if (isNotABCD(targetRow, c) && board[targetRow][c].draft?.includes(num)) {
                         positionsToExclude.push({ row: targetRow, col: c });
                       }
                     }
@@ -1416,10 +1201,8 @@ const checkXWingVarient = (
 
                 if (
                   positionsToExclude.length > 0 &&
-                  Math.floor(groupD[0].row / 3) ===
-                    Math.floor(positionsToExclude[0].row / 3) &&
-                  Math.floor(groupD[0].col / 3) ===
-                    Math.floor(positionsToExclude[0].col / 3)
+                  Math.floor(groupD[0].row / 3) === Math.floor(positionsToExclude[0].row / 3) &&
+                  Math.floor(groupD[0].col / 3) === Math.floor(positionsToExclude[0].col / 3)
                 ) {
                   return {
                     position: positionsToExclude,
@@ -1490,22 +1273,13 @@ export const xyWing = (
           !areCellsInSameUnit(cellB, cellC)
         ) {
           // 检查候选数是否符合 XY-Wing 模式
-          const commonCandidateBC = candidatesB.find((num) =>
-            candidatesC.includes(num)
-          );
-          const commonCandidateAC = candidatesA.find((num) =>
-            candidatesC.includes(num)
-          );
-          const commonCandidateAB = candidatesA.find((num) =>
-            candidatesB.includes(num)
-          );
+          const commonCandidateBC = candidatesB.find(num => candidatesC.includes(num));
+          const commonCandidateAC = candidatesA.find(num => candidatesC.includes(num));
+          const commonCandidateAB = candidatesA.find(num => candidatesB.includes(num));
           if (!commonCandidateBC || !commonCandidateAC || !commonCandidateAB) {
             continue;
           }
-          if (
-            new Set([commonCandidateBC, commonCandidateAC, commonCandidateAB])
-              .size !== 3
-          ) {
+          if (new Set([commonCandidateBC, commonCandidateAC, commonCandidateAB]).size !== 3) {
             continue;
           }
           // 找到符合条件的 XY-Wing
@@ -1526,10 +1300,7 @@ export const xyWing = (
 
               if (isInSameUnitWithB && isInSameUnitWithC) {
                 const cell = board[row]?.[col];
-                if (
-                  cell?.value === null &&
-                  cell.draft?.includes(targetNumber)
-                ) {
+                if (cell?.value === null && cell.draft?.includes(targetNumber)) {
                   affectedPositions.push({ row, col });
                 }
               }
@@ -1554,22 +1325,13 @@ export const xyWing = (
           !areCellsInSameUnit(cellA, cellC)
         ) {
           // 检查候选数是否符合 XY-Wing 模式
-          const commonCandidateAC = candidatesA.find((num) =>
-            candidatesC.includes(num)
-          );
-          const commonCandidateBA = candidatesB.find((num) =>
-            candidatesA.includes(num)
-          );
-          const commonCandidateBC = candidatesB.find((num) =>
-            candidatesC.includes(num)
-          );
+          const commonCandidateAC = candidatesA.find(num => candidatesC.includes(num));
+          const commonCandidateBA = candidatesB.find(num => candidatesA.includes(num));
+          const commonCandidateBC = candidatesB.find(num => candidatesC.includes(num));
           if (!commonCandidateAC || !commonCandidateBA || !commonCandidateBC) {
             continue;
           }
-          if (
-            new Set([commonCandidateAC, commonCandidateBA, commonCandidateBC])
-              .size !== 3
-          ) {
+          if (new Set([commonCandidateAC, commonCandidateBA, commonCandidateBC]).size !== 3) {
             continue;
           }
           // 找到符合条件的 XY-Wing
@@ -1590,10 +1352,7 @@ export const xyWing = (
 
               if (isInSameUnitWithA && isInSameUnitWithC) {
                 const cell = board[row]?.[col];
-                if (
-                  cell?.value === null &&
-                  cell.draft?.includes(targetNumber)
-                ) {
+                if (cell?.value === null && cell.draft?.includes(targetNumber)) {
                   affectedPositions.push({ row, col });
                 }
               }
@@ -1618,22 +1377,13 @@ export const xyWing = (
           !areCellsInSameUnit(cellA, cellB)
         ) {
           // 检查候选数是否符合 XY-Wing 模式
-          const commonCandidateAB = candidatesA.find((num) =>
-            candidatesB.includes(num)
-          );
-          const commonCandidateCA = candidatesC.find((num) =>
-            candidatesA.includes(num)
-          );
-          const commonCandidateCB = candidatesC.find((num) =>
-            candidatesB.includes(num)
-          );
+          const commonCandidateAB = candidatesA.find(num => candidatesB.includes(num));
+          const commonCandidateCA = candidatesC.find(num => candidatesA.includes(num));
+          const commonCandidateCB = candidatesC.find(num => candidatesB.includes(num));
           if (!commonCandidateAB || !commonCandidateCA || !commonCandidateCB) {
             continue;
           }
-          if (
-            new Set([commonCandidateAB, commonCandidateCA, commonCandidateCB])
-              .size !== 3
-          ) {
+          if (new Set([commonCandidateAB, commonCandidateCA, commonCandidateCB]).size !== 3) {
             continue;
           }
           // 找到符合条件的 XY-Wing
@@ -1654,10 +1404,7 @@ export const xyWing = (
 
               if (isInSameUnitWithA && isInSameUnitWithB) {
                 const cell = board[row]?.[col];
-                if (
-                  cell?.value === null &&
-                  cell.draft?.includes(targetNumber)
-                ) {
+                if (cell?.value === null && cell.draft?.includes(targetNumber)) {
                   affectedPositions.push({ row, col });
                 }
               }
@@ -1724,10 +1471,8 @@ export const xyzWing = (
         if (!hasXY && !hasXZ) continue;
 
         // 在A所在的行和列中寻找方格C
-        const cellsInRow =
-          candidateMap[x]?.row?.get(cellA.row)?.positions ?? [];
-        const cellsInCol =
-          candidateMap[x]?.col?.get(cellA.col)?.positions ?? [];
+        const cellsInRow = candidateMap[x]?.row?.get(cellA.row)?.positions ?? [];
+        const cellsInCol = candidateMap[x]?.col?.get(cellA.col)?.positions ?? [];
         const potentialCells = [...cellsInRow, ...cellsInCol];
 
         for (const cellC of potentialCells) {
@@ -1743,8 +1488,7 @@ export const xyzWing = (
           // 检查C的候选数是否为xy或xz，且与B不同
           const hasCXY = cellCDraft.includes(x) && cellCDraft.includes(y);
           const hasCXZ = cellCDraft.includes(x) && cellCDraft.includes(z);
-          if ((!hasCXY && !hasCXZ) || (hasCXY && hasXY) || (hasCXZ && hasXZ))
-            continue;
+          if ((!hasCXY && !hasCXZ) || (hasCXY && hasXY) || (hasCXZ && hasXZ)) continue;
 
           // 寻找受影响的方格D
           const affectedPositions: Position[] = [];
@@ -1826,7 +1570,7 @@ export const isUnitStrongLink = (
   if (
     cell1.draft.length === 2 &&
     cell2.draft.length === 2 &&
-    cell1.draft.every((n) => cell2.draft.includes(n))
+    cell1.draft.every(n => cell2.draft.includes(n))
   ) {
     return true;
   }
@@ -1838,8 +1582,8 @@ export const isUnitStrongLink = (
     cell1.draft.includes(num) &&
     cell2.draft.includes(num)
   ) {
-    const otherNum1 = cell1.draft.find((n) => n !== num);
-    const otherNum2 = cell2.draft.find((n) => n !== num);
+    const otherNum1 = cell1.draft.find(n => n !== num);
+    const otherNum2 = cell2.draft.find(n => n !== num);
 
     if (otherNum1 && otherNum2) {
       // 检查共同行、列和宫
@@ -1856,11 +1600,7 @@ export const isUnitStrongLink = (
 
       if (isSameRow) {
         for (let col = 0; col < 9; col++) {
-          if (
-            col !== position1.col &&
-            col !== position2.col &&
-            checkCellC(position1.row, col)
-          ) {
+          if (col !== position1.col && col !== position2.col && checkCellC(position1.row, col)) {
             return true;
           }
         }
@@ -1868,11 +1608,7 @@ export const isUnitStrongLink = (
 
       if (isSameCol) {
         for (let row = 0; row < 9; row++) {
-          if (
-            row !== position1.row &&
-            row !== position2.row &&
-            checkCellC(row, position1.col)
-          ) {
+          if (row !== position1.row && row !== position2.row && checkCellC(row, position1.col)) {
             return true;
           }
         }
@@ -1905,27 +1641,21 @@ export const isUnitStrongLink = (
   const positionB = cellB === cell2 ? position2 : position1;
 
   if (cellA.draft.length === 3 && cellB.draft.length === 2) {
-    const [a, b] = cellA.draft.filter((n) => n !== num);
-    if (
-      cellB.draft.includes(num) &&
-      (cellB.draft.includes(a) || cellB.draft.includes(b))
-    ) {
+    const [a, b] = cellA.draft.filter(n => n !== num);
+    if (cellB.draft.includes(num) && (cellB.draft.includes(a) || cellB.draft.includes(b))) {
       const units = getCommonUnits(positionA, positionB, board);
       for (const unit of units) {
         const cellC = board[unit.row]?.[unit.col];
         if (cellC.draft.includes(num)) continue;
         if (cellC.draft.length === 2) {
-          if (
-            cellA.draft.includes(cellC.draft[0]) &&
-            cellA.draft.includes(cellC.draft[1])
-          ) {
+          if (cellA.draft.includes(cellC.draft[0]) && cellA.draft.includes(cellC.draft[1])) {
             return true;
           }
         }
       }
     }
   } else if (cellA.draft.length === 3 && cellB.draft.length === 3) {
-    if (cellA.draft.every((n) => cellB.draft.includes(n))) {
+    if (cellA.draft.every(n => cellB.draft.includes(n))) {
       const units = getCommonUnits(positionA, positionB, board);
       for (const unit of units) {
         const cellC = board[unit.row]?.[unit.col];
@@ -1970,10 +1700,8 @@ export const isUnitStrongLink = (
   }
 
   // 检查宫
-  const box1 =
-    Math.floor(position1.row / 3) * 3 + Math.floor(position1.col / 3);
-  const box2 =
-    Math.floor(position2.row / 3) * 3 + Math.floor(position2.col / 3);
+  const box1 = Math.floor(position1.row / 3) * 3 + Math.floor(position1.col / 3);
+  const box2 = Math.floor(position2.row / 3) * 3 + Math.floor(position2.col / 3);
   if (box1 === box2) {
     const boxCandidates = candidateMap[num]?.box?.get(box1);
     if (boxCandidates?.count === 2) {
@@ -2000,15 +1728,7 @@ export const findStrongLink = (
       for (let j = i + 1; j < positions.length; j++) {
         const position1 = { row: positions[i].row, col: positions[i].col };
         const position2 = { row: positions[j].row, col: positions[j].col };
-        if (
-          isUnitStrongLink(
-            board,
-            position1,
-            position2,
-            Number(num),
-            candidateMap
-          )
-        ) {
+        if (isUnitStrongLink(board, position1, position2, Number(num), candidateMap)) {
           return { positions: [position1, position2], num: Number(num) };
         }
       }
@@ -2042,17 +1762,11 @@ export const isStrongLink = (
 
       visited.add(key);
 
-      if (
-        currentNode.row === position1.row &&
-        currentNode.col === position1.col
-      ) {
+      if (currentNode.row === position1.row && currentNode.col === position1.col) {
         foundPosition1 = true;
       }
 
-      if (
-        currentNode.row === position2.row &&
-        currentNode.col === position2.col
-      ) {
+      if (currentNode.row === position2.row && currentNode.col === position2.col) {
         foundPosition2 = true;
       }
 
@@ -2093,11 +1807,7 @@ export const getGraphNodesCounts = (graphNode: GraphNode): number => {
   return count;
 };
 
-export const getGraphNode = (
-  pos: Position,
-  num: number,
-  graph: Graph
-): GraphNode | null => {
+export const getGraphNode = (pos: Position, num: number, graph: Graph): GraphNode | null => {
   const graphArr = graph[num] ?? [];
   for (const graphNode of graphArr) {
     const queue: GraphNode[] = [graphNode];
@@ -2133,10 +1843,7 @@ export const getGraphNodePaths = (
     visited: Set<string>,
     currentPath: Position[]
   ) => {
-    if (
-      currentNode.row === targetNode.row &&
-      currentNode.col === targetNode.col
-    ) {
+    if (currentNode.row === targetNode.row && currentNode.col === targetNode.col) {
       paths.push([...currentPath]);
       return;
     }
@@ -2156,9 +1863,7 @@ export const getGraphNodePaths = (
   const visited = new Set<string>();
   const startKey = `${graphNode1.row},${graphNode1.col}`;
   visited.add(startKey);
-  dfs(graphNode1, graphNode2, visited, [
-    { row: graphNode1.row, col: graphNode1.col },
-  ]);
+  dfs(graphNode1, graphNode2, visited, [{ row: graphNode1.row, col: graphNode1.col }]);
 
   return paths;
 };
@@ -2173,9 +1878,7 @@ export const checkStrongLinkParity = (
   const startNodes = graph[num] ?? [];
 
   for (const startNode of startNodes) {
-    const queue: { node: GraphNode; depth: number }[] = [
-      { node: startNode, depth: 0 },
-    ];
+    const queue: { node: GraphNode; depth: number }[] = [{ node: startNode, depth: 0 }];
     const visited: Set<string> = new Set();
 
     while (queue.length > 0) {
@@ -2188,14 +1891,9 @@ export const checkStrongLinkParity = (
 
       visited.add(key);
 
-      if (
-        currentNode.row === position1.row &&
-        currentNode.col === position1.col
-      ) {
+      if (currentNode.row === position1.row && currentNode.col === position1.col) {
         // 找到第一个位置，继续搜索第二个位置
-        const subQueue: { node: GraphNode; depth: number }[] = [
-          { node: currentNode, depth: 0 },
-        ];
+        const subQueue: { node: GraphNode; depth: number }[] = [{ node: currentNode, depth: 0 }];
         const subVisited: Set<string> = new Set();
 
         while (subQueue.length > 0) {
@@ -2256,15 +1954,10 @@ export const skyscraper = (
             }
 
             // 找到共同影响的区域
-            let affectedPositions = findCommonAffectedPositions(
-              pos1,
-              pos2,
-              board,
-              num
-            );
+            let affectedPositions = findCommonAffectedPositions(pos1, pos2, board, num);
 
             // 排除与路径开头和结尾都为强连接的位置
-            affectedPositions = affectedPositions.filter((pos) => {
+            affectedPositions = affectedPositions.filter(pos => {
               const isStrongLinkWithStart = isUnitStrongLink(
                 board,
                 pos,
@@ -2272,23 +1965,14 @@ export const skyscraper = (
                 num,
                 candidateMap
               );
-              const isStrongLinkWithEnd = isUnitStrongLink(
-                board,
-                pos,
-                path[3],
-                num,
-                candidateMap
-              );
+              const isStrongLinkWithEnd = isUnitStrongLink(board, pos, path[3], num, candidateMap);
               return !(isStrongLinkWithStart && isStrongLinkWithEnd);
             });
 
             if (
               affectedPositions.length > 0 &&
-              !affectedPositions.some((pos) =>
-                path.some(
-                  (pathPos) =>
-                    pathPos.row === pos.row && pathPos.col === pos.col
-                )
+              !affectedPositions.some(pos =>
+                path.some(pathPos => pathPos.row === pos.row && pathPos.col === pos.col)
               )
             ) {
               return {
@@ -2311,15 +1995,10 @@ export const skyscraper = (
             }
 
             // 找到共同影响的区域
-            let affectedPositions = findCommonAffectedPositions(
-              pos1,
-              pos2,
-              board,
-              num
-            );
+            let affectedPositions = findCommonAffectedPositions(pos1, pos2, board, num);
 
             // 排除与路径开头和结尾都为强连接的位置
-            affectedPositions = affectedPositions.filter((pos) => {
+            affectedPositions = affectedPositions.filter(pos => {
               const isStrongLinkWithStart = isUnitStrongLink(
                 board,
                 pos,
@@ -2327,23 +2006,14 @@ export const skyscraper = (
                 num,
                 candidateMap
               );
-              const isStrongLinkWithEnd = isUnitStrongLink(
-                board,
-                pos,
-                path[5],
-                num,
-                candidateMap
-              );
+              const isStrongLinkWithEnd = isUnitStrongLink(board, pos, path[5], num, candidateMap);
               return !(isStrongLinkWithStart && isStrongLinkWithEnd);
             });
 
             if (
               affectedPositions.length > 0 &&
-              !affectedPositions.some((pos) =>
-                path.some(
-                  (pathPos) =>
-                    pathPos.row === pos.row && pathPos.col === pos.col
-                )
+              !affectedPositions.some(pos =>
+                path.some(pathPos => pathPos.row === pos.row && pathPos.col === pos.col)
               )
             ) {
               return {
@@ -2352,7 +2022,7 @@ export const skyscraper = (
                 method: SOLUTION_METHODS.SKYSCRAPER,
                 target: [num],
                 isFill: false,
-                label: "6",
+                label: '6',
               };
             }
           }
@@ -2453,25 +2123,9 @@ export const skyscraper2 = (
         for (let j = i + 1; j < nodesArr.length; j++) {
           for (let k = 0; k < nodesArr[i].length; k++) {
             for (let l = 0; l < nodesArr[j].length; l++) {
-              if (
-                isWeakLink(
-                  board,
-                  nodesArr[i][k],
-                  nodesArr[j][l],
-                  Number(num),
-                  candidateMap
-                )
-              ) {
-                const graphNode1 = findGraphNodeByPosition(
-                  nodesArr[i][k],
-                  Number(num),
-                  graph
-                );
-                const graphNode2 = findGraphNodeByPosition(
-                  nodesArr[j][l],
-                  Number(num),
-                  graph
-                );
+              if (isWeakLink(board, nodesArr[i][k], nodesArr[j][l], Number(num), candidateMap)) {
+                const graphNode1 = findGraphNodeByPosition(nodesArr[i][k], Number(num), graph);
+                const graphNode2 = findGraphNodeByPosition(nodesArr[j][l], Number(num), graph);
                 if (!graphNode1 || !graphNode2) continue;
                 for (const graphNode1_1 of graphNode1.next) {
                   for (const graphNode2_1 of graphNode2?.next ?? []) {
@@ -2515,15 +2169,10 @@ export const skyscraper2 = (
   return null;
 };
 
-export const isInSameBox = (
-  pos1: Position | GraphNode,
-  pos2: Position | GraphNode
-): boolean => {
+export const isInSameBox = (pos1: Position | GraphNode, pos2: Position | GraphNode): boolean => {
   return (
-    Math.floor((pos1 as Position).row / 3) ===
-      Math.floor((pos2 as Position).row / 3) &&
-    Math.floor((pos1 as Position).col / 3) ===
-      Math.floor((pos2 as Position).col / 3)
+    Math.floor((pos1 as Position).row / 3) === Math.floor((pos2 as Position).row / 3) &&
+    Math.floor((pos1 as Position).col / 3) === Math.floor((pos2 as Position).col / 3)
   );
 };
 
@@ -2617,7 +2266,7 @@ export const combinationChain = (
                     target: [num],
                     isFill: false,
                     isWeakLink: isWeakLink(board, C, D, num, candidateMap),
-                    chainStructure: "3-2-1",
+                    chainStructure: '3-2-1',
                   };
                 }
               }
@@ -2628,7 +2277,7 @@ export const combinationChain = (
                 for (const path of paths) {
                   if (
                     path.some(
-                      (p) =>
+                      p =>
                         (p.row === A?.row && p.col === A?.col) ||
                         (p.row === B?.row && p.col === B?.col) ||
                         (p.row === C?.row && p.col === C?.col)
@@ -2645,13 +2294,10 @@ export const combinationChain = (
                     graphNodeG.col !== B.col
                   ) {
                     position.push({ row: A.row, col: graphNodeG.col });
-                  } else if (
-                    Math.floor(A.row / 3) === Math.floor(graphNodeG.row / 3)
-                  ) {
+                  } else if (Math.floor(A.row / 3) === Math.floor(graphNodeG.row / 3)) {
                     for (let col = 0; col < 9; col++) {
                       if (
-                        Math.floor(col / 3) ===
-                          Math.floor(graphNodeG.col / 3) &&
+                        Math.floor(col / 3) === Math.floor(graphNodeG.col / 3) &&
                         board[A.row]?.[col].value === null &&
                         board[A.row]?.[col]?.draft?.includes(num) &&
                         col !== A.col &&
@@ -2665,10 +2311,9 @@ export const combinationChain = (
                   // 检查position中的元素是否与prompt中的元素位置相同，如果相同则剔除
                   const promptPositions = [A, B, C, ...path];
                   position = position.filter(
-                    (pos) =>
+                    pos =>
                       !promptPositions.some(
-                        (promptPos) =>
-                          promptPos.row === pos.row && promptPos.col === pos.col
+                        promptPos => promptPos.row === pos.row && promptPos.col === pos.col
                       )
                   );
 
@@ -2683,7 +2328,7 @@ export const combinationChain = (
                     target: [num],
                     isFill: false,
                     isWeakLink: isWeakLink(board, C, D, num, candidateMap),
-                    chainStructure: "3-4-1",
+                    chainStructure: '3-4-1',
                   };
                 }
               }
@@ -2718,11 +2363,8 @@ export const combinationChain = (
                       method: SOLUTION_METHODS.COMBINATION_CHAIN,
                       target: [num],
                       isFill: false,
-                      isWeakLink:
-                        candidateMap[num].row.get(A.row)?.count != 3
-                          ? true
-                          : false,
-                      chainStructure: "3-2-2",
+                      isWeakLink: candidateMap[num].row.get(A.row)?.count != 3 ? true : false,
+                      chainStructure: '3-2-2',
                     };
                   }
                 }
@@ -2781,7 +2423,7 @@ export const combinationChain = (
                       target: [num],
                       isFill: false,
                       isWeakLink: isWeakLink(board, C, D, num, candidateMap),
-                      chainStructure: "3-2-1",
+                      chainStructure: '3-2-1',
                     };
                   }
                 }
@@ -2792,7 +2434,7 @@ export const combinationChain = (
                   for (const path of paths) {
                     if (
                       path.some(
-                        (p) =>
+                        p =>
                           (p.row === A?.row && p.col === A?.col) ||
                           (p.row === B?.row && p.col === B?.col) ||
                           (p.row === C?.row && p.col === C?.col)
@@ -2803,21 +2445,17 @@ export const combinationChain = (
                     // 检查列的情况
                     let position: Position[] = [];
                     if (
-                      Math.floor(A.col / 3) !==
-                        Math.floor(graphNodeG.col / 3) &&
+                      Math.floor(A.col / 3) !== Math.floor(graphNodeG.col / 3) &&
                       board[graphNodeG.row]?.[A.col].value === null &&
                       board[graphNodeG.row]?.[A.col]?.draft?.includes(num) &&
                       graphNodeG.row !== A.row &&
                       graphNodeG.row !== B.row
                     ) {
                       position.push({ row: graphNodeG.row, col: A.col });
-                    } else if (
-                      Math.floor(A.col / 3) === Math.floor(graphNodeG.col / 3)
-                    ) {
+                    } else if (Math.floor(A.col / 3) === Math.floor(graphNodeG.col / 3)) {
                       for (let row = 0; row < 9; row++) {
                         if (
-                          Math.floor(row / 3) ===
-                            Math.floor(graphNodeG.row / 3) &&
+                          Math.floor(row / 3) === Math.floor(graphNodeG.row / 3) &&
                           board[row]?.[A.col].value === null &&
                           board[row]?.[A.col]?.draft?.includes(num) &&
                           row !== A.row &&
@@ -2831,11 +2469,9 @@ export const combinationChain = (
                     // 检查position中的元素是否与prompt中的元素位置相同，如果相同则剔除
                     const promptPositions = [A, B, C, ...path];
                     position = position.filter(
-                      (pos) =>
+                      pos =>
                         !promptPositions.some(
-                          (promptPos) =>
-                            promptPos.row === pos.row &&
-                            promptPos.col === pos.col
+                          promptPos => promptPos.row === pos.row && promptPos.col === pos.col
                         )
                     );
 
@@ -2850,7 +2486,7 @@ export const combinationChain = (
                       target: [num],
                       isFill: false,
                       isWeakLink: isWeakLink(board, C, D, num, candidateMap),
-                      chainStructure: "3-4-1",
+                      chainStructure: '3-4-1',
                     };
                   }
                 }
@@ -2886,11 +2522,8 @@ export const combinationChain = (
                       method: SOLUTION_METHODS.COMBINATION_CHAIN,
                       target: [num],
                       isFill: false,
-                      isWeakLink:
-                        candidateMap[num].col.get(A.col)?.count != 3
-                          ? true
-                          : false,
-                      chainStructure: "3-2-2",
+                      isWeakLink: candidateMap[num].col.get(A.col)?.count != 3 ? true : false,
+                      chainStructure: '3-2-2',
                     };
                   }
                 }
@@ -2915,19 +2548,13 @@ const findCommonAffectedPositions = (
 
   for (let row = 0; row < 9; row++) {
     for (let col = 0; col < 9; col++) {
-      if (
-        (row === pos1.row && col === pos1.col) ||
-        (row === pos2.row && col === pos2.col)
-      ) {
+      if ((row === pos1.row && col === pos1.col) || (row === pos2.row && col === pos2.col)) {
         continue;
       }
 
       const cell = board[row]?.[col];
       if (cell?.value === null && cell.draft?.includes(num)) {
-        if (
-          areCellsInSameUnit({ row, col }, pos1) &&
-          areCellsInSameUnit({ row, col }, pos2)
-        ) {
+        if (areCellsInSameUnit({ row, col }, pos1) && areCellsInSameUnit({ row, col }, pos2)) {
           affectedPositions.push({ row, col });
         }
       }
@@ -3026,19 +2653,13 @@ export const findSixPath = (
 };
 
 // 获取两个格子的共同区域
-const getCommonUnits = (
-  pos1: Position,
-  pos2: Position,
-  board: CellData[][]
-): Position[] => {
+const getCommonUnits = (pos1: Position, pos2: Position, board: CellData[][]): Position[] => {
   const units: Position[] = [];
   const uniquePositions = new Set<string>();
   const units1 = getUnits(pos1, board);
   const units2 = getUnits(pos2, board);
   for (const unit1 of units1) {
-    if (
-      units2.some((unit2) => unit2.row === unit1.row && unit2.col === unit1.col)
-    ) {
+    if (units2.some(unit2 => unit2.row === unit1.row && unit2.col === unit1.col)) {
       const key = `${unit1.row},${unit1.col}`;
       if (!uniquePositions.has(key)) {
         uniquePositions.add(key);
@@ -3269,12 +2890,9 @@ export const Loop = (
             if (rootNodeArray1.length && rootNodeArray2.length) {
               for (const rootNode1 of rootNodeArray1) {
                 for (const rootNode2 of rootNodeArray2) {
-                  if (
-                    rootNode1.row === rootNode2.row &&
-                    rootNode1.col === rootNode2.col
-                  ) {
+                  if (rootNode1.row === rootNode2.row && rootNode1.col === rootNode2.col) {
                     return {
-                      label: "3-2",
+                      label: '3-2',
                       position: [{ row: rootNode1.row, col: rootNode1.col }],
                       prompt: [
                         { row: rootNode1.row, col: rootNode1.col },
@@ -3298,23 +2916,14 @@ export const Loop = (
             const endNodes2Array = findGraphNodeByDistance(endNode1, 1);
             if (startNodes2Array.length && endNodes2Array.length) {
               for (const startNode2 of startNodes2Array) {
-                if (
-                  startNode2.row === startNode1.row &&
-                  startNode2.col === startNode1.col
-                ) {
+                if (startNode2.row === startNode1.row && startNode2.col === startNode1.col) {
                   continue;
                 }
                 for (const endNode2 of endNodes2Array) {
-                  if (
-                    endNode2.row === endNode1.row &&
-                    endNode2.col === endNode1.col
-                  ) {
+                  if (endNode2.row === endNode1.row && endNode2.col === endNode1.col) {
                     continue;
                   }
-                  if (
-                    endNode2.row === startNode2.row &&
-                    endNode2.col === startNode2.col
-                  ) {
+                  if (endNode2.row === startNode2.row && endNode2.col === startNode2.col) {
                     continue;
                   }
                   // 3-2-2
@@ -3332,15 +2941,10 @@ export const Loop = (
                     if (rootNodeArray1.length && rootNodeArray2.length) {
                       for (const rootNode1 of rootNodeArray1) {
                         for (const rootNode2 of rootNodeArray2) {
-                          if (
-                            rootNode1.row === rootNode2.row &&
-                            rootNode1.col === rootNode2.col
-                          ) {
+                          if (rootNode1.row === rootNode2.row && rootNode1.col === rootNode2.col) {
                             return {
-                              label: "3-2-2",
-                              position: [
-                                { row: rootNode1.row, col: rootNode1.col },
-                              ],
+                              label: '3-2-2',
+                              position: [{ row: rootNode1.row, col: rootNode1.col }],
                               prompt: [
                                 { row: rootNode1.row, col: rootNode1.col },
                                 { row: startNode.row, col: startNode.col },
@@ -3374,15 +2978,10 @@ export const Loop = (
                     if (rootNodeArray1.length && rootNodeArray2.length) {
                       for (const rootNode1 of rootNodeArray1) {
                         for (const rootNode2 of rootNodeArray2) {
-                          if (
-                            rootNode1.row === rootNode2.row &&
-                            rootNode1.col === rootNode2.col
-                          ) {
+                          if (rootNode1.row === rootNode2.row && rootNode1.col === rootNode2.col) {
                             return {
-                              label: "3-4",
-                              position: [
-                                { row: rootNode1.row, col: rootNode1.col },
-                              ],
+                              label: '3-4',
+                              position: [{ row: rootNode1.row, col: rootNode1.col }],
                               prompt: [
                                 { row: rootNode1.row, col: rootNode1.col },
                                 { row: startNode.row, col: startNode.col },
@@ -3412,10 +3011,7 @@ export const Loop = (
   return null;
 };
 
-export const getEmptyCellsInRow = (
-  row: number,
-  board: CellData[][]
-): Position[] => {
+export const getEmptyCellsInRow = (row: number, board: CellData[][]): Position[] => {
   const emptyCells: Position[] = [];
   for (let col = 0; col < 9; col++) {
     if (board[row][col].draft.length) {
@@ -3425,10 +3021,7 @@ export const getEmptyCellsInRow = (
   return emptyCells;
 };
 
-export const getEmptyCellsInCol = (
-  col: number,
-  board: CellData[][]
-): Position[] => {
+export const getEmptyCellsInCol = (col: number, board: CellData[][]): Position[] => {
   const emptyCells: Position[] = [];
   for (let row = 0; row < 9; row++) {
     if (board[row][col].draft.length) {
@@ -3455,10 +3048,7 @@ export const getEmptyCellsInBox = (
       for (let c = startCol; c < startCol + 3; c++) {
         if (
           board[r][c].draft.length &&
-          !(
-            (r === pos1.row && c === pos1.col) ||
-            (r === pos2.row && c === pos2.col)
-          )
+          !((r === pos1.row && c === pos1.col) || (r === pos2.row && c === pos2.col))
         ) {
           emptyCells.push({ row: r, col: c });
         }
@@ -3484,8 +3074,7 @@ export const uniqueRectangle = (
         if (
           cell1 &&
           cell2 &&
-          JSON.stringify(cell1.candidates) ===
-            JSON.stringify(cell2.candidates) &&
+          JSON.stringify(cell1.candidates) === JSON.stringify(cell2.candidates) &&
           cell1.candidates.length === 2
         ) {
           let col1 = cell1.col;
@@ -3498,9 +3087,7 @@ export const uniqueRectangle = (
             let cell3: Candidate | undefined;
             let cell4: Candidate | undefined;
             if (candidateMap[num].col.get(col1)?.count === 2) {
-              if (
-                candidateMap[num].col.get(col1)?.positions[0].row === cell1.row
-              ) {
+              if (candidateMap[num].col.get(col1)?.positions[0].row === cell1.row) {
                 cell3 = candidateMap[num].col.get(col1)?.positions[1];
                 cell4 = {
                   row: cell3?.row,
@@ -3516,9 +3103,7 @@ export const uniqueRectangle = (
                 };
               }
             } else if (candidateMap[num].col.get(col2)?.count === 2) {
-              if (
-                candidateMap[num].col.get(col2)?.positions[0].row === cell2.row
-              ) {
+              if (candidateMap[num].col.get(col2)?.positions[0].row === cell2.row) {
                 cell3 = candidateMap[num].col.get(col2)?.positions[1];
                 cell4 = {
                   row: cell3?.row,
@@ -3536,19 +3121,14 @@ export const uniqueRectangle = (
             }
             if (cell3?.row !== cell4?.row) continue;
             if (cell3 && cell4) {
-              let box1 =
-                Math.floor(cell1.row / 3) * 3 + Math.floor(cell1.col / 3);
-              let box2 =
-                Math.floor(cell2.row / 3) * 3 + Math.floor(cell2.col / 3);
-              let box3 =
-                Math.floor(cell3.row / 3) * 3 + Math.floor(cell3.col / 3);
-              let box4 =
-                Math.floor(cell4.row / 3) * 3 + Math.floor(cell4.col / 3);
+              let box1 = Math.floor(cell1.row / 3) * 3 + Math.floor(cell1.col / 3);
+              let box2 = Math.floor(cell2.row / 3) * 3 + Math.floor(cell2.col / 3);
+              let box3 = Math.floor(cell3.row / 3) * 3 + Math.floor(cell3.col / 3);
+              let box4 = Math.floor(cell4.row / 3) * 3 + Math.floor(cell4.col / 3);
               let arr = [box1, box2, box3, box4];
               let set = new Set(arr);
               if (
-                JSON.stringify(cell3.candidates) ===
-                  JSON.stringify(cell1.candidates) &&
+                JSON.stringify(cell3.candidates) === JSON.stringify(cell1.candidates) &&
                 cell4.candidates.includes(a) &&
                 cell4.candidates.includes(b) &&
                 cell4.candidates.length > 2 &&
@@ -3564,7 +3144,7 @@ export const uniqueRectangle = (
                   ],
                   method: SOLUTION_METHODS.UNIQUE_RECTANGLE,
                   target: [a, b],
-                  label: "ab-ab-ab-abc",
+                  label: 'ab-ab-ab-abc',
                 };
               }
             }
@@ -3580,8 +3160,7 @@ export const uniqueRectangle = (
         if (
           cell1 &&
           cell2 &&
-          JSON.stringify(cell1.candidates) ===
-            JSON.stringify(cell2.candidates) &&
+          JSON.stringify(cell1.candidates) === JSON.stringify(cell2.candidates) &&
           cell1.candidates.length === 2
         ) {
           let col1 = cell1.col;
@@ -3593,8 +3172,7 @@ export const uniqueRectangle = (
             if (row2 === row) continue;
             if (
               board[row2][col1].draft.length === 3 &&
-              JSON.stringify(board[row2][col1].draft) ===
-                JSON.stringify(board[row2][col2].draft) &&
+              JSON.stringify(board[row2][col1].draft) === JSON.stringify(board[row2][col2].draft) &&
               board[row2][col1].draft.includes(a) &&
               board[row2][col2].draft.includes(b)
             ) {
@@ -3608,9 +3186,7 @@ export const uniqueRectangle = (
                 col: col2,
                 candidates: board[row2][col2].draft,
               };
-              const c = board[row2][col1].draft.find(
-                (item) => item !== a && item !== b
-              );
+              const c = board[row2][col1].draft.find(item => item !== a && item !== b);
               if (!c) continue;
               const affectedCells = findCommonAffectedPositions(
                 { row: cell3.row, col: cell3.col },
@@ -3624,14 +3200,10 @@ export const uniqueRectangle = (
                   deleteCells.push(cell);
                 }
               }
-              let box1 =
-                Math.floor(cell1.row / 3) * 3 + Math.floor(cell1.col / 3);
-              let box2 =
-                Math.floor(cell2.row / 3) * 3 + Math.floor(cell2.col / 3);
-              let box3 =
-                Math.floor(cell3.row / 3) * 3 + Math.floor(cell3.col / 3);
-              let box4 =
-                Math.floor(cell4.row / 3) * 3 + Math.floor(cell4.col / 3);
+              let box1 = Math.floor(cell1.row / 3) * 3 + Math.floor(cell1.col / 3);
+              let box2 = Math.floor(cell2.row / 3) * 3 + Math.floor(cell2.col / 3);
+              let box3 = Math.floor(cell3.row / 3) * 3 + Math.floor(cell3.col / 3);
+              let box4 = Math.floor(cell4.row / 3) * 3 + Math.floor(cell4.col / 3);
               let arr = [box1, box2, box3, box4];
               let set = new Set(arr);
               if (deleteCells.length && set.size === 2) {
@@ -3646,7 +3218,7 @@ export const uniqueRectangle = (
                   ],
                   method: SOLUTION_METHODS.UNIQUE_RECTANGLE,
                   target: [c],
-                  label: "ab-ab-abc-abc",
+                  label: 'ab-ab-abc-abc',
                 };
               }
             }
@@ -3662,8 +3234,7 @@ export const uniqueRectangle = (
         if (
           cell1 &&
           cell2 &&
-          JSON.stringify(cell1.candidates) ===
-            JSON.stringify(cell2.candidates) &&
+          JSON.stringify(cell1.candidates) === JSON.stringify(cell2.candidates) &&
           cell1.candidates.length === 2
         ) {
           let row1 = cell1.row;
@@ -3675,8 +3246,7 @@ export const uniqueRectangle = (
             if (col2 === col) continue;
             if (
               board[row1][col2].draft.length === 3 &&
-              JSON.stringify(board[row1][col2].draft) ===
-                JSON.stringify(board[row2][col2].draft) &&
+              JSON.stringify(board[row1][col2].draft) === JSON.stringify(board[row2][col2].draft) &&
               board[row1][col2].draft.includes(a) &&
               board[row2][col2].draft.includes(b)
             ) {
@@ -3690,9 +3260,7 @@ export const uniqueRectangle = (
                 col: col2,
                 candidates: board[row2][col2].draft,
               };
-              const c = board[row1][col2].draft.find(
-                (item) => item !== a && item !== b
-              );
+              const c = board[row1][col2].draft.find(item => item !== a && item !== b);
               if (!c) continue;
               const affectedCells = findCommonAffectedPositions(
                 { row: cell3.row, col: cell3.col },
@@ -3706,14 +3274,10 @@ export const uniqueRectangle = (
                   deleteCells.push(cell);
                 }
               }
-              let box1 =
-                Math.floor(cell1.row / 3) * 3 + Math.floor(cell1.col / 3);
-              let box2 =
-                Math.floor(cell2.row / 3) * 3 + Math.floor(cell2.col / 3);
-              let box3 =
-                Math.floor(cell3.row / 3) * 3 + Math.floor(cell3.col / 3);
-              let box4 =
-                Math.floor(cell4.row / 3) * 3 + Math.floor(cell4.col / 3);
+              let box1 = Math.floor(cell1.row / 3) * 3 + Math.floor(cell1.col / 3);
+              let box2 = Math.floor(cell2.row / 3) * 3 + Math.floor(cell2.col / 3);
+              let box3 = Math.floor(cell3.row / 3) * 3 + Math.floor(cell3.col / 3);
+              let box4 = Math.floor(cell4.row / 3) * 3 + Math.floor(cell4.col / 3);
               let arr = [box1, box2, box3, box4];
               let set = new Set(arr);
               if (deleteCells.length && set.size === 2) {
@@ -3728,7 +3292,7 @@ export const uniqueRectangle = (
                   ],
                   method: SOLUTION_METHODS.UNIQUE_RECTANGLE,
                   target: [c],
-                  label: "ab-ab-abc-abc",
+                  label: 'ab-ab-abc-abc',
                 };
               }
             }
@@ -3746,8 +3310,7 @@ export const uniqueRectangle = (
         if (
           cell1 &&
           cell2 &&
-          JSON.stringify(cell1.candidates) ===
-            JSON.stringify(cell2.candidates) &&
+          JSON.stringify(cell1.candidates) === JSON.stringify(cell2.candidates) &&
           cell1.candidates.length === 2
         ) {
           let col1 = cell1.col;
@@ -3789,9 +3352,7 @@ export const uniqueRectangle = (
                 candidates: board[row2][col1].draft,
               };
             }
-            const other = cell3?.candidates.filter(
-              (item) => item !== a && item !== b
-            );
+            const other = cell3?.candidates.filter(item => item !== a && item !== b);
             if (
               cell3 &&
               cell4 &&
@@ -3801,10 +3362,10 @@ export const uniqueRectangle = (
               cell4.candidates.includes(other[0])
             ) {
               const remainingCandidates1 = cell4.candidates.filter(
-                (item) => item !== a && item !== b
+                item => item !== a && item !== b
               );
               const remainingCandidates2 = cell3.candidates.filter(
-                (item) => item !== a && item !== b
+                item => item !== a && item !== b
               );
               if (
                 remainingCandidates1.length === 2 &&
@@ -3842,14 +3403,10 @@ export const uniqueRectangle = (
                   }
                 }
 
-                let box1 =
-                  Math.floor(cell1.row / 3) * 3 + Math.floor(cell1.col / 3);
-                let box2 =
-                  Math.floor(cell2.row / 3) * 3 + Math.floor(cell2.col / 3);
-                let box3 =
-                  Math.floor(cell3.row / 3) * 3 + Math.floor(cell3.col / 3);
-                let box4 =
-                  Math.floor(cell4.row / 3) * 3 + Math.floor(cell4.col / 3);
+                let box1 = Math.floor(cell1.row / 3) * 3 + Math.floor(cell1.col / 3);
+                let box2 = Math.floor(cell2.row / 3) * 3 + Math.floor(cell2.col / 3);
+                let box3 = Math.floor(cell3.row / 3) * 3 + Math.floor(cell3.col / 3);
+                let box4 = Math.floor(cell4.row / 3) * 3 + Math.floor(cell4.col / 3);
                 let arr = [box1, box2, box3, box4];
                 let set = new Set(arr);
 
@@ -3866,7 +3423,7 @@ export const uniqueRectangle = (
                     ],
                     method: SOLUTION_METHODS.UNIQUE_RECTANGLE,
                     target: [c, d],
-                    label: "ab-ab-abc-abcd",
+                    label: 'ab-ab-abc-abcd',
                   };
                 }
                 deleteCells = [];
@@ -3902,14 +3459,10 @@ export const uniqueRectangle = (
                     deleteCells.push(cell);
                   }
                 }
-                box1 =
-                  Math.floor(cell1.row / 3) * 3 + Math.floor(cell1.col / 3);
-                box2 =
-                  Math.floor(cell2.row / 3) * 3 + Math.floor(cell2.col / 3);
-                box3 =
-                  Math.floor(cell3.row / 3) * 3 + Math.floor(cell3.col / 3);
-                box4 =
-                  Math.floor(cell4.row / 3) * 3 + Math.floor(cell4.col / 3);
+                box1 = Math.floor(cell1.row / 3) * 3 + Math.floor(cell1.col / 3);
+                box2 = Math.floor(cell2.row / 3) * 3 + Math.floor(cell2.col / 3);
+                box3 = Math.floor(cell3.row / 3) * 3 + Math.floor(cell3.col / 3);
+                box4 = Math.floor(cell4.row / 3) * 3 + Math.floor(cell4.col / 3);
                 arr = [box1, box2, box3, box4];
                 set = new Set(arr);
                 if (deleteCells.length && cell5 && set.size === 2) {
@@ -3925,7 +3478,7 @@ export const uniqueRectangle = (
                     ],
                     method: SOLUTION_METHODS.UNIQUE_RECTANGLE,
                     target: [c, d],
-                    label: "ab-ab-abc-abcd",
+                    label: 'ab-ab-abc-abcd',
                   };
                 }
               }
@@ -3943,8 +3496,7 @@ export const uniqueRectangle = (
         if (
           cell1 &&
           cell2 &&
-          JSON.stringify(cell1.candidates) ===
-            JSON.stringify(cell2.candidates) &&
+          JSON.stringify(cell1.candidates) === JSON.stringify(cell2.candidates) &&
           cell1.candidates.length === 2
         ) {
           let row1 = cell1.row;
@@ -3986,9 +3538,7 @@ export const uniqueRectangle = (
                 candidates: board[row1][col2].draft,
               };
             }
-            const other = cell3?.candidates.filter(
-              (item) => item !== a && item !== b
-            );
+            const other = cell3?.candidates.filter(item => item !== a && item !== b);
             if (
               cell3 &&
               cell4 &&
@@ -3998,10 +3548,10 @@ export const uniqueRectangle = (
               cell4.candidates.includes(other[0])
             ) {
               const remainingCandidates1 = cell4.candidates.filter(
-                (item) => item !== a && item !== b
+                item => item !== a && item !== b
               );
               const remainingCandidates2 = cell3.candidates.filter(
-                (item) => item !== a && item !== b
+                item => item !== a && item !== b
               );
               if (
                 remainingCandidates1.length === 2 &&
@@ -4037,14 +3587,10 @@ export const uniqueRectangle = (
                     deleteCells.push(cell);
                   }
                 }
-                let box1 =
-                  Math.floor(cell1.row / 3) * 3 + Math.floor(cell1.col / 3);
-                let box2 =
-                  Math.floor(cell2.row / 3) * 3 + Math.floor(cell2.col / 3);
-                let box3 =
-                  Math.floor(cell3.row / 3) * 3 + Math.floor(cell3.col / 3);
-                let box4 =
-                  Math.floor(cell4.row / 3) * 3 + Math.floor(cell4.col / 3);
+                let box1 = Math.floor(cell1.row / 3) * 3 + Math.floor(cell1.col / 3);
+                let box2 = Math.floor(cell2.row / 3) * 3 + Math.floor(cell2.col / 3);
+                let box3 = Math.floor(cell3.row / 3) * 3 + Math.floor(cell3.col / 3);
+                let box4 = Math.floor(cell4.row / 3) * 3 + Math.floor(cell4.col / 3);
                 let arr = [box1, box2, box3, box4];
                 let set = new Set(arr);
                 if (deleteCells.length && cell5 && set.size === 2) {
@@ -4060,7 +3606,7 @@ export const uniqueRectangle = (
                     ],
                     method: SOLUTION_METHODS.UNIQUE_RECTANGLE,
                     target: [c, d],
-                    label: "ab-ab-abc-abcd",
+                    label: 'ab-ab-abc-abcd',
                   };
                 }
                 deleteCells = [];
@@ -4096,14 +3642,10 @@ export const uniqueRectangle = (
                     deleteCells.push(cell);
                   }
                 }
-                box1 =
-                  Math.floor(cell1.row / 3) * 3 + Math.floor(cell1.col / 3);
-                box2 =
-                  Math.floor(cell2.row / 3) * 3 + Math.floor(cell2.col / 3);
-                box3 =
-                  Math.floor(cell3.row / 3) * 3 + Math.floor(cell3.col / 3);
-                box4 =
-                  Math.floor(cell4.row / 3) * 3 + Math.floor(cell4.col / 3);
+                box1 = Math.floor(cell1.row / 3) * 3 + Math.floor(cell1.col / 3);
+                box2 = Math.floor(cell2.row / 3) * 3 + Math.floor(cell2.col / 3);
+                box3 = Math.floor(cell3.row / 3) * 3 + Math.floor(cell3.col / 3);
+                box4 = Math.floor(cell4.row / 3) * 3 + Math.floor(cell4.col / 3);
                 arr = [box1, box2, box3, box4];
                 set = new Set(arr);
                 if (deleteCells.length && cell5 && set.size === 2) {
@@ -4119,7 +3661,7 @@ export const uniqueRectangle = (
                     ],
                     method: SOLUTION_METHODS.UNIQUE_RECTANGLE,
                     target: [c, d],
-                    label: "ab-ab-abc-abcd",
+                    label: 'ab-ab-abc-abcd',
                   };
                 }
               }
@@ -4138,8 +3680,7 @@ export const uniqueRectangle = (
         if (
           cell1 &&
           cell2 &&
-          JSON.stringify(cell1.candidates) ===
-            JSON.stringify(cell2.candidates) &&
+          JSON.stringify(cell1.candidates) === JSON.stringify(cell2.candidates) &&
           cell1.candidates.length === 2
         ) {
           let col1 = cell1.col;
@@ -4181,9 +3722,7 @@ export const uniqueRectangle = (
                 candidates: board[row2][col1].draft,
               };
             }
-            const other = cell3?.candidates.filter(
-              (item) => item !== a && item !== b
-            );
+            const other = cell3?.candidates.filter(item => item !== a && item !== b);
             if (
               cell3 &&
               cell4 &&
@@ -4193,10 +3732,10 @@ export const uniqueRectangle = (
               !cell4.candidates.includes(other[0])
             ) {
               const remainingCandidates1 = cell4.candidates.filter(
-                (item) => item !== a && item !== b
+                item => item !== a && item !== b
               );
               const remainingCandidates2 = cell3.candidates.filter(
-                (item) => item !== a && item !== b
+                item => item !== a && item !== b
               );
               const c = remainingCandidates1[0];
               const d = remainingCandidates2[0];
@@ -4229,14 +3768,10 @@ export const uniqueRectangle = (
                   deleteCells.push(cell);
                 }
               }
-              let box1 =
-                Math.floor(cell1.row / 3) * 3 + Math.floor(cell1.col / 3);
-              let box2 =
-                Math.floor(cell2.row / 3) * 3 + Math.floor(cell2.col / 3);
-              let box3 =
-                Math.floor(cell3.row / 3) * 3 + Math.floor(cell3.col / 3);
-              let box4 =
-                Math.floor(cell4.row / 3) * 3 + Math.floor(cell4.col / 3);
+              let box1 = Math.floor(cell1.row / 3) * 3 + Math.floor(cell1.col / 3);
+              let box2 = Math.floor(cell2.row / 3) * 3 + Math.floor(cell2.col / 3);
+              let box3 = Math.floor(cell3.row / 3) * 3 + Math.floor(cell3.col / 3);
+              let box4 = Math.floor(cell4.row / 3) * 3 + Math.floor(cell4.col / 3);
               let arr = [box1, box2, box3, box4];
               let set = new Set(arr);
               if (deleteCells.length && cell5 && set.size === 2) {
@@ -4252,7 +3787,7 @@ export const uniqueRectangle = (
                   ],
                   method: SOLUTION_METHODS.UNIQUE_RECTANGLE,
                   target: [c, d],
-                  label: "ab-ab-abc-abcd",
+                  label: 'ab-ab-abc-abcd',
                 };
               }
               deleteCells = [];
@@ -4307,7 +3842,7 @@ export const uniqueRectangle = (
                   ],
                   method: SOLUTION_METHODS.UNIQUE_RECTANGLE,
                   target: [c, d],
-                  label: "ab-ab-abc-abcd",
+                  label: 'ab-ab-abc-abcd',
                 };
               }
             }
@@ -4324,8 +3859,7 @@ export const uniqueRectangle = (
         if (
           cell1 &&
           cell2 &&
-          JSON.stringify(cell1.candidates) ===
-            JSON.stringify(cell2.candidates) &&
+          JSON.stringify(cell1.candidates) === JSON.stringify(cell2.candidates) &&
           cell1.candidates.length === 2
         ) {
           let row1 = cell1.row;
@@ -4367,9 +3901,7 @@ export const uniqueRectangle = (
                 candidates: board[row1][col2].draft,
               };
             }
-            const other = cell3?.candidates.filter(
-              (item) => item !== a && item !== b
-            );
+            const other = cell3?.candidates.filter(item => item !== a && item !== b);
             if (
               cell3 &&
               cell4 &&
@@ -4379,10 +3911,10 @@ export const uniqueRectangle = (
               !cell4.candidates.includes(other[0])
             ) {
               const remainingCandidates1 = cell4.candidates.filter(
-                (item) => item !== a && item !== b
+                item => item !== a && item !== b
               );
               const remainingCandidates2 = cell3.candidates.filter(
-                (item) => item !== a && item !== b
+                item => item !== a && item !== b
               );
               const c = remainingCandidates1[0];
               const d = remainingCandidates2[0];
@@ -4415,14 +3947,10 @@ export const uniqueRectangle = (
                   deleteCells.push(cell);
                 }
               }
-              let box1 =
-                Math.floor(cell1.row / 3) * 3 + Math.floor(cell1.col / 3);
-              let box2 =
-                Math.floor(cell2.row / 3) * 3 + Math.floor(cell2.col / 3);
-              let box3 =
-                Math.floor(cell3.row / 3) * 3 + Math.floor(cell3.col / 3);
-              let box4 =
-                Math.floor(cell4.row / 3) * 3 + Math.floor(cell4.col / 3);
+              let box1 = Math.floor(cell1.row / 3) * 3 + Math.floor(cell1.col / 3);
+              let box2 = Math.floor(cell2.row / 3) * 3 + Math.floor(cell2.col / 3);
+              let box3 = Math.floor(cell3.row / 3) * 3 + Math.floor(cell3.col / 3);
+              let box4 = Math.floor(cell4.row / 3) * 3 + Math.floor(cell4.col / 3);
               let arr = [box1, box2, box3, box4];
               let set = new Set(arr);
               if (deleteCells.length && cell5 && set.size === 2) {
@@ -4438,7 +3966,7 @@ export const uniqueRectangle = (
                   ],
                   method: SOLUTION_METHODS.UNIQUE_RECTANGLE,
                   target: [c, d],
-                  label: "ab-ab-abc-abcd",
+                  label: 'ab-ab-abc-abcd',
                 };
               }
               deleteCells = [];
@@ -4493,7 +4021,7 @@ export const uniqueRectangle = (
                   ],
                   method: SOLUTION_METHODS.UNIQUE_RECTANGLE,
                   target: [c, d],
-                  label: "ab-ab-abc-abcd",
+                  label: 'ab-ab-abc-abcd',
                 };
               }
             }
@@ -4513,11 +4041,7 @@ export const uniqueRectangle = (
               if (col2 === col) continue;
 
               const cell2 = board[row2][col2];
-              if (
-                cell2.draft.length === 2 &&
-                cell2.draft.includes(a) &&
-                cell2.draft.includes(b)
-              ) {
+              if (cell2.draft.length === 2 && cell2.draft.includes(a) && cell2.draft.includes(b)) {
                 const cell3 = board[row][col2];
                 const cell4 = board[row2][col];
 
@@ -4527,9 +4051,7 @@ export const uniqueRectangle = (
                   cell3.draft.includes(b) &&
                   JSON.stringify(cell3.draft) === JSON.stringify(cell4.draft)
                 ) {
-                  const c = cell3.draft.filter(
-                    (item) => item !== a && item !== b
-                  )[0];
+                  const c = cell3.draft.filter(item => item !== a && item !== b)[0];
 
                   const box1 = Math.floor(row / 3) * 3 + Math.floor(col / 3);
                   const box2 = Math.floor(row2 / 3) * 3 + Math.floor(col2 / 3);
@@ -4563,7 +4085,7 @@ export const uniqueRectangle = (
                         ],
                         method: SOLUTION_METHODS.UNIQUE_RECTANGLE,
                         target: [c],
-                        label: "ab-abc-ab-abc",
+                        label: 'ab-abc-ab-abc',
                       };
                     }
                   }
@@ -4595,13 +4117,11 @@ export const BinaryUniversalGrave = (
         const rowCount1 = candidateMap[a].row.get(row)?.count || 0;
         const colCount1 = candidateMap[a].col.get(col)?.count || 0;
         const boxCount1 =
-          candidateMap[a].box.get(Math.floor(row / 3) * 3 + Math.floor(col / 3))
-            ?.count || 0;
+          candidateMap[a].box.get(Math.floor(row / 3) * 3 + Math.floor(col / 3))?.count || 0;
         const rowCount2 = candidateMap[b].row.get(row)?.count || 0;
         const colCount2 = candidateMap[b].col.get(col)?.count || 0;
         const boxCount2 =
-          candidateMap[b].box.get(Math.floor(row / 3) * 3 + Math.floor(col / 3))
-            ?.count || 0;
+          candidateMap[b].box.get(Math.floor(row / 3) * 3 + Math.floor(col / 3))?.count || 0;
         if (
           rowCount1 === 2 &&
           colCount1 === 2 &&
@@ -4664,18 +4184,14 @@ const getAffectedCells = (
   let affectedCells: Position[] = [];
   for (const pos of candidateMap[num].row.get(position.row)?.positions || []) {
     if (pos.row === position.row && pos.col === position.col) continue;
-    const isHas = affectedCells.some(
-      (item) => item.row === pos.row && item.col === pos.col
-    );
+    const isHas = affectedCells.some(item => item.row === pos.row && item.col === pos.col);
     if (!isHas) {
       affectedCells.push(pos);
     }
   }
   for (const pos of candidateMap[num].col.get(position.col)?.positions || []) {
     if (pos.row === position.row && pos.col === position.col) continue;
-    const isHas = affectedCells.some(
-      (item) => item.row === pos.row && item.col === pos.col
-    );
+    const isHas = affectedCells.some(item => item.row === pos.row && item.col === pos.col);
     if (!isHas) {
       affectedCells.push(pos);
     }
@@ -4684,14 +4200,12 @@ const getAffectedCells = (
     Math.floor(position.row / 3) * 3 + Math.floor(position.col / 3)
   )?.positions || []) {
     if (pos.row === position.row && pos.col === position.col) continue;
-    const isHas = affectedCells.some(
-      (item) => item.row === pos.row && item.col === pos.col
-    );
+    const isHas = affectedCells.some(item => item.row === pos.row && item.col === pos.col);
     if (!isHas) {
       affectedCells.push(pos);
     }
   }
-  affectedCells = affectedCells.map((item) => ({
+  affectedCells = affectedCells.map(item => ({
     row: item.row,
     col: item.col,
   }));
@@ -4708,7 +4222,7 @@ class Node {
   sons3: Node[] = []; // 强链关系导致填入候选数的方格
   father: Node | null = null;
   depth: number;
-  label: "双" | "弱" | "强" | "";
+  label: '双' | '弱' | '强' | '';
 
   constructor(
     row: number,
@@ -4717,7 +4231,7 @@ class Node {
     depth: number,
     father: Node | null = null,
     noValue: number[] = [],
-    label: "双" | "弱" | "强" | "" = ""
+    label: '双' | '弱' | '强' | '' = ''
   ) {
     this.row = row;
     this.col = col;
@@ -4740,7 +4254,7 @@ const getAncestors = (
   const ancestors: { row: number; col: number; value: number | null }[] = [];
   let current: Node | null = node;
   let lastCurrent: Node | null = null;
-  let label: string = "";
+  let label: string = '';
 
   while (current) {
     ancestors.unshift({
@@ -4771,12 +4285,19 @@ const isInAncestors = (node: Node, row: number, col: number): boolean => {
 // 递归构建连锁反应树
 const buildChainTree = (
   node: Node,
-  board: Board,
+  board: CellData[][],
   candidateMap: CandidateMap,
-  graph: Graph
+  graph: Graph,
+  depth: number,
+  visitedMap: Set<string>
 ): void => {
-  if (node.depth >= 6) return;
+  if (node.depth >= depth) return;
 
+  visitedMap.add(`${node.row}-${node.col}`);
+  // 创建一个新的visitedMap副本，以避免修改原始集合
+  const newVisitedMap1 = new Set<string>(visitedMap);
+  const newVisitedMap2 = new Set<string>(visitedMap);
+  const newVisitedMap3 = new Set<string>(visitedMap);
   const pos: Position = { row: node.row, col: node.col };
 
   // 1. 处理双数置换 (sons1)
@@ -4784,7 +4305,7 @@ const buildChainTree = (
 
   for (const pos of affectedCells1) {
     // 检查是否已经在祖先链中，避免循环
-    if (isInAncestors(node, pos.row, pos.col)) continue;
+    if (newVisitedMap1.has(`${pos.row}-${pos.col}`)) continue;
 
     // 如果单元格包含当前节点的值作为候选数
     if (board[pos.row][pos.col].draft.length === 2) {
@@ -4792,17 +4313,9 @@ const buildChainTree = (
         node.value === board[pos.row][pos.col].draft[0]
           ? board[pos.row][pos.col].draft[1]
           : board[pos.row][pos.col].draft[0];
-      const son = new Node(
-        pos.row,
-        pos.col,
-        other,
-        node.depth + 1,
-        node,
-        [node.value],
-        "双"
-      );
+      const son = new Node(pos.row, pos.col, other, node.depth + 1, node, [node.value], '双');
       node.sons1.push(son);
-      buildChainTree(son, board, candidateMap, graph);
+      buildChainTree(son, board, candidateMap, graph, depth, newVisitedMap1);
     }
   }
 
@@ -4815,19 +4328,11 @@ const buildChainTree = (
 
   for (const pos of affectedCells2) {
     // 检查是否已经在祖先链中，避免循环
-    if (isInAncestors(node, pos.row, pos.col)) continue;
+    if (newVisitedMap2.has(`${pos.row}-${pos.col}`)) continue;
 
-    const son = new Node(
-      pos.row,
-      pos.col,
-      null,
-      node.depth + 1,
-      node,
-      [node.value],
-      "弱"
-    );
+    const son = new Node(pos.row, pos.col, null, node.depth + 1, node, [node.value], '弱');
     node.sons2.push(son);
-    buildChainTree(son, board, candidateMap, graph);
+    buildChainTree(son, board, candidateMap, graph, depth, newVisitedMap2);
   }
 
   // 3. 处理强链关系 (sons3)
@@ -4836,10 +4341,8 @@ const buildChainTree = (
     const nodesArray = findGraphNodeByDistance(graphNode_noValue, 1);
     for (const graphNode of nodesArray) {
       // 检查是否已经在祖先链中，避免循环
-      if (isInAncestors(node, graphNode.row, graphNode.col)) continue;
-      const restCandidates = board[graphNode.row][graphNode.col].draft.filter(
-        (v) => v !== noValue
-      );
+      if (newVisitedMap3.has(`${graphNode.row}-${graphNode.col}`)) continue;
+      const restCandidates = board[graphNode.row][graphNode.col].draft.filter(v => v !== noValue);
       const son = new Node(
         graphNode.row,
         graphNode.col,
@@ -4847,16 +4350,16 @@ const buildChainTree = (
         node.depth + 1,
         node,
         restCandidates,
-        "强"
+        '强'
       );
       node.sons3.push(son);
-      buildChainTree(son, board, candidateMap, graph);
+      buildChainTree(son, board, candidateMap, graph, depth, newVisitedMap3);
     }
   }
 };
 
-export const XYChain = (
-  board: Board,
+export const doubleColorChain = (
+  board: CellData[][],
   candidateMap: CandidateMap,
   graph: Graph
 ): Result | null => {
@@ -4868,12 +4371,12 @@ export const XYChain = (
         const [a, b] = cell.draft;
 
         // 单独对 a 构建
-        const rootA = new Node(row, col, a, 1, null, [b], "");
-        buildChainTree(rootA, board, candidateMap, graph);
+        const rootA = new Node(row, col, a, 1, null, [b], '');
+        buildChainTree(rootA, board, candidateMap, graph, 6, new Set());
 
         // 单独对 b 构建
-        const rootB = new Node(row, col, b, 1, null, [a], "");
-        buildChainTree(rootB, board, candidateMap, graph);
+        const rootB = new Node(row, col, b, 1, null, [a], '');
+        buildChainTree(rootB, board, candidateMap, graph, 6, new Set());
 
         // 将rootA的所有节点放入数组
         const nodesA: Node[] = [];
@@ -4933,27 +4436,23 @@ export const XYChain = (
 
               if (commonUnits.length > 0) {
                 // 获取两个节点的所有祖先
-                const {
-                  ancestors: ancestorsA,
-                  root: rootA,
-                  label: labelA,
-                } = getAncestors(nodeA);
-                const {
-                  ancestors: ancestorsB,
-                  root: rootB,
-                  label: labelB,
-                } = getAncestors(nodeB);
+                const { ancestors: ancestorsA, root: rootA, label: labelA } = getAncestors(nodeA);
+                const { ancestors: ancestorsB, root: rootB, label: labelB } = getAncestors(nodeB);
+                const isHasDuplicate = [...ancestorsA, ...ancestorsB].some(item =>
+                  commonUnits.some(pos => pos.row === item.row && pos.col === item.col)
+                );
+                if (isHasDuplicate) continue;
 
                 return {
                   isFill: false,
                   position: commonUnits,
                   target: [nodeA.value],
-                  method: SOLUTION_METHODS.XY_CHAIN,
+                  method: SOLUTION_METHODS.DOUBLE_COLOR_CHAIN,
                   prompt: [...ancestorsA, ...ancestorsB],
                   label: `①${labelA}-${labelB}`,
                   highlightPromts1: ancestorsA,
                   highlightPromts2: ancestorsB,
-                  highlightDeletes: commonUnits.map((pos) => ({
+                  highlightDeletes: commonUnits.map(pos => ({
                     row: pos.row,
                     col: pos.col,
                     value: [nodeA.value],
@@ -4971,22 +4470,14 @@ export const XYChain = (
             ) {
               if (board[nodeA.row][nodeA.col].draft.includes(nodeB.value)) {
                 // 获取两个节点的所有祖先
-                const {
-                  ancestors: ancestorsA,
-                  root: rootA,
-                  label: labelA,
-                } = getAncestors(nodeA);
-                const {
-                  ancestors: ancestorsB,
-                  root: rootB,
-                  label: labelB,
-                } = getAncestors(nodeB);
+                const { ancestors: ancestorsA, root: rootA, label: labelA } = getAncestors(nodeA);
+                const { ancestors: ancestorsB, root: rootB, label: labelB } = getAncestors(nodeB);
 
                 return {
                   isFill: false,
                   position: [{ row: nodeA.row, col: nodeA.col }],
                   target: [nodeB.value],
-                  method: SOLUTION_METHODS.XY_CHAIN,
+                  method: SOLUTION_METHODS.DOUBLE_COLOR_CHAIN,
                   prompt: [...ancestorsA, ...ancestorsB],
                   label: `②${labelA}-${labelB}`,
                   highlightPromts1: ancestorsA,
@@ -5002,22 +4493,14 @@ export const XYChain = (
               }
               if (board[nodeB.row][nodeB.col].draft.includes(nodeA.value)) {
                 // 获取两个节点的所有祖先
-                const {
-                  ancestors: ancestorsA,
-                  root: rootA,
-                  label: labelA,
-                } = getAncestors(nodeA);
-                const {
-                  ancestors: ancestorsB,
-                  root: rootB,
-                  label: labelB,
-                } = getAncestors(nodeB);
+                const { ancestors: ancestorsA, root: rootA, label: labelA } = getAncestors(nodeA);
+                const { ancestors: ancestorsB, root: rootB, label: labelB } = getAncestors(nodeB);
 
                 return {
                   isFill: false,
                   position: [{ row: nodeB.row, col: nodeB.col }],
                   target: [nodeA.value],
-                  method: SOLUTION_METHODS.XY_CHAIN,
+                  method: SOLUTION_METHODS.DOUBLE_COLOR_CHAIN,
                   prompt: [...ancestorsA, ...ancestorsB],
                   label: `③${labelA}-${labelB}`,
                   highlightPromts1: ancestorsA,
@@ -5041,27 +4524,19 @@ export const XYChain = (
               const cell = board[nodeA.row][nodeA.col];
               // 找出除了nodeA和nodeB填入的值以外的其他候选数
               const otherCandidates = cell.draft.filter(
-                (value) => value !== nodeA.value && value !== nodeB.value
+                value => value !== nodeA.value && value !== nodeB.value
               );
 
               if (otherCandidates.length > 0) {
                 // 获取两个节点的所有祖先
-                const {
-                  ancestors: ancestorsA,
-                  root: rootA,
-                  label: labelA,
-                } = getAncestors(nodeA);
-                const {
-                  ancestors: ancestorsB,
-                  root: rootB,
-                  label: labelB,
-                } = getAncestors(nodeB);
+                const { ancestors: ancestorsA, root: rootA, label: labelA } = getAncestors(nodeA);
+                const { ancestors: ancestorsB, root: rootB, label: labelB } = getAncestors(nodeB);
 
                 return {
                   isFill: false,
                   position: [{ row: nodeA.row, col: nodeA.col }],
                   target: otherCandidates,
-                  method: SOLUTION_METHODS.XY_CHAIN,
+                  method: SOLUTION_METHODS.DOUBLE_COLOR_CHAIN,
                   prompt: [...ancestorsA, ...ancestorsB],
                   label: `④${labelA}-${labelB}`,
                   highlightPromts1: ancestorsA,
@@ -5085,541 +4560,13 @@ export const XYChain = (
   return null;
 };
 
-export const XYChain2 = (
-  board: Board,
-  candidateMap: CandidateMap,
-  graph: Graph
-): Result | null => {
-  // 寻找可能的起始点
-  for (let row = 0; row < 9; row++) {
-    for (let col = 0; col < 9; col++) {
-      const cell = board[row][col];
-      if (cell.draft.length === 3) {
-        const [a, b, c] = cell.draft;
-
-        // 单独对 a 构建
-        const rootA = new Node(row, col, a, 1, null, [b], "");
-        buildChainTree(rootA, board, candidateMap, graph);
-
-        // 单独对 b 构建
-        const rootB = new Node(row, col, b, 1, null, [a], "");
-        buildChainTree(rootB, board, candidateMap, graph);
-
-        // 单独对 c 构建
-        const rootC = new Node(row, col, c, 1, null, [a, b], "");
-        buildChainTree(rootC, board, candidateMap, graph);
-
-        // 将rootA的所有节点放入数组
-        const nodesA: Node[] = [];
-        const collectNodesA = (root: Node) => {
-          const queue: Node[] = [root];
-          let index = 0;
-
-          while (index < queue.length) {
-            const node = queue[index++];
-            nodesA.push(node);
-
-            queue.push(...node.sons1, ...node.sons2, ...node.sons3);
-          }
-        };
-        collectNodesA(rootA);
-
-        // 将rootB的所有节点放入数组
-        const nodesB: Node[] = [];
-        const collectNodesB = (root: Node) => {
-          const queue: Node[] = [root];
-          let index = 0;
-
-          while (index < queue.length) {
-            const node = queue[index++];
-            nodesB.push(node);
-
-            queue.push(...node.sons1, ...node.sons2, ...node.sons3);
-          }
-        };
-        collectNodesB(rootB);
-
-        // 将rootC的所有节点放入数组
-        const nodesC: Node[] = [];
-        const collectNodesC = (root: Node) => {
-          const queue: Node[] = [root];
-          let index = 0;
-
-          while (index < queue.length) {
-            const node = queue[index++];
-            nodesC.push(node);
-
-            queue.push(...node.sons1, ...node.sons2, ...node.sons3);
-          }
-        };
-        collectNodesC(rootC);
-
-        for (const nodeA of nodesA) {
-          for (const nodeB of nodesB) {
-            for (const nodeC of nodesC) {
-              if (nodeA.depth === 2 && nodeB.depth === 2) continue;
-              if (nodeA.depth === 1 && nodeB.depth === 2) continue;
-              if (nodeA.depth === 2 && nodeB.depth === 1) continue;
-              if (nodeA.depth === 3 && nodeB.depth === 1) continue;
-              if (nodeA.depth === 1 && nodeB.depth === 3) continue;
-              const isInSameUnitAB = areCellsInSameUnit(
-                { row: nodeA.row, col: nodeA.col },
-                { row: nodeB.row, col: nodeB.col }
-              );
-              const isInSameUnitAC = areCellsInSameUnit(
-                { row: nodeA.row, col: nodeA.col },
-                { row: nodeC.row, col: nodeC.col }
-              );
-              const isInSameUnitBC = areCellsInSameUnit(
-                { row: nodeB.row, col: nodeB.col },
-                { row: nodeC.row, col: nodeC.col }
-              );
-              // 情况一：如果存在两个方格里填入的数字相同，那么检查他们的共同影响区
-              if (
-                nodeA.value &&
-                nodeB.value &&
-                nodeC.value &&
-                nodeA.value === nodeB.value &&
-                nodeA.value === nodeC.value &&
-                !(nodeA.row === nodeB.row && nodeA.col === nodeB.col) &&
-                !(nodeA.row === nodeC.row && nodeA.col === nodeC.col) &&
-                !(nodeB.row === nodeC.row && nodeB.col === nodeC.col)
-              ) {
-                // 检查是否有共同影响区域
-                const commonUnits = findCommonAffectedPositions_Three(
-                  { row: nodeA.row, col: nodeA.col },
-                  { row: nodeB.row, col: nodeB.col },
-                  { row: nodeC.row, col: nodeC.col },
-                  nodeA.value,
-                  board
-                );
-
-                if (commonUnits.length > 0) {
-                  // 获取两个节点的所有祖先
-                  const {
-                    ancestors: ancestorsA,
-                    root: rootA,
-                    label: labelA,
-                  } = getAncestors(nodeA);
-                  const {
-                    ancestors: ancestorsB,
-                    root: rootB,
-                    label: labelB,
-                  } = getAncestors(nodeB);
-                  const {
-                    ancestors: ancestorsC,
-                    root: rootC,
-                    label: labelC,
-                  } = getAncestors(nodeC);
-
-                  return {
-                    isFill: false,
-                    position: commonUnits,
-                    target: [nodeA.value],
-                    method: SOLUTION_METHODS.XY_CHAIN2,
-                    prompt: [...ancestorsA, ...ancestorsB, ...ancestorsC],
-                    label: `①${labelA}-${labelB}-${labelC}`,
-                    highlightPromts1: ancestorsA,
-                    highlightPromts2: ancestorsB,
-                    highlightPromts3: ancestorsC,
-                    highlightDeletes: commonUnits.map((pos) => ({
-                      row: pos.row,
-                      col: pos.col,
-                      value: [nodeA.value],
-                    })),
-                  };
-                }
-              }
-              // 情况二：B占据了被删除点且看得到A、C
-              else if (
-                isInSameUnitAB &&
-                isInSameUnitBC &&
-                nodeA.value &&
-                nodeB.value &&
-                nodeC.value &&
-                nodeA.value !== nodeB.value &&
-                nodeB.value !== nodeC.value &&
-                nodeA.value === nodeC.value &&
-                !(nodeA.row === nodeB.row && nodeA.col === nodeB.col) &&
-                !(nodeA.row === nodeC.row && nodeA.col === nodeC.col) &&
-                !(nodeB.row === nodeC.row && nodeB.col === nodeC.col)
-              ) {
-                if (board[nodeB.row][nodeB.col].draft.includes(nodeA.value)) {
-                  // 获取两个节点的所有祖先
-                  const {
-                    ancestors: ancestorsA,
-                    root: rootA,
-                    label: labelA,
-                  } = getAncestors(nodeA);
-                  const {
-                    ancestors: ancestorsB,
-                    root: rootB,
-                    label: labelB,
-                  } = getAncestors(nodeB);
-                  const {
-                    ancestors: ancestorsC,
-                    root: rootC,
-                    label: labelC,
-                  } = getAncestors(nodeC);
-
-                  return {
-                    isFill: false,
-                    position: [{ row: nodeB.row, col: nodeB.col }],
-                    target: [nodeA.value],
-                    method: SOLUTION_METHODS.XY_CHAIN2,
-                    prompt: [...ancestorsA, ...ancestorsB, ...ancestorsC],
-                    label: `②${labelA}-${labelB}-${labelC}`,
-                    highlightPromts1: ancestorsA,
-                    highlightPromts2: ancestorsB,
-                    highlightPromts3: ancestorsC,
-                    highlightDeletes: [
-                      {
-                        row: nodeB.row,
-                        col: nodeB.col,
-                        value: [nodeA.value],
-                      },
-                    ],
-                  };
-                }
-              }
-              // 情况三：A占据了被删除点且看得到B、C
-              else if (
-                isInSameUnitAB &&
-                isInSameUnitAC &&
-                nodeA.value &&
-                nodeB.value &&
-                nodeC.value &&
-                nodeA.value !== nodeB.value &&
-                nodeA.value !== nodeC.value &&
-                nodeB.value === nodeC.value &&
-                !(nodeA.row === nodeB.row && nodeA.col === nodeB.col) &&
-                !(nodeA.row === nodeC.row && nodeA.col === nodeC.col) &&
-                !(nodeB.row === nodeC.row && nodeB.col === nodeC.col)
-              ) {
-                if (board[nodeA.row][nodeA.col].draft.includes(nodeB.value)) {
-                  // 获取两个节点的所有祖先
-                  const {
-                    ancestors: ancestorsA,
-                    root: rootA,
-                    label: labelA,
-                  } = getAncestors(nodeA);
-                  const {
-                    ancestors: ancestorsB,
-                    root: rootB,
-                    label: labelB,
-                  } = getAncestors(nodeB);
-                  const {
-                    ancestors: ancestorsC,
-                    root: rootC,
-                    label: labelC,
-                  } = getAncestors(nodeC);
-
-                  return {
-                    isFill: false,
-                    position: [{ row: nodeA.row, col: nodeA.col }],
-                    target: [nodeB.value],
-                    method: SOLUTION_METHODS.XY_CHAIN2,
-                    prompt: [...ancestorsA, ...ancestorsB, ...ancestorsC],
-                    label: `③${labelA}-${labelB}-${labelC}`,
-                    highlightPromts1: ancestorsA,
-                    highlightPromts2: ancestorsB,
-                    highlightPromts3: ancestorsC,
-                    highlightDeletes: [
-                      {
-                        row: nodeA.row,
-                        col: nodeA.col,
-                        value: [nodeB.value],
-                      },
-                    ],
-                  };
-                }
-              }
-              // 情况四：C占据了被删除点且看得到A、B
-              else if (
-                isInSameUnitAC &&
-                isInSameUnitBC &&
-                nodeA.value &&
-                nodeB.value &&
-                nodeC.value &&
-                nodeB.value !== nodeC.value &&
-                nodeA.value !== nodeC.value &&
-                nodeB.value === nodeA.value &&
-                !(nodeA.row === nodeB.row && nodeA.col === nodeB.col) &&
-                !(nodeA.row === nodeC.row && nodeA.col === nodeC.col) &&
-                !(nodeB.row === nodeC.row && nodeB.col === nodeC.col)
-              ) {
-                if (board[nodeC.row][nodeC.col].draft.includes(nodeA.value)) {
-                  // 获取两个节点的所有祖先
-                  const {
-                    ancestors: ancestorsA,
-                    root: rootA,
-                    label: labelA,
-                  } = getAncestors(nodeA);
-                  const {
-                    ancestors: ancestorsB,
-                    root: rootB,
-                    label: labelB,
-                  } = getAncestors(nodeB);
-                  const {
-                    ancestors: ancestorsC,
-                    root: rootC,
-                    label: labelC,
-                  } = getAncestors(nodeC);
-
-                  return {
-                    isFill: false,
-                    position: [{ row: nodeC.row, col: nodeC.col }],
-                    target: [nodeA.value],
-                    method: SOLUTION_METHODS.XY_CHAIN2,
-                    prompt: [...ancestorsA, ...ancestorsB, ...ancestorsC],
-                    label: `④${labelA}-${labelB}-${labelC}`,
-                    highlightPromts1: ancestorsA,
-                    highlightPromts2: ancestorsB,
-                    highlightPromts3: ancestorsC,
-                    highlightDeletes: [
-                      {
-                        row: nodeC.row,
-                        col: nodeC.col,
-                        value: [nodeA.value],
-                      },
-                    ],
-                  };
-                }
-              }
-              // 情况五：AB占据了被删除点且看得到C
-              else if (
-                isInSameUnitAC &&
-                nodeA.value &&
-                nodeB.value &&
-                nodeC.value &&
-                nodeC.value !== nodeA.value &&
-                nodeC.value !== nodeB.value &&
-                nodeA.row === nodeB.row &&
-                nodeA.col === nodeB.col &&
-                !(nodeA.row === nodeC.row && nodeA.col === nodeC.col) &&
-                !(nodeB.row === nodeC.row && nodeB.col === nodeC.col)
-              ) {
-                if (board[nodeA.row][nodeA.col].draft.includes(nodeC.value)) {
-                  // 获取两个节点的所有祖先
-                  const {
-                    ancestors: ancestorsA,
-                    root: rootA,
-                    label: labelA,
-                  } = getAncestors(nodeA);
-                  const {
-                    ancestors: ancestorsB,
-                    root: rootB,
-                    label: labelB,
-                  } = getAncestors(nodeB);
-                  const {
-                    ancestors: ancestorsC,
-                    root: rootC,
-                    label: labelC,
-                  } = getAncestors(nodeC);
-
-                  return {
-                    isFill: false,
-                    position: [{ row: nodeC.row, col: nodeC.col }],
-                    target: [nodeA.value],
-                    method: SOLUTION_METHODS.XY_CHAIN2,
-                    prompt: [...ancestorsA, ...ancestorsB, ...ancestorsC],
-                    label: `⑤${labelA}-${labelB}-${labelC}`,
-                    highlightPromts1: ancestorsA,
-                    highlightPromts2: ancestorsB,
-                    highlightPromts3: ancestorsC,
-                    highlightDeletes: [
-                      {
-                        row: nodeC.row,
-                        col: nodeC.col,
-                        value: [nodeA.value],
-                      },
-                    ],
-                  };
-                }
-              }
-              // 情况六：BC占据了被删除点且看得到A
-              else if (
-                isInSameUnitAB &&
-                nodeA.value &&
-                nodeB.value &&
-                nodeC.value &&
-                nodeC.value !== nodeA.value &&
-                nodeC.value !== nodeB.value &&
-                !(nodeA.row === nodeB.row && nodeA.col === nodeB.col) &&
-                !(nodeA.row === nodeC.row && nodeA.col === nodeC.col) &&
-                nodeB.row === nodeC.row &&
-                nodeB.col === nodeC.col
-              ) {
-                if (board[nodeC.row][nodeC.col].draft.includes(nodeA.value)) {
-                  // 获取两个节点的所有祖先
-                  const {
-                    ancestors: ancestorsA,
-                    root: rootA,
-                    label: labelA,
-                  } = getAncestors(nodeA);
-                  const {
-                    ancestors: ancestorsB,
-                    root: rootB,
-                    label: labelB,
-                  } = getAncestors(nodeB);
-                  const {
-                    ancestors: ancestorsC,
-                    root: rootC,
-                    label: labelC,
-                  } = getAncestors(nodeC);
-
-                  return {
-                    isFill: false,
-                    position: [{ row: nodeB.row, col: nodeB.col }],
-                    target: [nodeC.value],
-                    method: SOLUTION_METHODS.XY_CHAIN2,
-                    prompt: [...ancestorsA, ...ancestorsB, ...ancestorsC],
-                    label: `⑥${labelA}-${labelB}-${labelC}`,
-                    highlightPromts1: ancestorsA,
-                    highlightPromts2: ancestorsB,
-                    highlightPromts3: ancestorsC,
-                    highlightDeletes: [
-                      {
-                        row: nodeB.row,
-                        col: nodeB.col,
-                        value: [nodeC.value],
-                      },
-                    ],
-                  };
-                }
-              }
-              // 情况七：AC占据了被删除点且看得到B
-              else if (
-                isInSameUnitAB &&
-                nodeA.value &&
-                nodeB.value &&
-                nodeC.value &&
-                nodeC.value !== nodeA.value &&
-                nodeC.value !== nodeB.value &&
-                !(nodeA.row === nodeB.row && nodeA.col === nodeB.col) &&
-                nodeA.row === nodeC.row &&
-                nodeA.col === nodeC.col &&
-                !(nodeB.row === nodeC.row && nodeB.col === nodeC.col)
-              ) {
-                if (board[nodeC.row][nodeC.col].draft.includes(nodeB.value)) {
-                  // 获取两个节点的所有祖先
-                  const {
-                    ancestors: ancestorsA,
-                    root: rootA,
-                    label: labelA,
-                  } = getAncestors(nodeA);
-                  const {
-                    ancestors: ancestorsB,
-                    root: rootB,
-                    label: labelB,
-                  } = getAncestors(nodeB);
-                  const {
-                    ancestors: ancestorsC,
-                    root: rootC,
-                    label: labelC,
-                  } = getAncestors(nodeC);
-
-                  return {
-                    isFill: false,
-                    position: [{ row: nodeB.row, col: nodeB.col }],
-                    target: [nodeC.value],
-                    method: SOLUTION_METHODS.XY_CHAIN2,
-                    prompt: [...ancestorsA, ...ancestorsB, ...ancestorsC],
-                    label: `⑦${labelA}-${labelB}-${labelC}`,
-                    highlightPromts1: ancestorsA,
-                    highlightPromts2: ancestorsB,
-                    highlightPromts3: ancestorsC,
-                    highlightDeletes: [
-                      {
-                        row: nodeB.row,
-                        col: nodeB.col,
-                        value: [nodeC.value],
-                      },
-                    ],
-                  };
-                }
-              }
-              // 情况八：ABC占据了被删除点
-              else if (
-                nodeA.value &&
-                nodeB.value &&
-                nodeC.value &&
-                (nodeA.row === nodeB.row && nodeA.col === nodeB.col) &&
-                (nodeA.row === nodeC.row && nodeA.col === nodeC.col) &&
-                (nodeB.row === nodeC.row && nodeB.col === nodeC.col)
-              ) {
-                // 获取该位置的所有候选数
-                const cell = board[nodeA.row][nodeA.col];
-                // 找出除了nodeA和nodeB填入的值以外的其他候选数
-                const otherCandidates = cell.draft.filter(
-                  (value) =>
-                    value !== nodeA.value &&
-                    value !== nodeB.value &&
-                    value !== nodeC.value
-                );
-
-                if (otherCandidates.length > 0) {
-                  // 获取两个节点的所有祖先
-                  const {
-                    ancestors: ancestorsA,
-                    root: rootA,
-                    label: labelA,
-                  } = getAncestors(nodeA);
-                  const {
-                    ancestors: ancestorsB,
-                    root: rootB,
-                    label: labelB,
-                  } = getAncestors(nodeB);
-                  const {
-                    ancestors: ancestorsC,
-                    root: rootC,
-                    label: labelC,
-                  } = getAncestors(nodeC);
-
-                  return {
-                    isFill: false,
-                    position: [{ row: nodeA.row, col: nodeA.col }],
-                    target: otherCandidates,
-                    method: SOLUTION_METHODS.XY_CHAIN2,
-                    prompt: [...ancestorsA, ...ancestorsB, ...ancestorsC],
-                    label: `⑧${labelA}-${labelB}-${labelC}`,
-                    highlightPromts1: ancestorsA,
-                    highlightPromts2: ancestorsB,
-                    highlightPromts3: ancestorsC,
-                    highlightDeletes: [
-                      {
-                        row: nodeA.row,
-                        col: nodeA.col,
-                        value: otherCandidates,
-                      },
-                    ],
-                  };
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  return null;
-};
-
-export const swordfish = (
-  board: Board,
-  candidateMap: CandidateMap,
-  graph: Graph
-) => {
+export const swordfish = (board: CellData[][], candidateMap: CandidateMap, graph: Graph) => {
   for (let num = 1; num <= 9; num++) {
     if (true) {
       const arr: { row: number; positions: Position[] }[] = [];
       for (let row = 0; row < 9; row++) {
         const rowStats = candidateMap[num].row.get(row);
-        if (
-          rowStats &&
-          (rowStats.positions.length === 2 || rowStats.positions.length === 3)
-        ) {
+        if (rowStats && (rowStats.positions.length === 2 || rowStats.positions.length === 3)) {
           arr.push({ row, positions: rowStats.positions });
         }
       }
@@ -5634,12 +4581,8 @@ export const swordfish = (
               const row2 = arr[j].row;
               const row3 = arr[k].row;
 
-              const allPositions = [
-                ...positions1,
-                ...positions2,
-                ...positions3,
-              ];
-              const allCols = allPositions.map((pos) => pos.col);
+              const allPositions = [...positions1, ...positions2, ...positions3];
+              const allCols = allPositions.map(pos => pos.col);
               const uniqueCols = new Set(allCols);
 
               if (uniqueCols.size === 3) {
@@ -5672,10 +4615,7 @@ export const swordfish = (
       const arr: { col: number; positions: Position[] }[] = [];
       for (let col = 0; col < 9; col++) {
         const colStats = candidateMap[num].col.get(col);
-        if (
-          colStats &&
-          (colStats.positions.length === 2 || colStats.positions.length === 3)
-        ) {
+        if (colStats && (colStats.positions.length === 2 || colStats.positions.length === 3)) {
           arr.push({ col, positions: colStats.positions });
         }
       }
@@ -5690,12 +4630,8 @@ export const swordfish = (
               const col2 = arr[j].col;
               const col3 = arr[k].col;
 
-              const allPositions = [
-                ...positions1,
-                ...positions2,
-                ...positions3,
-              ];
-              const allRows = allPositions.map((pos) => pos.row);
+              const allPositions = [...positions1, ...positions2, ...positions3];
+              const allRows = allPositions.map(pos => pos.row);
               const uniqueRows = new Set(allRows);
 
               if (uniqueRows.size === 3) {
@@ -5727,11 +4663,7 @@ export const swordfish = (
   return null;
 };
 
-export const jellyfish = (
-  board: Board,
-  candidateMap: CandidateMap,
-  graph: Graph
-) => {
+export const jellyfish = (board: CellData[][], candidateMap: CandidateMap, graph: Graph) => {
   for (let num = 1; num <= 9; num++) {
     if (true) {
       const arr: { row: number; positions: Position[] }[] = [];
@@ -5760,13 +4692,8 @@ export const jellyfish = (
                 const row3 = arr[k].row;
                 const row4 = arr[l].row;
 
-                const allPositions = [
-                  ...positions1,
-                  ...positions2,
-                  ...positions3,
-                  ...positions4,
-                ];
-                const allCols = allPositions.map((pos) => pos.col);
+                const allPositions = [...positions1, ...positions2, ...positions3, ...positions4];
+                const allCols = allPositions.map(pos => pos.col);
                 const uniqueCols = new Set(allCols);
                 if (uniqueCols.size === 4) {
                   const deletedPositions: Position[] = [];
@@ -5821,20 +4748,14 @@ export const jellyfish = (
                   const col3 = arr[k].col;
                   const col4 = arr[l].col;
 
-                  const allPositions = [
-                    ...positions1,
-                    ...positions2,
-                    ...positions3,
-                    ...positions4,
-                  ];
-                  const allRows = allPositions.map((pos) => pos.row);
+                  const allPositions = [...positions1, ...positions2, ...positions3, ...positions4];
+                  const allRows = allPositions.map(pos => pos.row);
                   const uniqueRows = new Set(allRows);
 
                   if (uniqueRows.size === 4) {
                     const deletedPositions: Position[] = [];
                     for (const row of uniqueRows) {
-                      const positions =
-                        candidateMap[num].row.get(row)?.positions;
+                      const positions = candidateMap[num].row.get(row)?.positions;
                       for (const pos of positions) {
                         if (![col1, col2, col3, col4].includes(pos.col)) {
                           deletedPositions.push(pos);
@@ -5897,11 +4818,7 @@ const findCommonAffectedPositions_Three = (
   return affectedPositions;
 };
 
-export const wxyzWing = (
-  board: Board,
-  candidateMap: CandidateMap,
-  graph: Graph
-) => {
+export const wxyzWing = (board: CellData[][], candidateMap: CandidateMap, graph: Graph) => {
   for (let row = 0; row < 9; row++) {
     for (let col = 0; col < 9; col++) {
       const cell1 = board[row][col];
@@ -5910,17 +4827,11 @@ export const wxyzWing = (
         const affectedCells = getUnits({ row, col }, board);
         for (const pos2 of affectedCells) {
           const cell2 = board[pos2.row][pos2.col];
-          if (
-            cell2.draft.length === 2 &&
-            cell2.draft.every((num) => cell1.draft.includes(num))
-          ) {
+          if (cell2.draft.length === 2 && cell2.draft.every(num => cell1.draft.includes(num))) {
             for (const pos3 of affectedCells) {
               if (pos3.row === pos2.row && pos3.col === pos2.col) continue;
               const cell3 = board[pos3.row][pos3.col];
-              if (
-                cell3.draft.length === 2 &&
-                cell3.draft.every((num) => cell1.draft.includes(num))
-              ) {
+              if (cell3.draft.length === 2 && cell3.draft.every(num => cell1.draft.includes(num))) {
                 for (const pos4 of affectedCells) {
                   if (
                     (pos4.row === pos3.row && pos4.col === pos3.col) ||
@@ -5930,26 +4841,13 @@ export const wxyzWing = (
                   const cell4 = board[pos4.row][pos4.col];
                   if (
                     cell4.draft.length === 2 &&
-                    cell4.draft.every((num) => cell1.draft.includes(num))
+                    cell4.draft.every(num => cell1.draft.includes(num))
                   ) {
-                    const set = new Set([
-                      ...cell2.draft,
-                      ...cell3.draft,
-                      ...cell4.draft,
-                    ]);
+                    const set = new Set([...cell2.draft, ...cell3.draft, ...cell4.draft]);
                     if (set.size !== 4) continue;
-                    const isCell2andCell3inSameUnit = areCellsInSameUnit(
-                      pos2,
-                      pos3
-                    );
-                    const isCell2andCell4inSameUnit = areCellsInSameUnit(
-                      pos2,
-                      pos4
-                    );
-                    const isCell3andCell4inSameUnit = areCellsInSameUnit(
-                      pos3,
-                      pos4
-                    );
+                    const isCell2andCell3inSameUnit = areCellsInSameUnit(pos2, pos3);
+                    const isCell2andCell4inSameUnit = areCellsInSameUnit(pos2, pos4);
+                    const isCell3andCell4inSameUnit = areCellsInSameUnit(pos3, pos4);
                     if (
                       isCell2andCell3inSameUnit &&
                       isCell2andCell4inSameUnit &&
@@ -5957,8 +4855,7 @@ export const wxyzWing = (
                     )
                       continue;
                     const commonCandidate = cell2.draft.find(
-                      (num) =>
-                        cell3.draft.includes(num) && cell4.draft.includes(num)
+                      num => cell3.draft.includes(num) && cell4.draft.includes(num)
                     );
                     if (!commonCandidate) continue;
                     if (
@@ -5968,16 +4865,15 @@ export const wxyzWing = (
                         isCell3andCell4inSameUnit
                       )
                     ) {
-                      const affectedPositions =
-                        findCommonAffectedPositions_Three(
-                          pos2,
-                          pos3,
-                          pos4,
-                          commonCandidate,
-                          board
-                        );
+                      const affectedPositions = findCommonAffectedPositions_Three(
+                        pos2,
+                        pos3,
+                        pos4,
+                        commonCandidate,
+                        board
+                      );
                       const deletedPositions = affectedPositions.filter(
-                        (pos) => !(pos.row === row && pos.col === col)
+                        pos => !(pos.row === row && pos.col === col)
                       );
                       if (deletedPositions.length) {
                         return {
@@ -5998,5 +4894,433 @@ export const wxyzWing = (
       }
     }
   }
+  return null;
+};
+
+export const tripleColorChain = (
+  board: CellData[][],
+  candidateMap: CandidateMap,
+  graph: Graph
+): Result | null => {
+  // 寻找可能的起始点
+  for (let row = 0; row < 9; row++) {
+    for (let col = 0; col < 9; col++) {
+      const cell = board[row][col];
+      if (cell.draft.length === 3) {
+        const [a, b, c] = cell.draft;
+
+        // 单独对 a 构建
+        const rootA = new Node(row, col, a, 1, null, [b], '');
+        buildChainTree(rootA, board, candidateMap, graph, 4, new Set());
+
+        // 单独对 b 构建
+        const rootB = new Node(row, col, b, 1, null, [a], '');
+        buildChainTree(rootB, board, candidateMap, graph, 4, new Set());
+
+        // 单独对 c 构建
+        const rootC = new Node(row, col, c, 1, null, [a, b], '');
+        buildChainTree(rootC, board, candidateMap, graph, 4, new Set());
+
+        // 将rootA的所有节点放入数组
+        const nodesA: Node[] = [];
+        const collectNodesA = (root: Node) => {
+          const queue: Node[] = [root];
+          let index = 0;
+
+          while (index < queue.length) {
+            const node = queue[index++];
+            nodesA.push(node);
+
+            queue.push(...node.sons1, ...node.sons2, ...node.sons3);
+          }
+        };
+        collectNodesA(rootA);
+
+        // 将rootB的所有节点放入数组
+        const nodesB: Node[] = [];
+        const collectNodesB = (root: Node) => {
+          const queue: Node[] = [root];
+          let index = 0;
+
+          while (index < queue.length) {
+            const node = queue[index++];
+            nodesB.push(node);
+
+            queue.push(...node.sons1, ...node.sons2, ...node.sons3);
+          }
+        };
+        collectNodesB(rootB);
+
+        // 将rootC的所有节点放入数组
+        const nodesC: Node[] = [];
+        const collectNodesC = (root: Node) => {
+          const queue: Node[] = [root];
+          let index = 0;
+
+          while (index < queue.length) {
+            const node = queue[index++];
+            nodesC.push(node);
+
+            queue.push(...node.sons1, ...node.sons2, ...node.sons3);
+          }
+        };
+        collectNodesC(rootC);
+
+        for (const nodeA of nodesA) {
+          for (const nodeB of nodesB) {
+            for (const nodeC of nodesC) {
+              if (nodeA.depth === 1 && nodeB.depth <= 3 && nodeC.depth <= 3) continue;
+              if (nodeA.depth <= 3 && nodeB.depth === 1 && nodeC.depth <= 3) continue;
+              if (nodeA.depth <= 3 && nodeB.depth <= 3 && nodeC.depth === 1) continue;
+
+              const isInSameUnitAB = areCellsInSameUnit(
+                { row: nodeA.row, col: nodeA.col },
+                { row: nodeB.row, col: nodeB.col }
+              );
+              const isInSameUnitAC = areCellsInSameUnit(
+                { row: nodeA.row, col: nodeA.col },
+                { row: nodeC.row, col: nodeC.col }
+              );
+              const isInSameUnitBC = areCellsInSameUnit(
+                { row: nodeB.row, col: nodeB.col },
+                { row: nodeC.row, col: nodeC.col }
+              );
+              // 情况一：如果存在两个方格里填入的数字相同，那么检查他们的共同影响区
+              if (
+                nodeA.value &&
+                nodeB.value &&
+                nodeC.value &&
+                nodeA.value === nodeB.value &&
+                nodeA.value === nodeC.value &&
+                !(nodeA.row === nodeB.row && nodeA.col === nodeB.col) &&
+                !(nodeA.row === nodeC.row && nodeA.col === nodeC.col) &&
+                !(nodeB.row === nodeC.row && nodeB.col === nodeC.col)
+              ) {
+                // 检查是否有共同影响区域
+                const commonUnits = findCommonAffectedPositions_Three(
+                  { row: nodeA.row, col: nodeA.col },
+                  { row: nodeB.row, col: nodeB.col },
+                  { row: nodeC.row, col: nodeC.col },
+                  nodeA.value,
+                  board
+                );
+
+                if (commonUnits.length > 0) {
+                  // 获取两个节点的所有祖先
+                  const { ancestors: ancestorsA, root: rootA, label: labelA } = getAncestors(nodeA);
+                  const { ancestors: ancestorsB, root: rootB, label: labelB } = getAncestors(nodeB);
+                  const { ancestors: ancestorsC, root: rootC, label: labelC } = getAncestors(nodeC);
+                  const isHasDuplicate = [...ancestorsA, ...ancestorsB, ...ancestorsC].some(item =>
+                    commonUnits.some(pos => pos.row === item.row && pos.col === item.col)
+                  );
+                  if (isHasDuplicate) continue;
+
+                  return {
+                    isFill: false,
+                    position: commonUnits,
+                    target: [nodeA.value],
+                    method: SOLUTION_METHODS.TRIPLE_COLOR_CHAIN,
+                    prompt: [...ancestorsA, ...ancestorsB, ...ancestorsC],
+                    label: `①${labelA}-${labelB}-${labelC}`,
+                    highlightPromts1: ancestorsA,
+                    highlightPromts2: ancestorsB,
+                    highlightPromts3: ancestorsC,
+                    highlightDeletes: commonUnits.map(pos => ({
+                      row: pos.row,
+                      col: pos.col,
+                      value: [nodeA.value],
+                    })),
+                  };
+                }
+              }
+              // 情况二：B占据了被删除点且看得到A、C
+              else if (
+                isInSameUnitAB &&
+                isInSameUnitBC &&
+                nodeA.value &&
+                nodeB.value &&
+                nodeC.value &&
+                nodeA.value !== nodeB.value &&
+                nodeB.value !== nodeC.value &&
+                nodeA.value === nodeC.value &&
+                !(nodeA.row === nodeB.row && nodeA.col === nodeB.col) &&
+                !(nodeA.row === nodeC.row && nodeA.col === nodeC.col) &&
+                !(nodeB.row === nodeC.row && nodeB.col === nodeC.col)
+              ) {
+                if (board[nodeB.row][nodeB.col].draft.includes(nodeA.value)) {
+                  // 获取两个节点的所有祖先
+                  const { ancestors: ancestorsA, root: rootA, label: labelA } = getAncestors(nodeA);
+                  const { ancestors: ancestorsB, root: rootB, label: labelB } = getAncestors(nodeB);
+                  const { ancestors: ancestorsC, root: rootC, label: labelC } = getAncestors(nodeC);
+
+                  return {
+                    isFill: false,
+                    position: [{ row: nodeB.row, col: nodeB.col }],
+                    target: [nodeA.value],
+                    method: SOLUTION_METHODS.TRIPLE_COLOR_CHAIN,
+                    prompt: [...ancestorsA, ...ancestorsB, ...ancestorsC],
+                    label: `②${labelA}-${labelB}-${labelC}`,
+                    highlightPromts1: ancestorsA,
+                    highlightPromts2: ancestorsB,
+                    highlightPromts3: ancestorsC,
+                    highlightDeletes: [
+                      {
+                        row: nodeB.row,
+                        col: nodeB.col,
+                        value: [nodeA.value],
+                      },
+                    ],
+                  };
+                }
+              }
+              // 情况三：A占据了被删除点且看得到B、C
+              else if (
+                isInSameUnitAB &&
+                isInSameUnitAC &&
+                nodeA.value &&
+                nodeB.value &&
+                nodeC.value &&
+                nodeA.value !== nodeB.value &&
+                nodeA.value !== nodeC.value &&
+                nodeB.value === nodeC.value &&
+                !(nodeA.row === nodeB.row && nodeA.col === nodeB.col) &&
+                !(nodeA.row === nodeC.row && nodeA.col === nodeC.col) &&
+                !(nodeB.row === nodeC.row && nodeB.col === nodeC.col)
+              ) {
+                if (board[nodeA.row][nodeA.col].draft.includes(nodeB.value)) {
+                  // 获取两个节点的所有祖先
+                  const { ancestors: ancestorsA, root: rootA, label: labelA } = getAncestors(nodeA);
+                  const { ancestors: ancestorsB, root: rootB, label: labelB } = getAncestors(nodeB);
+                  const { ancestors: ancestorsC, root: rootC, label: labelC } = getAncestors(nodeC);
+
+                  return {
+                    isFill: false,
+                    position: [{ row: nodeA.row, col: nodeA.col }],
+                    target: [nodeB.value],
+                    method: SOLUTION_METHODS.TRIPLE_COLOR_CHAIN,
+                    prompt: [...ancestorsA, ...ancestorsB, ...ancestorsC],
+                    label: `③${labelA}-${labelB}-${labelC}`,
+                    highlightPromts1: ancestorsA,
+                    highlightPromts2: ancestorsB,
+                    highlightPromts3: ancestorsC,
+                    highlightDeletes: [
+                      {
+                        row: nodeA.row,
+                        col: nodeA.col,
+                        value: [nodeB.value],
+                      },
+                    ],
+                  };
+                }
+              }
+              // 情况四：C占据了被删除点且看得到A、B
+              else if (
+                isInSameUnitAC &&
+                isInSameUnitBC &&
+                nodeA.value &&
+                nodeB.value &&
+                nodeC.value &&
+                nodeB.value !== nodeC.value &&
+                nodeA.value !== nodeC.value &&
+                nodeB.value === nodeA.value &&
+                !(nodeA.row === nodeB.row && nodeA.col === nodeB.col) &&
+                !(nodeA.row === nodeC.row && nodeA.col === nodeC.col) &&
+                !(nodeB.row === nodeC.row && nodeB.col === nodeC.col)
+              ) {
+                if (board[nodeC.row][nodeC.col].draft.includes(nodeA.value)) {
+                  // 获取两个节点的所有祖先
+                  const { ancestors: ancestorsA, root: rootA, label: labelA } = getAncestors(nodeA);
+                  const { ancestors: ancestorsB, root: rootB, label: labelB } = getAncestors(nodeB);
+                  const { ancestors: ancestorsC, root: rootC, label: labelC } = getAncestors(nodeC);
+
+                  return {
+                    isFill: false,
+                    position: [{ row: nodeC.row, col: nodeC.col }],
+                    target: [nodeA.value],
+                    method: SOLUTION_METHODS.TRIPLE_COLOR_CHAIN,
+                    prompt: [...ancestorsA, ...ancestorsB, ...ancestorsC],
+                    label: `④${labelA}-${labelB}-${labelC}`,
+                    highlightPromts1: ancestorsA,
+                    highlightPromts2: ancestorsB,
+                    highlightPromts3: ancestorsC,
+                    highlightDeletes: [
+                      {
+                        row: nodeC.row,
+                        col: nodeC.col,
+                        value: [nodeA.value],
+                      },
+                    ],
+                  };
+                }
+              }
+              // 情况五：AB占据了被删除点且看得到C
+              else if (
+                isInSameUnitAC &&
+                nodeA.value &&
+                nodeB.value &&
+                nodeC.value &&
+                nodeC.value !== nodeA.value &&
+                nodeC.value !== nodeB.value &&
+                nodeA.row === nodeB.row &&
+                nodeA.col === nodeB.col &&
+                !(nodeA.row === nodeC.row && nodeA.col === nodeC.col) &&
+                !(nodeB.row === nodeC.row && nodeB.col === nodeC.col)
+              ) {
+                if (board[nodeA.row][nodeA.col].draft.includes(nodeC.value)) {
+                  // 获取两个节点的所有祖先
+                  const { ancestors: ancestorsA, root: rootA, label: labelA } = getAncestors(nodeA);
+                  const { ancestors: ancestorsB, root: rootB, label: labelB } = getAncestors(nodeB);
+                  const { ancestors: ancestorsC, root: rootC, label: labelC } = getAncestors(nodeC);
+
+                  return {
+                    isFill: false,
+                    position: [{ row: nodeB.row, col: nodeB.col }],
+                    target: [nodeC.value],
+                    method: SOLUTION_METHODS.TRIPLE_COLOR_CHAIN,
+                    prompt: [...ancestorsA, ...ancestorsB, ...ancestorsC],
+                    label: `⑤${labelA}-${labelB}-${labelC}`,
+                    highlightPromts1: ancestorsA,
+                    highlightPromts2: ancestorsB,
+                    highlightPromts3: ancestorsC,
+                    highlightDeletes: [
+                      {
+                        row: nodeB.row,
+                        col: nodeB.col,
+                        value: [nodeC.value],
+                      },
+                    ],
+                  };
+                }
+              }
+              // 情况六：BC占据了被删除点且看得到A
+              else if (
+                isInSameUnitAB &&
+                nodeA.value &&
+                nodeB.value &&
+                nodeC.value &&
+                nodeC.value !== nodeA.value &&
+                nodeB.value !== nodeA.value &&
+                !(nodeA.row === nodeB.row && nodeA.col === nodeB.col) &&
+                !(nodeA.row === nodeC.row && nodeA.col === nodeC.col) &&
+                nodeB.row === nodeC.row &&
+                nodeB.col === nodeC.col
+              ) {
+                if (board[nodeC.row][nodeC.col].draft.includes(nodeA.value)) {
+                  // 获取两个节点的所有祖先
+                  const { ancestors: ancestorsA, root: rootA, label: labelA } = getAncestors(nodeA);
+                  const { ancestors: ancestorsB, root: rootB, label: labelB } = getAncestors(nodeB);
+                  const { ancestors: ancestorsC, root: rootC, label: labelC } = getAncestors(nodeC);
+
+                  return {
+                    isFill: false,
+                    position: [{ row: nodeB.row, col: nodeB.col }],
+                    target: [nodeA.value],
+                    method: SOLUTION_METHODS.TRIPLE_COLOR_CHAIN,
+                    prompt: [...ancestorsA, ...ancestorsB, ...ancestorsC],
+                    label: `⑥${labelA}-${labelB}-${labelC}`,
+                    highlightPromts1: ancestorsA,
+                    highlightPromts2: ancestorsB,
+                    highlightPromts3: ancestorsC,
+                    highlightDeletes: [
+                      {
+                        row: nodeB.row,
+                        col: nodeB.col,
+                        value: [nodeA.value],
+                      },
+                    ],
+                  };
+                }
+              }
+              // 情况七：AC占据了被删除点且看得到B
+              else if (
+                isInSameUnitAB &&
+                nodeA.value &&
+                nodeB.value &&
+                nodeC.value &&
+                nodeA.value !== nodeB.value &&
+                nodeC.value !== nodeB.value &&
+                !(nodeA.row === nodeB.row && nodeA.col === nodeB.col) &&
+                nodeA.row === nodeC.row &&
+                nodeA.col === nodeC.col &&
+                !(nodeB.row === nodeC.row && nodeB.col === nodeC.col)
+              ) {
+                if (board[nodeC.row][nodeC.col].draft.includes(nodeB.value)) {
+                  // 获取两个节点的所有祖先
+                  const { ancestors: ancestorsA, root: rootA, label: labelA } = getAncestors(nodeA);
+                  const { ancestors: ancestorsB, root: rootB, label: labelB } = getAncestors(nodeB);
+                  const { ancestors: ancestorsC, root: rootC, label: labelC } = getAncestors(nodeC);
+
+                  return {
+                    isFill: false,
+                    position: [{ row: nodeC.row, col: nodeC.col }],
+                    target: [nodeB.value],
+                    method: SOLUTION_METHODS.TRIPLE_COLOR_CHAIN,
+                    prompt: [...ancestorsA, ...ancestorsB, ...ancestorsC],
+                    label: `⑦${labelA}-${labelB}-${labelC}`,
+                    highlightPromts1: ancestorsA,
+                    highlightPromts2: ancestorsB,
+                    highlightPromts3: ancestorsC,
+                    highlightDeletes: [
+                      {
+                        row: nodeC.row,
+                        col: nodeC.col,
+                        value: [nodeB.value],
+                      },
+                    ],
+                  };
+                }
+              }
+              // 情况八：ABC占据了被删除点
+              else if (
+                nodeA.value &&
+                nodeB.value &&
+                nodeC.value &&
+                nodeA.row === nodeB.row &&
+                nodeA.col === nodeB.col &&
+                nodeA.row === nodeC.row &&
+                nodeA.col === nodeC.col &&
+                nodeB.row === nodeC.row &&
+                nodeB.col === nodeC.col
+              ) {
+                // 获取该位置的所有候选数
+                const cell = board[nodeA.row][nodeA.col];
+                // 找出除了nodeA和nodeB填入的值以外的其他候选数
+                const otherCandidates = cell.draft.filter(
+                  value => value !== nodeA.value && value !== nodeB.value && value !== nodeC.value
+                );
+
+                if (otherCandidates.length > 0) {
+                  // 获取两个节点的所有祖先
+                  const { ancestors: ancestorsA, root: rootA, label: labelA } = getAncestors(nodeA);
+                  const { ancestors: ancestorsB, root: rootB, label: labelB } = getAncestors(nodeB);
+                  const { ancestors: ancestorsC, root: rootC, label: labelC } = getAncestors(nodeC);
+
+                  return {
+                    isFill: false,
+                    position: [{ row: nodeA.row, col: nodeA.col }],
+                    target: otherCandidates,
+                    method: SOLUTION_METHODS.TRIPLE_COLOR_CHAIN,
+                    prompt: [...ancestorsA, ...ancestorsB, ...ancestorsC],
+                    label: `⑧${labelA}-${labelB}-${labelC}`,
+                    highlightPromts1: ancestorsA,
+                    highlightPromts2: ancestorsB,
+                    highlightPromts3: ancestorsC,
+                    highlightDeletes: [
+                      {
+                        row: nodeA.row,
+                        col: nodeA.col,
+                        value: otherCandidates,
+                      },
+                    ],
+                  };
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
   return null;
 };

@@ -6,7 +6,6 @@ import {
   solve,
   solve3,
   getCellClassName,
-  checkSolutionStatus,
   checkNumberInRowColumnAndBox,
   updateRelatedCellsDraft,
   getCandidates,
@@ -29,10 +28,8 @@ import {
   checkStrongLinkParity,
   skyscraper,
   skyscraper2,
-  hiddenTriple1,
   nakedTriple1,
   nakedTriple2,
-  hiddenTriple2,
   swordfish,
   trialAndErrorDIY,
   isUnitStrongLink,
@@ -43,8 +40,9 @@ import {
   uniqueRectangle,
   BinaryUniversalGrave,
   jellyfish,
-  XYChain,
-  XYChain2,
+  doubleColorChain,
+  tripleColorChain,
+  hiddenTriple,
 } from "../tools/solution";
 import "./sudoku.less";
 import type {
@@ -59,6 +57,7 @@ import mockBoard from "./mock";
 import DLX from "../tools/DLX";
 import extreme from "./extreme";
 import hard from "./hard";
+import medium from "./3medium";
 import { SudokuSolver } from "../tools/DLX";
 
 const Sudoku: React.FC = () => {
@@ -196,8 +195,7 @@ const Sudoku: React.FC = () => {
       nakedTriple1,
       nakedTriple2,
       hiddenPair,
-      hiddenTriple1,
-      hiddenTriple2,
+      hiddenTriple,
       xWing,
       xWingVarient,
       xyWing,
@@ -206,31 +204,30 @@ const Sudoku: React.FC = () => {
       skyscraper2,
       combinationChain,
       swordfish,
+      jellyfish,
       Loop,
       uniqueRectangle,
-      XYChain,
-      XYChain2,
-      jellyfish,
+      doubleColorChain,
       BinaryUniversalGrave,
     ];
 
     const mapArray = [];
-    const combinationChainMap = new Map();
     const failureMap = new Map();
     const falseSolutionMap = new Map();
-    const xyChainMap100 = new Map();
+    const doubleColorChainMap = new Map();
     const labelArray: string[] = [];
     const skyscraperMap_4 = new Map();
     const skyscraperMap_6 = new Map();
     const skyscraperMap2 = new Map();
-    const xyChain2Map = new Map();
+    const tripleColorChainMap = new Map();
+    const hiddenPairMap = new Map();
+    const hiddenTripleMap = new Map();
 
-    for (let i = 0; i < extreme.length; i++) {
-      // for (let i = 0; i < 100; i++) {
+    // for (let i = 0; i < extreme.length; i++) {
+      for (let i = 1788; i < 1789; i++) {
       if (i % 100 === 0) {
         console.log(`正在处理第${i}个数独...`);
       }
-
       const map = new Map();
       let board2 = convertToBoard(i);
       let answer = convertToAnswer(i);
@@ -243,6 +240,7 @@ const Sudoku: React.FC = () => {
       let result: Result | null = null;
       while (true) {
         let j = 0;
+        const startTime = performance.now();
         for (j = 0; j < solveFunctions.length; j++) {
           result = solveFunctions[j](board2, candidateMap, graph);
           if (result === null) {
@@ -266,23 +264,44 @@ const Sudoku: React.FC = () => {
           if (isFill) {
             counts++;
           }
+          if (result.method === SOLUTION_METHODS.TRIPLE_COLOR_CHAIN) {
+            const endTime = performance.now();
+            const executionTime = endTime - startTime;
+            if (executionTime > 10) {
+              console.log(`${result.label} 用时：${executionTime}ms`, i);
+            }
+          }
+          if (result.method === SOLUTION_METHODS.DOUBLE_COLOR_CHAIN) {
+            const endTime = performance.now();
+            const executionTime = endTime - startTime;
+            if (executionTime > 10) {
+              console.log(`${result.label} 用时：${executionTime}ms`, i);
+            }
+          }
           switch (result.method) {
-            case SOLUTION_METHODS.XY_CHAIN:
-              xyChainMap100.set(i, result.label);
+            case SOLUTION_METHODS.DOUBLE_COLOR_CHAIN:
+              doubleColorChainMap.set(i, result.label);
               if (!labelArray.includes(result.label)) {
                 labelArray.push(result.label);
               }
               break;
-            case SOLUTION_METHODS.X_WING_VARIENT_COLUMN:
-            case SOLUTION_METHODS.X_WING_VARIENT_ROW:
-              xwingVarientMap.set(i, result.label);
+            case SOLUTION_METHODS.TRIPLE_COLOR_CHAIN:
+              tripleColorChainMap.set(i, result.label);
               break;
-            case SOLUTION_METHODS.SWORDFISH_ROW:
-            case SOLUTION_METHODS.SWORDFISH_COLUMN:
-              swordfishMap.set(i, result.label);
+            case SOLUTION_METHODS.HIDDEN_PAIR_ROW:
+            case SOLUTION_METHODS.HIDDEN_PAIR_COLUMN:
+            case SOLUTION_METHODS.HIDDEN_PAIR_BOX:
+              hiddenPairMap.set(i, result.label);
               break;
-            case SOLUTION_METHODS.XY_CHAIN2:
-              xyChain2Map.set(i, result.label);
+            case SOLUTION_METHODS.HIDDEN_TRIPLE_ROW:
+            case SOLUTION_METHODS.HIDDEN_TRIPLE_COLUMN:
+            case SOLUTION_METHODS.HIDDEN_TRIPLE_BOX:
+              hiddenTripleMap.set(i, result.label);
+              break;
+            case SOLUTION_METHODS.HIDDEN_TRIPLE_ROW1:
+            case SOLUTION_METHODS.HIDDEN_TRIPLE_COLUMN1:
+            case SOLUTION_METHODS.HIDDEN_TRIPLE_BOX1:
+              hiddenTriple1Map.set(i, result.label);
               break;
           }
           const newBoard = deepCopyBoard(board2);
@@ -337,12 +356,15 @@ const Sudoku: React.FC = () => {
     }
     console.log("failureMap", failureMap);
     console.log("falseSolutionMap", falseSolutionMap);
-    console.log("xyChainMap100", xyChainMap100);
+    console.log("doubleColorChainMap", doubleColorChainMap);
     console.log("labelArray", labelArray);
     console.log("skyscraperMap_4", skyscraperMap_4);
     console.log("skyscraperMap_6", skyscraperMap_6);
     console.log("skyscraperMap2", skyscraperMap2);
-    console.log("xyChain2Map", xyChain2Map);
+    console.log("tripleColorChainMap", tripleColorChainMap);
+    console.log("hiddenPairMap", hiddenPairMap);
+    console.log("hiddenTripleMap", hiddenTripleMap);
+    console.log("hiddenTriple1Map", hiddenTriple1Map);
   };
 
   const generateBoard = () => {
@@ -370,10 +392,10 @@ const Sudoku: React.FC = () => {
       }))
     );
 
-    newBoard = deepCopyBoard(mockBoard);
+    // newBoard = deepCopyBoard(mockBoard);
 
-    updateBoard(newBoard, "生成新棋盘");
-    // updateBoard(convertToBoard(285), "生成新棋盘");
+    // updateBoard(newBoard, "生成新棋盘");
+    updateBoard(convertToBoard(194), "生成新棋盘");
 
     // 生成解决方案
     const solvedBoard = newBoard.map((row) => row.map((cell) => ({ ...cell })));
@@ -818,8 +840,7 @@ const Sudoku: React.FC = () => {
       nakedTriple1,
       nakedTriple2,
       hiddenPair,
-      hiddenTriple1,
-      hiddenTriple2,
+      hiddenTriple,
       xWing,
       xWingVarient,
       xyWing,
@@ -828,11 +849,10 @@ const Sudoku: React.FC = () => {
       skyscraper2,
       combinationChain,
       swordfish,
+      jellyfish,
       Loop,
       uniqueRectangle,
-      XYChain,
-      XYChain2,
-      jellyfish,
+      doubleColorChain,
       BinaryUniversalGrave,
       trialAndErrorDIY,
     ];
@@ -1735,191 +1755,6 @@ const Sudoku: React.FC = () => {
           setPrompts(target);
           boardWithHighlight = applyHintHighlight(board, result, "both");
           deleteStr = position.join("、");
-          switch (result.label) {
-            case "双双双":
-              posStr1 = `R${prompt[0].row + 1}C${prompt[0].col + 1}`;
-              posStr2 = `R${prompt[1].row + 1}C${prompt[1].col + 1}`;
-              posStr3 = `R${prompt[2].row + 1}C${prompt[2].col + 1}`;
-              posStr4 = `R${prompt[3].row + 1}C${prompt[3].col + 1}`;
-              // hintContent = t('hints.XY_CHAIN_sss', {
-              //   target1: target[0],
-              //   target2: target[1],
-              //   target3: target[2],
-              //   target4: target[3],
-              //   deleteStr,
-              //   posStr1,
-              //   posStr2,
-              //   posStr3,
-              //   posStr4,
-              // });
-              break;
-            case "双双双双":
-              posStr1 = `R${prompt[0].row + 1}C${prompt[0].col + 1}`;
-              posStr2 = `R${prompt[1].row + 1}C${prompt[1].col + 1}`;
-              posStr3 = `R${prompt[2].row + 1}C${prompt[2].col + 1}`;
-              posStr4 = `R${prompt[3].row + 1}C${prompt[3].col + 1}`;
-              posStr5 = `R${prompt[4].row + 1}C${prompt[4].col + 1}`;
-              // hintContent = t('hints.XY_CHAIN_ssss', {
-              //   target1: target[0],
-              //   target2: target[1],
-              //   target3: target[2],
-              //   target4: target[3],
-              //   target5: target[4],
-              //   deleteStr,
-              //   posStr1,
-              //   posStr2,
-              //   posStr3,
-              //   posStr4,
-              //   posStr5,
-              // });
-              break;
-            case "弱强双":
-              posStr1 = `R${prompt[0].row + 1}C${prompt[0].col + 1}`;
-              posStr2 = `R${prompt[1].row + 1}C${prompt[1].col + 1}`;
-              posStr3 = `R${prompt[2].row + 1}C${prompt[2].col + 1}`;
-              posStr4 = `R${prompt[3].row + 1}C${prompt[3].col + 1}`;
-              // hintContent = t("hints.XY_CHAIN_rqs", {
-              //   target1: target[0],
-              //   target2: target[1],
-              //   deleteStr,
-              //   posStr1,
-              //   posStr2,
-              //   posStr3,
-              //   posStr4,
-              // });
-              break;
-            case "弱强强":
-              posStr1 = `R${prompt[0].row + 1}C${prompt[0].col + 1}`;
-              posStr2 = `R${prompt[1].row + 1}C${prompt[1].col + 1}`;
-              posStr3 = `R${prompt[2].row + 1}C${prompt[2].col + 1}`;
-              posStr4 = `R${prompt[3].row + 1}C${prompt[3].col + 1}`;
-              // hintContent = t('hints.XY_CHAIN_rqq', {
-              //   target1: target[0],
-              //   target2: target[1],
-              //   deleteStr,
-              //   posStr1,
-              //   posStr2,
-              //   posStr3,
-              //   posStr4,
-              // });
-              break;
-            case "弱强强强":
-              posStr1 = `R${prompt[0].row + 1}C${prompt[0].col + 1}`;
-              posStr2 = `R${prompt[1].row + 1}C${prompt[1].col + 1}`;
-              posStr3 = `R${prompt[2].row + 1}C${prompt[2].col + 1}`;
-              posStr4 = `R${prompt[3].row + 1}C${prompt[3].col + 1}`;
-              posStr5 = `R${prompt[4].row + 1}C${prompt[4].col + 1}`;
-              // hintContent = t('hints.XY_CHAIN_rqqq', {
-              //   target1: target[0],
-              //   target2: target[1],
-              //   target3: target[2],
-              //   deleteStr,
-              //   posStr1,
-              //   posStr2,
-              //   posStr3,
-              //   posStr4,
-              //   posStr5,
-              // });
-              break;
-            case "弱强强双":
-              posStr1 = `R${prompt[0].row + 1}C${prompt[0].col + 1}`;
-              posStr2 = `R${prompt[1].row + 1}C${prompt[1].col + 1}`;
-              posStr3 = `R${prompt[2].row + 1}C${prompt[2].col + 1}`;
-              posStr4 = `R${prompt[3].row + 1}C${prompt[3].col + 1}`;
-              posStr5 = `R${prompt[4].row + 1}C${prompt[4].col + 1}`;
-              // hintContent = t('hints.XY_CHAIN_rqqs', {
-              //   target1: target[0],
-              //   target2: target[1],
-              //   target3: target[2],
-              //   deleteStr,
-              //   posStr1,
-              //   posStr2,
-              //   posStr3,
-              //   posStr4,
-              //   posStr5,
-              // });
-              break;
-            case "弱强强强强":
-              posStr1 = `R${prompt[0].row + 1}C${prompt[0].col + 1}`;
-              posStr2 = `R${prompt[1].row + 1}C${prompt[1].col + 1}`;
-              posStr3 = `R${prompt[2].row + 1}C${prompt[2].col + 1}`;
-              posStr4 = `R${prompt[3].row + 1}C${prompt[3].col + 1}`;
-              posStr5 = `R${prompt[4].row + 1}C${prompt[4].col + 1}`;
-              posStr6 = `R${prompt[5].row + 1}C${prompt[5].col + 1}`;
-              // hintContent = t('hints.XY_CHAIN_rqqqq', {
-              //   target1: target[0],
-              //   target2: target[1],
-              //   target3: target[2],
-              //   target4: target[3],
-              //   deleteStr,
-              //   posStr1,
-              //   posStr2,
-              //   posStr3,
-              //   posStr4,
-              //   posStr5,
-              //   posStr6,
-              // });
-              break;
-            case "弱强强强双":
-              posStr1 = `R${prompt[0].row + 1}C${prompt[0].col + 1}`;
-              posStr2 = `R${prompt[1].row + 1}C${prompt[1].col + 1}`;
-              posStr3 = `R${prompt[2].row + 1}C${prompt[2].col + 1}`;
-              posStr4 = `R${prompt[3].row + 1}C${prompt[3].col + 1}`;
-              posStr5 = `R${prompt[4].row + 1}C${prompt[4].col + 1}`;
-              posStr6 = `R${prompt[5].row + 1}C${prompt[5].col + 1}`;
-              // hintContent = t('hints.XY_CHAIN_rqqqs', {
-              //   target1: target[0],
-              //   target2: target[1],
-              //   target3: target[2],
-              //   target4: target[3],
-              //   deleteStr,
-              //   posStr1,
-              //   posStr2,
-              //   posStr3,
-              //   posStr4,
-              //   posStr5,
-              //   posStr6,
-              // });
-              break;
-            case "弱强双双":
-              posStr1 = `R${prompt[0].row + 1}C${prompt[0].col + 1}`;
-              posStr2 = `R${prompt[1].row + 1}C${prompt[1].col + 1}`;
-              posStr3 = `R${prompt[2].row + 1}C${prompt[2].col + 1}`;
-              posStr4 = `R${prompt[3].row + 1}C${prompt[3].col + 1}`;
-              posStr5 = `R${prompt[4].row + 1}C${prompt[4].col + 1}`;
-              // hintContent = t('hints.XY_CHAIN_rqss', {
-              //   target1: target[0],
-              //   target2: target[1],
-              //   target3: target[2],
-              //   deleteStr,
-              //   posStr1,
-              //   posStr2,
-              //   posStr3,
-              //   posStr4,
-              //   posStr5,
-              // });
-              break;
-            case "双双强强":
-              posStr1 = `R${prompt[0].row + 1}C${prompt[0].col + 1}`;
-              posStr2 = `R${prompt[1].row + 1}C${prompt[1].col + 1}`;
-              posStr3 = `R${prompt[2].row + 1}C${prompt[2].col + 1}`;
-              posStr4 = `R${prompt[3].row + 1}C${prompt[3].col + 1}`;
-              posStr5 = `R${prompt[4].row + 1}C${prompt[4].col + 1}`;
-              // hintContent = t('hints.XY_CHAIN_ssqq', {
-              //   target1: target[0],
-              //   target2: target[1],
-              //   target3: target[2],
-              //   target4: target[3],
-              //   target5: target[4],
-              //   deleteStr,
-              //   posStr1,
-              //   posStr2,
-              //   posStr3,
-              //   posStr4,
-              //   posStr5,
-              // });
-              break;
-          }
           break;
         case SOLUTION_METHODS.UNIQUE_RECTANGLE:
           boardWithHighlight = applyHintHighlight(board, result, "both");
@@ -1946,7 +1781,19 @@ const Sudoku: React.FC = () => {
           setPositions(target);
           setPrompts(target);
           break;
-        case SOLUTION_METHODS.XY_CHAIN2:
+        case SOLUTION_METHODS.HIDDEN_TRIPLE_ROW:
+        case SOLUTION_METHODS.HIDDEN_TRIPLE_COLUMN:
+        case SOLUTION_METHODS.HIDDEN_TRIPLE_BOX:
+          boardWithHighlight = applyHintHighlight(board, result, "both");
+          setPositions(target);
+          setPrompts(target);
+          break;
+        case SOLUTION_METHODS.DOUBLE_COLOR_CHAIN:
+          boardWithHighlight = applyHintHighlight(board, result, "both");
+          setPositions(target);
+          setPrompts(target);
+          break;
+        case SOLUTION_METHODS.TRIPLE_COLOR_CHAIN:
           boardWithHighlight = applyHintHighlight(board, result, "both");
           setPositions(target);
           setPrompts(target);
