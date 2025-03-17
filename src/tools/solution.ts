@@ -4182,28 +4182,24 @@ const getAffectedCells = (
     return [];
   }
   let affectedCells: Position[] = [];
+  const visitedMap = new Set<string>();
+  visitedMap.add(`${position.row}-${position.col}`);
   for (const pos of candidateMap[num].row.get(position.row)?.positions || []) {
-    if (pos.row === position.row && pos.col === position.col) continue;
-    const isHas = affectedCells.some(item => item.row === pos.row && item.col === pos.col);
-    if (!isHas) {
-      affectedCells.push(pos);
-    }
+    if (visitedMap.has(`${pos.row}-${pos.col}`)) continue;
+    visitedMap.add(`${pos.row}-${pos.col}`);
+    affectedCells.push(pos);
   }
   for (const pos of candidateMap[num].col.get(position.col)?.positions || []) {
-    if (pos.row === position.row && pos.col === position.col) continue;
-    const isHas = affectedCells.some(item => item.row === pos.row && item.col === pos.col);
-    if (!isHas) {
-      affectedCells.push(pos);
-    }
+    if (visitedMap.has(`${pos.row}-${pos.col}`)) continue;
+    visitedMap.add(`${pos.row}-${pos.col}`);
+    affectedCells.push(pos);
   }
   for (const pos of candidateMap[num].box.get(
     Math.floor(position.row / 3) * 3 + Math.floor(position.col / 3)
   )?.positions || []) {
-    if (pos.row === position.row && pos.col === position.col) continue;
-    const isHas = affectedCells.some(item => item.row === pos.row && item.col === pos.col);
-    if (!isHas) {
-      affectedCells.push(pos);
-    }
+    if (visitedMap.has(`${pos.row}-${pos.col}`)) continue;
+    visitedMap.add(`${pos.row}-${pos.col}`);
+    affectedCells.push(pos);
   }
   affectedCells = affectedCells.map(item => ({
     row: item.row,
@@ -4327,6 +4323,7 @@ const buildChainTree = (
   );
 
   for (const pos of affectedCells2) {
+    if(board[pos.row][pos.col].draft.length===2)continue
     // 检查是否已经在祖先链中，避免循环
     if (newVisitedMap2.has(`${pos.row}-${pos.col}`)) continue;
 
@@ -4340,6 +4337,15 @@ const buildChainTree = (
     const graphNode_noValue = getGraphNode(pos, noValue, graph);
     const nodesArray = findGraphNodeByDistance(graphNode_noValue, 1);
     for (const graphNode of nodesArray) {
+      if (
+        board[graphNode.row][graphNode.col].draft.length === 2 &&
+        board[pos.row][pos.col].draft.length === 2 &&
+        board[graphNode.row][graphNode.col].draft[0] ===
+          board[pos.row][pos.col].draft[0] &&
+        board[graphNode.row][graphNode.col].draft[1] ===
+          board[pos.row][pos.col].draft[1]
+      )
+        continue;
       // 检查是否已经在祖先链中，避免循环
       if (newVisitedMap3.has(`${graphNode.row}-${graphNode.col}`)) continue;
       const restCandidates = board[graphNode.row][graphNode.col].draft.filter(v => v !== noValue);

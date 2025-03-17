@@ -223,8 +223,8 @@ const Sudoku: React.FC = () => {
     const hiddenPairMap = new Map();
     const hiddenTripleMap = new Map();
 
-    // for (let i = 0; i < extreme.length; i++) {
-      for (let i = 1788; i < 1789; i++) {
+    for (let i = 0; i < extreme.length; i++) {
+      // for (let i = 1788; i < 1789; i++) {
       if (i % 100 === 0) {
         console.log(`正在处理第${i}个数独...`);
       }
