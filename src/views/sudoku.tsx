@@ -224,7 +224,7 @@ const Sudoku: React.FC = () => {
     const hiddenTripleMap = new Map();
 
     // for (let i = 0; i < extreme.length; i++) {
-      for (let i = 1788; i < 1789; i++) {
+      for (let i = 0; i < 100; i++) {
       if (i % 100 === 0) {
         console.log(`正在处理第${i}个数独...`);
       }
@@ -298,11 +298,6 @@ const Sudoku: React.FC = () => {
             case SOLUTION_METHODS.HIDDEN_TRIPLE_BOX:
               hiddenTripleMap.set(i, result.label);
               break;
-            case SOLUTION_METHODS.HIDDEN_TRIPLE_ROW1:
-            case SOLUTION_METHODS.HIDDEN_TRIPLE_COLUMN1:
-            case SOLUTION_METHODS.HIDDEN_TRIPLE_BOX1:
-              hiddenTriple1Map.set(i, result.label);
-              break;
           }
           const newBoard = deepCopyBoard(board2);
           let isFalse = false;
@@ -364,7 +359,6 @@ const Sudoku: React.FC = () => {
     console.log("tripleColorChainMap", tripleColorChainMap);
     console.log("hiddenPairMap", hiddenPairMap);
     console.log("hiddenTripleMap", hiddenTripleMap);
-    console.log("hiddenTriple1Map", hiddenTriple1Map);
   };
 
   const generateBoard = () => {
@@ -392,10 +386,10 @@ const Sudoku: React.FC = () => {
       }))
     );
 
-    // newBoard = deepCopyBoard(mockBoard);
+    newBoard = deepCopyBoard(mockBoard);
 
-    // updateBoard(newBoard, "生成新棋盘");
-    updateBoard(convertToBoard(194), "生成新棋盘");
+    updateBoard(newBoard, "生成新棋盘");
+    // updateBoard(convertToBoard(1788), "生成新棋盘");
 
     // 生成解决方案
     const solvedBoard = newBoard.map((row) => row.map((cell) => ({ ...cell })));
@@ -858,9 +852,12 @@ const Sudoku: React.FC = () => {
     ];
     let result = null;
 
+    const startTime = performance.now();
     for (const solveFunction of solveFunctions) {
       result = solveFunction(board, candidateMap, graph);
       if (result) {
+        const endTime = performance.now();
+        console.log(`${solveFunction.name} 用时: ${endTime - startTime} 毫秒`);
         setResult(result);
         setSelectedNumber(null);
         console.log(result);
@@ -1933,11 +1930,7 @@ const Sudoku: React.FC = () => {
   };
 
   const handleTest2 = () => {
-    // for(let i = 0; i < extreme.length; i++) {
-    for (let i = 17; i < 18; i++) {
-      const result = new SudokuSolver().solve(extreme[i].puzzle);
-      console.log(result);
-    }
+    
   };
 
   return (
