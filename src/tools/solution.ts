@@ -1733,7 +1733,6 @@ export const xyzWing = (
   return null;
 };
 
-// 给定两个坐标和候选数，判断是否为同区域的强连接
 export const isUnitStrongLink = (
   board: CellData[][],
   position1: Position,
@@ -1741,183 +1740,34 @@ export const isUnitStrongLink = (
   num: number,
   candidateMap: CandidateMap
 ): boolean => {
-  const cell1 = board[position1.row]?.[position1.col];
-  const cell2 = board[position2.row]?.[position2.col];
   if (position1.row === position2.row && position1.col === position2.col) {
     return false;
   }
-
-  // 检查是否在同一行、同一列或同一宫
-  const isSameRow = position1.row === position2.row;
-  const isSameCol = position1.col === position2.col;
-  const isSameBox =
-    Math.floor(position1.row / 3) === Math.floor(position2.row / 3) &&
-    Math.floor(position1.col / 3) === Math.floor(position2.col / 3);
-
-  if (!(isSameRow || isSameCol || isSameBox)) {
+  if (!board[position1.row][position1.col].draft.includes(num)) {
     return false;
   }
-
-  // 情况一：检查两个单元格是否都只有两个候选数，且包含相同的候选数12 12
-  if (
-    cell1.draft.length === 2 &&
-    cell2.draft.length === 2 &&
-    cell1.draft.every((n) => cell2.draft.includes(n))
-  ) {
-    return true;
+  if (!board[position2.row][position2.col].draft.includes(num)) {
+    return false;
   }
-
-  // 情况二：检查是否存在第三个单元格C，其候选数为AB的候选数的并集12 23 13
-  if (
-    cell1.draft.length === 2 &&
-    cell2.draft.length === 2 &&
-    cell1.draft.includes(num) &&
-    cell2.draft.includes(num)
-  ) {
-    const otherNum1 = cell1.draft.find((n) => n !== num);
-    const otherNum2 = cell2.draft.find((n) => n !== num);
-
-    if (otherNum1 && otherNum2) {
-      // 检查共同行、列和宫
-      const checkCellC = (row: number, col: number) => {
-        const cellC = board[row]?.[col];
-        if (
-          cellC?.draft.length === 2 &&
-          cellC.draft.includes(otherNum1) &&
-          cellC.draft.includes(otherNum2)
-        ) {
-          return true;
-        }
-      };
-
-      if (isSameRow) {
-        for (let col = 0; col < 9; col++) {
-          if (
-            col !== position1.col &&
-            col !== position2.col &&
-            checkCellC(position1.row, col)
-          ) {
-            return true;
-          }
-        }
-      }
-
-      if (isSameCol) {
-        for (let row = 0; row < 9; row++) {
-          if (
-            row !== position1.row &&
-            row !== position2.row &&
-            checkCellC(row, position1.col)
-          ) {
-            return true;
-          }
-        }
-      }
-
-      if (isSameBox) {
-        const startRow = Math.floor(position1.row / 3) * 3;
-        const startCol = Math.floor(position1.col / 3) * 3;
-        for (let i = 0; i < 3; i++) {
-          for (let j = 0; j < 3; j++) {
-            const row = startRow + i;
-            const col = startCol + j;
-            if (
-              (row !== position1.row || col !== position1.col) &&
-              (row !== position2.row || col !== position2.col) &&
-              checkCellC(row, col)
-            ) {
-              return true;
-            }
-          }
-        }
-      }
-    }
-  }
-
-  // 情况三：格子A有候选数a、b、num，B有num、a或b，在格子AB所处的共同行或共同列或共同宫内寻找格子C，要求C的候选数为a、b
-  const cellA = cell1.draft.length === 3 ? cell1 : cell2;
-  const cellB = cellA === cell1 ? cell2 : cell1;
-  const positionA = cellA === cell1 ? position1 : position2;
-  const positionB = cellB === cell2 ? position2 : position1;
-
-  if (cellA.draft.length === 3 && cellB.draft.length === 2) {
-    const [a, b] = cellA.draft.filter((n) => n !== num);
-    if (
-      cellB.draft.includes(num) &&
-      (cellB.draft.includes(a) || cellB.draft.includes(b))
-    ) {
-      const units = getCommonUnits(positionA, positionB, board);
-      for (const unit of units) {
-        const cellC = board[unit.row]?.[unit.col];
-        if (cellC.draft.includes(num)) continue;
-        if (cellC.draft.length === 2) {
-          if (
-            cellA.draft.includes(cellC.draft[0]) &&
-            cellA.draft.includes(cellC.draft[1])
-          ) {
-            return true;
-          }
-        }
-      }
-    }
-  } else if (cellA.draft.length === 3 && cellB.draft.length === 3) {
-    if (cellA.draft.every((n) => cellB.draft.includes(n))) {
-      const units = getCommonUnits(positionA, positionB, board);
-      for (const unit of units) {
-        const cellC = board[unit.row]?.[unit.col];
-        if (cellC.draft.includes(num)) continue;
-        if (
-          cellC.draft.length === 2 &&
-          cellA.draft.includes(cellC.draft[0]) &&
-          cellA.draft.includes(cellC.draft[1])
-        ) {
-          return true;
-        }
-        if (cellC.draft.length === 3) {
-          if (
-            cellA.draft.includes(cellC.draft[0]) &&
-            cellA.draft.includes(cellC.draft[1]) &&
-            cellA.draft.includes(cellC.draft[2])
-          ) {
-            return true;
-          }
-        }
-      }
-    }
-  }
-
-  // 情况四：如果两个方格所在的行或列或宫只有它们俩，返回true
-  // 检查行
+  let flag1 = false;
+  let flag2 = false;
+  let flag3 = false;
   if (position1.row === position2.row) {
-    const rowCandidates = candidateMap[num]?.row?.get(position1.row);
-    if (rowCandidates?.count === 2) {
-      return true;
-    }
+    flag1 = candidateMap[num].row.get(position1.row)?.count === 2;
   }
-
-  // 检查列
-
   if (position1.col === position2.col) {
-    const colCandidates = candidateMap[num]?.col?.get(position1.col);
-
-    if (colCandidates?.count === 2) {
-      return true;
-    }
+    flag2 = candidateMap[num].col.get(position1.col)?.count === 2;
   }
-
-  // 检查宫
-  const box1 =
-    Math.floor(position1.row / 3) * 3 + Math.floor(position1.col / 3);
-  const box2 =
-    Math.floor(position2.row / 3) * 3 + Math.floor(position2.col / 3);
-  if (box1 === box2) {
-    const boxCandidates = candidateMap[num]?.box?.get(box1);
-    if (boxCandidates?.count === 2) {
-      return true;
-    }
+  if (
+    Math.floor(position1.row / 3) === Math.floor(position2.row / 3) &&
+    Math.floor(position1.col / 3) === Math.floor(position2.col / 3)
+  ) {
+    flag3 =
+      candidateMap[num].box.get(
+        Math.floor(position1.row / 3) * 3 + Math.floor(position1.col / 3)
+      )?.count === 2;
   }
-
-  return false;
+  return flag1 || flag2 || flag3;
 };
 
 interface StrongLink {

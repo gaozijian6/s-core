@@ -223,8 +223,8 @@ const Sudoku: React.FC = () => {
     const hiddenPairMap = new Map();
     const hiddenTripleMap = new Map();
 
-    // for (let i = 0; i < extreme.length; i++) {
-      for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < extreme.length; i++) {
+      // for (let i = 0; i < 100; i++) {
       if (i % 100 === 0) {
         console.log(`正在处理第${i}个数独...`);
       }
@@ -389,7 +389,7 @@ const Sudoku: React.FC = () => {
     newBoard = deepCopyBoard(mockBoard);
 
     updateBoard(newBoard, "生成新棋盘");
-    // updateBoard(convertToBoard(1788), "生成新棋盘");
+    // updateBoard(convertToBoard(34), "生成新棋盘");
 
     // 生成解决方案
     const solvedBoard = newBoard.map((row) => row.map((cell) => ({ ...cell })));
@@ -1929,8 +1929,16 @@ const Sudoku: React.FC = () => {
     testExtreme();
   };
 
+  const fib = (n: number) => {
+    if (n <= 1) return n;
+    return fib(n - 1) + fib(n - 2);
+  };
+
   const handleTest2 = () => {
-    
+    const startTime = performance.now();
+    console.log(fib(40));
+    const endTime = performance.now();
+    console.log(`Time taken: ${endTime - startTime} milliseconds`);
   };
 
   return (
