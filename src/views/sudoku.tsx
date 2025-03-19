@@ -1928,8 +1928,17 @@ const Sudoku: React.FC = () => {
     );
   };
 
+  const fibonacci = (n: number): number => {
+    if (n <= 1) return n;
+    return fibonacci(n - 1) + fibonacci(n - 2);
+  };
+
   const handleTest = () => {
-    testExtreme();
+    // testExtreme();
+    const startTime = performance.now();
+    console.log(fibonacci(40));
+    const endTime = performance.now();
+    console.log(`Time taken: ${endTime - startTime} milliseconds`);
   };
 
   const handleTest2 = () => {
