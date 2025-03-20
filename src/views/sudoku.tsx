@@ -24,8 +24,6 @@ import {
   xWingVarient,
   xyWing,
   xyzWing,
-  findStrongLink,
-  checkStrongLinkParity,
   skyscraper,
   skyscraper2,
   nakedTriple1,
@@ -33,7 +31,6 @@ import {
   swordfish,
   trialAndErrorDIY,
   isUnitStrongLink,
-  getGraphNodePaths,
   getGraphNode,
   combinationChain,
   Loop,
@@ -1864,23 +1861,10 @@ const Sudoku: React.FC = () => {
     console.log(board);
   };
 
-  const handleStrongLink = () => {
-    const result = findStrongLink(board, candidateMap);
-    console.log(result);
-  };
-
-  const handleCheckStrongLinkParity = () => {
-    const result = checkStrongLinkParity(
-      { row: 3, col: 2 },
-      { row: 1, col: 6 },
-      3,
-      graph
-    );
-    console.log(result);
-  };
-
   const handleGraph = () => {
     console.log(graph);
+    console.log(graph["1"].length);
+    
   };
 
   const handleDraft = () => {
@@ -1914,20 +1898,6 @@ const Sudoku: React.FC = () => {
         candidateMap
       )
     );
-  };
-
-  const handleGraphNodePaths = () => {
-    console.log(
-      getGraphNodePaths(
-        getGraphNode({ row: 0, col: 2 }, 4, graph),
-        getGraphNode({ row: 7, col: 1 }, 4, graph)
-      )
-    );
-  };
-
-  const fibonacci = (n: number): number => {
-    if (n <= 1) return n;
-    return fibonacci(n - 1) + fibonacci(n - 2);
   };
 
   const handleTest = () => {
@@ -2064,11 +2034,8 @@ const Sudoku: React.FC = () => {
         <Button onClick={handleShowCandidates}>一键草稿</Button>
         <Button onClick={handleHint}>提示</Button>
         <Button onClick={handlePrint}>打印</Button>
-        <Button onClick={handleStrongLink}>强连接判断</Button>
-        <Button onClick={handleCheckStrongLinkParity}>强连接奇偶性</Button>
         <Button onClick={handleGraph}>图</Button>
         <Button onClick={handleDraft}>候选数</Button>
-        <Button onClick={handleGraphNodePaths}>打印路径</Button>
         <Button onClick={handleTest}>测试</Button>
         <Button onClick={handleTest2}>测试2</Button>
       </div>
