@@ -1770,39 +1770,6 @@ export const isUnitStrongLink = (
   return flag1 || flag2 || flag3;
 };
 
-interface StrongLink {
-  positions: Position[];
-  num: number;
-}
-
-// 寻找强连接
-export const findStrongLink = (
-  board: CellData[][],
-  candidateMap: CandidateMap
-): StrongLink | null => {
-  for (const [num, { all }] of Object.entries(candidateMap)) {
-    const positions = all;
-    for (let i = 0; i < positions.length - 1; i++) {
-      for (let j = i + 1; j < positions.length; j++) {
-        const position1 = { row: positions[i].row, col: positions[i].col };
-        const position2 = { row: positions[j].row, col: positions[j].col };
-        if (
-          isUnitStrongLink(
-            board,
-            position1,
-            position2,
-            Number(num),
-            candidateMap
-          )
-        ) {
-          return { positions: [position1, position2], num: Number(num) };
-        }
-      }
-    }
-  }
-  return null;
-};
-
 // 给定两个坐标和候选数，判断是否为强连接
 export const isStrongLink = (
   position1: Position,
@@ -1855,30 +1822,6 @@ export const isStrongLink = (
   return false;
 };
 
-export const getGraphNodesCounts = (graphNode: GraphNode): number => {
-  const visited = new Set<string>();
-  const queue: GraphNode[] = [graphNode];
-  let count = 0;
-
-  while (queue.length > 0) {
-    const node = queue.shift()!;
-    const key = `${node.row},${node.col}`;
-
-    if (visited.has(key)) {
-      continue;
-    }
-
-    visited.add(key);
-    count++;
-
-    for (const nextNode of node.next) {
-      queue.push(nextNode);
-    }
-  }
-
-  return count;
-};
-
 export const getGraphNode = (
   pos: Position,
   num: number,
@@ -1905,113 +1848,6 @@ export const getGraphNode = (
   }
 
   return null;
-};
-
-export const getGraphNodePaths = (
-  graphNode1: GraphNode | null,
-  graphNode2: GraphNode | null
-): Position[][] => {
-  if (!graphNode1 || !graphNode2) return [];
-  const paths: Position[][] = [];
-  const dfs = (
-    currentNode: GraphNode,
-    targetNode: GraphNode,
-    visited: Set<string>,
-    currentPath: Position[]
-  ) => {
-    if (
-      currentNode.row === targetNode.row &&
-      currentNode.col === targetNode.col
-    ) {
-      paths.push([...currentPath]);
-      return;
-    }
-
-    for (const nextNode of currentNode.next) {
-      const key = `${nextNode.row},${nextNode.col}`;
-      if (!visited.has(key)) {
-        visited.add(key);
-        currentPath.push({ row: nextNode.row, col: nextNode.col });
-        dfs(nextNode, targetNode, visited, currentPath);
-        currentPath.pop();
-        visited.delete(key);
-      }
-    }
-  };
-
-  const visited = new Set<string>();
-  const startKey = `${graphNode1.row},${graphNode1.col}`;
-  visited.add(startKey);
-  dfs(graphNode1, graphNode2, visited, [
-    { row: graphNode1.row, col: graphNode1.col },
-  ]);
-
-  return paths;
-};
-
-// 检查强连接的奇偶性
-export const checkStrongLinkParity = (
-  position1: Position,
-  position2: Position,
-  num: number,
-  graph: Graph
-): 0 | 1 | 2 => {
-  const startNodes = graph[num] ?? [];
-
-  for (const startNode of startNodes) {
-    const queue: { node: GraphNode; depth: number }[] = [
-      { node: startNode, depth: 0 },
-    ];
-    const visited: Set<string> = new Set();
-
-    while (queue.length > 0) {
-      const { node: currentNode, depth } = queue.shift()!;
-      const key = `${currentNode.row},${currentNode.col}`;
-
-      if (visited.has(key)) {
-        continue;
-      }
-
-      visited.add(key);
-
-      if (
-        currentNode.row === position1.row &&
-        currentNode.col === position1.col
-      ) {
-        // 找到第一个位置，继续搜索第二个位置
-        const subQueue: { node: GraphNode; depth: number }[] = [
-          { node: currentNode, depth: 0 },
-        ];
-        const subVisited: Set<string> = new Set();
-
-        while (subQueue.length > 0) {
-          const { node: subNode, depth: subDepth } = subQueue.shift()!;
-          const subKey = `${subNode.row},${subNode.col}`;
-
-          if (subVisited.has(subKey)) {
-            continue;
-          }
-
-          subVisited.add(subKey);
-
-          if (subNode.row === position2.row && subNode.col === position2.col) {
-            // 找到第二个位置，判断奇偶性
-            return subDepth % 2 === 0 ? 2 : 1;
-          }
-
-          for (const nextNode of subNode.next) {
-            subQueue.push({ node: nextNode, depth: subDepth + 1 });
-          }
-        }
-      }
-
-      for (const nextNode of currentNode.next) {
-        queue.push({ node: nextNode, depth: depth + 1 });
-      }
-    }
-  }
-
-  return 0;
 };
 
 // 摩天楼
@@ -4655,6 +4491,8 @@ export const doubleColorChain = (
         const rootB = new Node(row, col, b, 1, null, [a], "");
         buildChainTree(rootB, board, candidateMap, graph, 6, new Set());
 
+ 
+
         // 将rootA的所有节点放入数组
         const nodesA: Node[] = [];
         const collectNodesA = (root: Node) => {
@@ -4684,6 +4522,11 @@ export const doubleColorChain = (
           }
         };
         collectNodesB(rootB);
+
+        if (row == 3 && col == 1) {
+          console.log(candidateMap);
+          
+        }
 
         for (const nodeA of nodesA) {
           for (const nodeB of nodesB) {

@@ -255,7 +255,6 @@ const board =[
             "value": null,
             "isGiven": false,
             "draft": [
-                5,
                 6,
                 9
             ]
@@ -297,8 +296,7 @@ const board =[
             "isGiven": false,
             "draft": [
                 1,
-                2,
-                6
+                2
             ]
         }
     ],
