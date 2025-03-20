@@ -4386,85 +4386,89 @@ const buildChainTree = (
   const newVisitedMap3 = new Set<string>(visitedMap);
   const pos: Position = { row: node.row, col: node.col };
 
-  // 1. 处理双数置换 (sons1)
-  const affectedCells1 = getAffectedCells(pos, node.value, candidateMap);
+  if (node.value) {
+    // 1. 处理双数置换 (sons1)
+    const affectedCells1 = getAffectedCells(pos, node.value, candidateMap);
 
-  for (const pos of affectedCells1) {
-    // 检查是否已经在祖先链中，避免循环
-    if (newVisitedMap1.has(`${pos.row}-${pos.col}`)) continue;
+    for (const pos of affectedCells1) {
+      // 检查是否已经在祖先链中，避免循环
+      if (newVisitedMap1.has(`${pos.row}-${pos.col}`)) continue;
 
-    // 如果单元格包含当前节点的值作为候选数
-    if (board[pos.row][pos.col].draft.length === 2) {
-      const other =
-        node.value === board[pos.row][pos.col].draft[0]
-          ? board[pos.row][pos.col].draft[1]
-          : board[pos.row][pos.col].draft[0];
+      // 如果单元格包含当前节点的值作为候选数
+      if (board[pos.row][pos.col].draft.length === 2) {
+        const other =
+          node.value === board[pos.row][pos.col].draft[0]
+            ? board[pos.row][pos.col].draft[1]
+            : board[pos.row][pos.col].draft[0];
+        const son = new Node(
+          pos.row,
+          pos.col,
+          other,
+          node.depth + 1,
+          node,
+          [node.value],
+          "双"
+        );
+        node.sons1.push(son);
+        buildChainTree(son, board, candidateMap, graph, depth, newVisitedMap1);
+      }
+    }
+
+    // 2. 处理消除候选数 (sons2)
+    const affectedCells2 = getAffectedCells(
+      { row: node.row, col: node.col },
+      node.value,
+      candidateMap
+    );
+
+    for (const pos of affectedCells2) {
+      if (board[pos.row][pos.col].draft.length === 2) continue;
+      // 检查是否已经在祖先链中，避免循环
+      if (newVisitedMap2.has(`${pos.row}-${pos.col}`)) continue;
+
       const son = new Node(
         pos.row,
         pos.col,
-        other,
+        null,
         node.depth + 1,
         node,
         [node.value],
-        "双"
+        "弱"
       );
-      node.sons1.push(son);
-      buildChainTree(son, board, candidateMap, graph, depth, newVisitedMap1);
+      node.sons2.push(son);
+      buildChainTree(son, board, candidateMap, graph, depth, newVisitedMap2);
     }
   }
 
-  // 2. 处理消除候选数 (sons2)
-  const affectedCells2 = getAffectedCells(
-    { row: node.row, col: node.col },
-    node.value,
-    candidateMap
-  );
-
-  for (const pos of affectedCells2) {
-    if (board[pos.row][pos.col].draft.length === 2) continue;
-    // 检查是否已经在祖先链中，避免循环
-    if (newVisitedMap2.has(`${pos.row}-${pos.col}`)) continue;
-
-    const son = new Node(
-      pos.row,
-      pos.col,
-      null,
-      node.depth + 1,
-      node,
-      [node.value],
-      "弱"
-    );
-    node.sons2.push(son);
-    buildChainTree(son, board, candidateMap, graph, depth, newVisitedMap2);
-  }
-
-  // 3. 处理强链关系 (sons3)
-  for (const noValue of node.noValue) {
-    const graphNode_noValue = getGraphNode(pos, noValue, graph);
-    const nodesArray = findGraphNodeByDistance(graphNode_noValue, 1);
-    for (const graphNode of nodesArray) {
-      if (
-        node.value &&
-        board[graphNode.row][graphNode.col].draft.length === 2 &&
-        board[graphNode.row][graphNode.col].draft.includes(node.value)
-      )
-        continue;
-      // 检查是否已经在祖先链中，避免循环
-      if (newVisitedMap3.has(`${graphNode.row}-${graphNode.col}`)) continue;
-      const restCandidates = board[graphNode.row][graphNode.col].draft.filter(
-        (v) => v !== noValue
-      );
-      const son = new Node(
-        graphNode.row,
-        graphNode.col,
-        noValue,
-        node.depth + 1,
-        node,
-        restCandidates,
-        "强"
-      );
-      node.sons3.push(son);
-      buildChainTree(son, board, candidateMap, graph, depth, newVisitedMap3);
+  if (node.noValue.length) {
+    // 3. 处理强链关系 (sons3)
+    for (const noValue of node.noValue) {
+      const graphNode_noValue = getGraphNode(pos, noValue, graph);
+      const nodesArray = findGraphNodeByDistance(graphNode_noValue, 1);
+      for (const graphNode of nodesArray) {
+        if (
+          node.value &&
+          board[graphNode.row][graphNode.col].draft.length === 2 &&
+          board[graphNode.row][graphNode.col].draft.includes(node.value)
+        )
+          continue;
+        // 检查是否已经在祖先链中，避免循环
+        if (newVisitedMap3.has(`${graphNode.row}-${graphNode.col}`)) continue;
+        const restCandidates = board[graphNode.row][graphNode.col].draft.filter(
+          (v) => v !== noValue
+        );
+        const son = new Node(
+          graphNode.row,
+          graphNode.col,
+          noValue,
+          node.depth + 1,
+          node,
+          restCandidates,
+          "强"
+        );
+        node.sons3.push(son);
+        buildChainTree(son, board, candidateMap, graph, depth, newVisitedMap3);
+      }
     }
   }
 };
@@ -4518,10 +4522,6 @@ export const doubleColorChain = (
           }
         };
         collectNodesB(rootB);
-
-        // if (row == 3 && col == 1) {
-        //   console.log(candidateMap);
-        // }
 
         for (const nodeA of nodesA) {
           for (const nodeB of nodesB) {
@@ -5118,16 +5118,16 @@ export const tripleColorChain = (
         const [a, b, c] = cell.draft;
 
         // 单独对 a 构建
-        const rootA = new Node(row, col, a, 1, null, [b], "");
-        buildChainTree(rootA, board, candidateMap, graph, 4, new Set());
+        const rootA = new Node(row, col, a, 1, null, [b,c], "");
+        buildChainTree(rootA, board, candidateMap, graph, 5, new Set());
 
         // 单独对 b 构建
-        const rootB = new Node(row, col, b, 1, null, [a], "");
-        buildChainTree(rootB, board, candidateMap, graph, 4, new Set());
+        const rootB = new Node(row, col, b, 1, null, [a,c], "");
+        buildChainTree(rootB, board, candidateMap, graph, 5, new Set());
 
         // 单独对 c 构建
         const rootC = new Node(row, col, c, 1, null, [a, b], "");
-        buildChainTree(rootC, board, candidateMap, graph, 4, new Set());
+        buildChainTree(rootC, board, candidateMap, graph, 5, new Set());
 
         // 将rootA的所有节点放入数组
         const nodesA: Node[] = [];
@@ -5274,7 +5274,9 @@ export const tripleColorChain = (
                 nodeA.value === nodeC.value &&
                 !(nodeA.row === nodeB.row && nodeA.col === nodeB.col) &&
                 !(nodeA.row === nodeC.row && nodeA.col === nodeC.col) &&
-                !(nodeB.row === nodeC.row && nodeB.col === nodeC.col)
+                !(nodeB.row === nodeC.row && nodeB.col === nodeC.col) &&
+                row !== nodeB.row &&
+                col !== nodeB.col
               ) {
                 if (board[nodeB.row][nodeB.col].draft.includes(nodeA.value)) {
                   // 获取两个节点的所有祖先
@@ -5326,7 +5328,9 @@ export const tripleColorChain = (
                 nodeB.value === nodeC.value &&
                 !(nodeA.row === nodeB.row && nodeA.col === nodeB.col) &&
                 !(nodeA.row === nodeC.row && nodeA.col === nodeC.col) &&
-                !(nodeB.row === nodeC.row && nodeB.col === nodeC.col)
+                !(nodeB.row === nodeC.row && nodeB.col === nodeC.col) &&
+                row !== nodeA.row &&
+                col !== nodeA.col
               ) {
                 if (board[nodeA.row][nodeA.col].draft.includes(nodeB.value)) {
                   // 获取两个节点的所有祖先
@@ -5378,7 +5382,9 @@ export const tripleColorChain = (
                 nodeB.value === nodeA.value &&
                 !(nodeA.row === nodeB.row && nodeA.col === nodeB.col) &&
                 !(nodeA.row === nodeC.row && nodeA.col === nodeC.col) &&
-                !(nodeB.row === nodeC.row && nodeB.col === nodeC.col)
+                !(nodeB.row === nodeC.row && nodeB.col === nodeC.col) &&
+                row !== nodeC.row &&
+                col !== nodeC.col
               ) {
                 if (board[nodeC.row][nodeC.col].draft.includes(nodeA.value)) {
                   // 获取两个节点的所有祖先
@@ -5429,7 +5435,9 @@ export const tripleColorChain = (
                 nodeA.row === nodeB.row &&
                 nodeA.col === nodeB.col &&
                 !(nodeA.row === nodeC.row && nodeA.col === nodeC.col) &&
-                !(nodeB.row === nodeC.row && nodeB.col === nodeC.col)
+                !(nodeB.row === nodeC.row && nodeB.col === nodeC.col) &&
+                row !== nodeA.row &&
+                col !== nodeA.col
               ) {
                 if (board[nodeA.row][nodeA.col].draft.includes(nodeC.value)) {
                   // 获取两个节点的所有祖先
@@ -5480,7 +5488,9 @@ export const tripleColorChain = (
                 !(nodeA.row === nodeB.row && nodeA.col === nodeB.col) &&
                 !(nodeA.row === nodeC.row && nodeA.col === nodeC.col) &&
                 nodeB.row === nodeC.row &&
-                nodeB.col === nodeC.col
+                nodeB.col === nodeC.col &&
+                row !== nodeC.row &&
+                col !== nodeC.col
               ) {
                 if (board[nodeC.row][nodeC.col].draft.includes(nodeA.value)) {
                   // 获取两个节点的所有祖先
@@ -5531,7 +5541,9 @@ export const tripleColorChain = (
                 !(nodeA.row === nodeB.row && nodeA.col === nodeB.col) &&
                 nodeA.row === nodeC.row &&
                 nodeA.col === nodeC.col &&
-                !(nodeB.row === nodeC.row && nodeB.col === nodeC.col)
+                !(nodeB.row === nodeC.row && nodeB.col === nodeC.col) &&
+                row !== nodeC.row &&
+                col !== nodeC.col
               ) {
                 if (board[nodeC.row][nodeC.col].draft.includes(nodeB.value)) {
                   // 获取两个节点的所有祖先
@@ -5581,7 +5593,9 @@ export const tripleColorChain = (
                 nodeA.row === nodeC.row &&
                 nodeA.col === nodeC.col &&
                 nodeB.row === nodeC.row &&
-                nodeB.col === nodeC.col
+                nodeB.col === nodeC.col &&
+                row !== nodeA.row &&
+                col !== nodeA.col
               ) {
                 // 获取该位置的所有候选数
                 const cell = board[nodeA.row][nodeA.col];
@@ -5639,4 +5653,28 @@ export const tripleColorChain = (
   }
 
   return null;
+};
+
+export const getGraphNodesCounts = (graphNode: GraphNode): number => {
+  const visited = new Set<string>();
+  const queue: GraphNode[] = [graphNode];
+  let count = 0;
+
+  while (queue.length > 0) {
+    const node = queue.shift()!;
+    const key = `${node.row},${node.col}`;
+
+    if (visited.has(key)) {
+      continue;
+    }
+
+    visited.add(key);
+    count++;
+
+    for (const nextNode of node.next) {
+      queue.push(nextNode);
+    }
+  }
+
+  return count;
 };

@@ -40,6 +40,7 @@ import {
   doubleColorChain,
   tripleColorChain,
   hiddenTriple,
+  getGraphNodesCounts,
 } from "../tools/solution";
 import "./sudoku.less";
 import type {
@@ -205,6 +206,7 @@ const Sudoku: React.FC = () => {
       Loop,
       uniqueRectangle,
       doubleColorChain,
+      tripleColorChain,
       BinaryUniversalGrave,
     ];
 
@@ -221,7 +223,7 @@ const Sudoku: React.FC = () => {
     const hiddenTripleMap = new Map();
 
     for (let i = 0; i < extreme.length; i++) {
-      // for (let i = 0; i < 100; i++) {
+      // for (let i = 0; i < 200; i++) {
       if (i % 100 === 0) {
         console.log(`正在处理第${i}个数独...`);
       }
@@ -386,7 +388,7 @@ const Sudoku: React.FC = () => {
     newBoard = deepCopyBoard(mockBoard);
 
     updateBoard(newBoard, "生成新棋盘");
-    // updateBoard(convertToBoard(34), "生成新棋盘");
+    // updateBoard(convertToBoard(194), "生成新棋盘");
 
     // 生成解决方案
     const solvedBoard = newBoard.map((row) => row.map((cell) => ({ ...cell })));
@@ -824,26 +826,27 @@ const Sudoku: React.FC = () => {
 
   const handleHint = () => {
     const solveFunctions = [
-      singleCandidate,
-      hiddenSingle,
-      blockElimination,
-      nakedPair,
-      nakedTriple1,
-      nakedTriple2,
-      hiddenPair,
-      hiddenTriple,
-      xWing,
-      xWingVarient,
-      xyWing,
-      xyzWing,
-      skyscraper,
-      skyscraper2,
-      combinationChain,
-      swordfish,
-      jellyfish,
-      Loop,
-      uniqueRectangle,
-      doubleColorChain,
+      // singleCandidate,
+      // hiddenSingle,
+      // blockElimination,
+      // nakedPair,
+      // nakedTriple1,
+      // nakedTriple2,
+      // hiddenPair,
+      // hiddenTriple,
+      // xWing,
+      // xWingVarient,
+      // xyWing,
+      // xyzWing,
+      // skyscraper,
+      // skyscraper2,
+      // combinationChain,
+      // swordfish,
+      // jellyfish,
+      // Loop,
+      // uniqueRectangle,
+      // doubleColorChain,
+      tripleColorChain,
       BinaryUniversalGrave,
       trialAndErrorDIY,
     ];
@@ -1863,8 +1866,12 @@ const Sudoku: React.FC = () => {
 
   const handleGraph = () => {
     console.log(graph);
-    console.log(graph["1"].length);
     
+    for (const key in graph) {
+      for (const index in graph[key]) {
+        console.log(key, index, getGraphNodesCounts(graph[key][index]));
+      }
+    }
   };
 
   const handleDraft = () => {
@@ -2080,22 +2087,6 @@ const Sudoku: React.FC = () => {
           <Button onClick={handleCancelHint}>取消</Button>
         </div>
       </Drawer>
-      <div
-        style={{
-          position: "fixed",
-          right: "20px",
-          top: "50%",
-          transform: "translateY(-50%)",
-          zIndex: 1000,
-        }}
-      >
-        <Input
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          placeholder="请输入内容"
-          onPressEnter={handleIsUnitStrongLink}
-        />
-      </div>
     </Card>
   );
 };
