@@ -4286,8 +4286,6 @@ const getAffectedCells = (
   const visitedMap = new Set<string>();
   visitedMap.add(`${position.row}-${position.col}`);
   let affectedCells: Position[] = [];
-  const visitedMap = new Set<string>();
-  visitedMap.add(`${position.row}-${position.col}`);
   for (const pos of candidateMap[num].row.get(position.row)?.positions || []) {
     if (visitedMap.has(`${pos.row}-${pos.col}`)) continue;
     visitedMap.add(`${pos.row}-${pos.col}`);
@@ -4423,7 +4421,7 @@ const buildChainTree = (
   );
 
   for (const pos of affectedCells2) {
-    if(board[pos.row][pos.col].draft.length===2)continue
+    if (board[pos.row][pos.col].draft.length === 2) continue;
     // 检查是否已经在祖先链中，避免循环
     if (newVisitedMap2.has(`${pos.row}-${pos.col}`)) continue;
 
@@ -4446,12 +4444,9 @@ const buildChainTree = (
     const nodesArray = findGraphNodeByDistance(graphNode_noValue, 1);
     for (const graphNode of nodesArray) {
       if (
+        node.value &&
         board[graphNode.row][graphNode.col].draft.length === 2 &&
-        board[pos.row][pos.col].draft.length === 2 &&
-        board[graphNode.row][graphNode.col].draft[0] ===
-          board[pos.row][pos.col].draft[0] &&
-        board[graphNode.row][graphNode.col].draft[1] ===
-          board[pos.row][pos.col].draft[1]
+        board[graphNode.row][graphNode.col].draft.includes(node.value)
       )
         continue;
       // 检查是否已经在祖先链中，避免循环
@@ -4494,8 +4489,6 @@ export const doubleColorChain = (
         const rootB = new Node(row, col, b, 1, null, [a], "");
         buildChainTree(rootB, board, candidateMap, graph, 6, new Set());
 
- 
-
         // 将rootA的所有节点放入数组
         const nodesA: Node[] = [];
         const collectNodesA = (root: Node) => {
@@ -4526,10 +4519,9 @@ export const doubleColorChain = (
         };
         collectNodesB(rootB);
 
-        if (row == 3 && col == 1) {
-          console.log(candidateMap);
-          
-        }
+        // if (row == 3 && col == 1) {
+        //   console.log(candidateMap);
+        // }
 
         for (const nodeA of nodesA) {
           for (const nodeB of nodesB) {

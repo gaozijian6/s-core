@@ -1901,23 +1901,7 @@ const Sudoku: React.FC = () => {
   };
 
   const handleTest = () => {
-    // testExtreme();
-    const startTime = performance.now();
-    console.log(fibonacci(40));
-    const endTime = performance.now();
-    console.log(`Time taken: ${endTime - startTime} milliseconds`);
-  };
-
-  const fib = (n: number) => {
-    if (n <= 1) return n;
-    return fib(n - 1) + fib(n - 2);
-  };
-
-  const handleTest2 = () => {
-    const startTime = performance.now();
-    console.log(fib(40));
-    const endTime = performance.now();
-    console.log(`Time taken: ${endTime - startTime} milliseconds`);
+    testExtreme();
   };
 
   return (
@@ -2037,7 +2021,6 @@ const Sudoku: React.FC = () => {
         <Button onClick={handleGraph}>图</Button>
         <Button onClick={handleDraft}>候选数</Button>
         <Button onClick={handleTest}>测试</Button>
-        <Button onClick={handleTest2}>测试2</Button>
       </div>
       <div className="numberButtons">
         {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((number) => (
