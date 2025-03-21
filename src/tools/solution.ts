@@ -4379,11 +4379,15 @@ const buildChainTree = (
 ): void => {
   if (node.depth >= depth) return;
 
-  visitedMap.add(`${node.row}-${node.col}`);
+  if (node.value) {
+    visitedMap.add(`${node.row}-${node.col}-value-${node.value}`);
+  }
+  if (node.noValue.length) {
+    for (const noValue of node.noValue) {
+      visitedMap.add(`${node.row}-${node.col}-noValue-${noValue}`);
+    }
+  }
   // 创建一个新的visitedMap副本，以避免修改原始集合
-  const newVisitedMap1 = new Set<string>(visitedMap);
-  const newVisitedMap2 = new Set<string>(visitedMap);
-  const newVisitedMap3 = new Set<string>(visitedMap);
   const pos: Position = { row: node.row, col: node.col };
 
   if (node.value) {
@@ -4391,15 +4395,14 @@ const buildChainTree = (
     const affectedCells1 = getAffectedCells(pos, node.value, candidateMap);
 
     for (const pos of affectedCells1) {
-      // 检查是否已经在祖先链中，避免循环
-      if (newVisitedMap1.has(`${pos.row}-${pos.col}`)) continue;
-
       // 如果单元格包含当前节点的值作为候选数
       if (board[pos.row][pos.col].draft.length === 2) {
         const other =
           node.value === board[pos.row][pos.col].draft[0]
             ? board[pos.row][pos.col].draft[1]
             : board[pos.row][pos.col].draft[0];
+
+        if (visitedMap.has(`${pos.row}-${pos.col}-value-${other}`)) continue;
         const son = new Node(
           pos.row,
           pos.col,
@@ -4410,7 +4413,7 @@ const buildChainTree = (
           "双"
         );
         node.sons1.push(son);
-        buildChainTree(son, board, candidateMap, graph, depth, newVisitedMap1);
+        buildChainTree(son, board, candidateMap, graph, depth, visitedMap);
       }
     }
 
@@ -4422,9 +4425,8 @@ const buildChainTree = (
     );
 
     for (const pos of affectedCells2) {
-      if (board[pos.row][pos.col].draft.length === 2) continue;
       // 检查是否已经在祖先链中，避免循环
-      if (newVisitedMap2.has(`${pos.row}-${pos.col}`)) continue;
+      if (visitedMap.has(`${pos.row}-${pos.col}-noValue-${node.value}`)) continue;
 
       const son = new Node(
         pos.row,
@@ -4436,7 +4438,7 @@ const buildChainTree = (
         "弱"
       );
       node.sons2.push(son);
-      buildChainTree(son, board, candidateMap, graph, depth, newVisitedMap2);
+      buildChainTree(son, board, candidateMap, graph, depth, visitedMap);
     }
   }
 
@@ -4446,14 +4448,8 @@ const buildChainTree = (
       const graphNode_noValue = getGraphNode(pos, noValue, graph);
       const nodesArray = findGraphNodeByDistance(graphNode_noValue, 1);
       for (const graphNode of nodesArray) {
-        if (
-          node.value &&
-          board[graphNode.row][graphNode.col].draft.length === 2 &&
-          board[graphNode.row][graphNode.col].draft.includes(node.value)
-        )
-          continue;
         // 检查是否已经在祖先链中，避免循环
-        if (newVisitedMap3.has(`${graphNode.row}-${graphNode.col}`)) continue;
+        if (visitedMap.has(`${graphNode.row}-${graphNode.col}-value-${noValue}`)) continue;
         const restCandidates = board[graphNode.row][graphNode.col].draft.filter(
           (v) => v !== noValue
         );
@@ -4467,7 +4463,7 @@ const buildChainTree = (
           "强"
         );
         node.sons3.push(son);
-        buildChainTree(son, board, candidateMap, graph, depth, newVisitedMap3);
+        buildChainTree(son, board, candidateMap, graph, depth, visitedMap);
       }
     }
   }
@@ -4478,7 +4474,6 @@ export const doubleColorChain = (
   candidateMap: CandidateMap,
   graph: Graph
 ): Result | null => {
-  // 寻找可能的起始点
   for (let row = 0; row < 9; row++) {
     for (let col = 0; col < 9; col++) {
       const cell = board[row][col];
@@ -4656,7 +4651,9 @@ export const doubleColorChain = (
                   ],
                 };
               }
-            } else if (
+            }
+            // 情况三：两个方格都在被删除方格
+            else if (
               nodeA.value &&
               nodeB.value &&
               nodeA.row === nodeB.row &&
@@ -5118,11 +5115,11 @@ export const tripleColorChain = (
         const [a, b, c] = cell.draft;
 
         // 单独对 a 构建
-        const rootA = new Node(row, col, a, 1, null, [b,c], "");
+        const rootA = new Node(row, col, a, 1, null, [b, c], "");
         buildChainTree(rootA, board, candidateMap, graph, 5, new Set());
 
         // 单独对 b 构建
-        const rootB = new Node(row, col, b, 1, null, [a,c], "");
+        const rootB = new Node(row, col, b, 1, null, [a, c], "");
         buildChainTree(rootB, board, candidateMap, graph, 5, new Set());
 
         // 单独对 c 构建
