@@ -251,9 +251,7 @@ const Sudoku: React.FC = () => {
         if (j === solveFunctions.length && !result && counts !== 81) {
           const endTime = performance.now();
           const executionTime = endTime - startTime;
-          if (executionTime > 15) {
-            console.log(`求不出解 用时：${executionTime}ms`, i);
-          }
+          console.log(`求不出解 用时：${executionTime}ms`, i);
           failureMap.set(i, false);
           break;
         }
@@ -831,27 +829,27 @@ const Sudoku: React.FC = () => {
 
   const handleHint = () => {
     const solveFunctions = [
-      // singleCandidate,
-      // hiddenSingle,
-      // blockElimination,
-      // nakedPair,
-      // nakedTriple1,
-      // nakedTriple2,
-      // hiddenPair,
-      // hiddenTriple,
-      // xWing,
-      // xWingVarient,
-      // xyWing,
-      // xyzWing,
-      // skyscraper,
-      // skyscraper2,
-      // combinationChain,
-      // swordfish,
-      // jellyfish,
-      // Loop,
-      // uniqueRectangle,
-      // doubleColorChain,
-      tripleColorChain,
+      singleCandidate,
+      hiddenSingle,
+      blockElimination,
+      nakedPair,
+      nakedTriple1,
+      nakedTriple2,
+      hiddenPair,
+      hiddenTriple,
+      xWing,
+      xWingVarient,
+      xyWing,
+      xyzWing,
+      skyscraper,
+      skyscraper2,
+      combinationChain,
+      swordfish,
+      jellyfish,
+      Loop,
+      uniqueRectangle,
+      doubleColorChain,
+      // tripleColorChain,
       BinaryUniversalGrave,
       trialAndErrorDIY,
     ];
