@@ -206,7 +206,7 @@ const Sudoku: React.FC = () => {
       Loop,
       uniqueRectangle,
       doubleColorChain,
-      tripleColorChain,
+      // tripleColorChain,
       BinaryUniversalGrave,
     ];
 
@@ -249,6 +249,11 @@ const Sudoku: React.FC = () => {
           }
         }
         if (j === solveFunctions.length && !result && counts !== 81) {
+          const endTime = performance.now();
+          const executionTime = endTime - startTime;
+          if (executionTime > 15) {
+            console.log(`求不出解 用时：${executionTime}ms`, i);
+          }
           failureMap.set(i, false);
           break;
         }
@@ -263,20 +268,20 @@ const Sudoku: React.FC = () => {
           if (isFill) {
             counts++;
           }
-          if (result.method === SOLUTION_METHODS.TRIPLE_COLOR_CHAIN) {
-            const endTime = performance.now();
-            const executionTime = endTime - startTime;
-            if (executionTime > 10) {
-              console.log(`${result.label} 用时：${executionTime}ms`, i);
-            }
-          }
-          if (result.method === SOLUTION_METHODS.DOUBLE_COLOR_CHAIN) {
-            const endTime = performance.now();
-            const executionTime = endTime - startTime;
-            if (executionTime > 10) {
-              console.log(`${result.label} 用时：${executionTime}ms`, i);
-            }
-          }
+          // if (result.method === SOLUTION_METHODS.TRIPLE_COLOR_CHAIN) {
+          //   const endTime = performance.now();
+          //   const executionTime = endTime - startTime;
+          //   if (executionTime > 15) {
+          //     console.log(`${result.label} 用时：${executionTime}ms`, i);
+          //   }
+          // }
+          // if (result.method === SOLUTION_METHODS.DOUBLE_COLOR_CHAIN) {
+          //   const endTime = performance.now();
+          //   const executionTime = endTime - startTime;
+          //   if (executionTime > 15) {
+          //     console.log(`${result.label} 用时：${executionTime}ms`, i);
+          //   }
+          // }
           switch (result.method) {
             case SOLUTION_METHODS.DOUBLE_COLOR_CHAIN:
               doubleColorChainMap.set(i, result.label);
