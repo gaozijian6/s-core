@@ -102,8 +102,8 @@ const Sudoku: React.FC = () => {
   const [inputValue, setInputValue] = useState<string>("");
 
   const convertToBoard = (index: number): CellData[][] => {
-    const board = extreme[index].puzzle;
-
+    // const board = medium[index].puzzle;
+    const board = ".6....4...81..4.6.2...9...86..5.7.8....9....6.2..6.7...3..7..9.5...8...7...1...3."
     const result: CellData[][] = [];
     for (let i = 0; i < 9; i++) {
       const row: CellData[] = [];
@@ -121,7 +121,7 @@ const Sudoku: React.FC = () => {
   };
 
   const convertToAnswer = (index: number): CellData[][] => {
-    const board = extreme[index].solution;
+    const board = medium[index].solution;
     const result: CellData[][] = [];
     for (let i = 0; i < 9; i++) {
       const row: CellData[] = [];
@@ -206,7 +206,7 @@ const Sudoku: React.FC = () => {
       Loop,
       uniqueRectangle,
       doubleColorChain,
-      // tripleColorChain,
+      tripleColorChain,
       BinaryUniversalGrave,
     ];
 
@@ -221,6 +221,11 @@ const Sudoku: React.FC = () => {
     const tripleColorChainMap = new Map();
     const hiddenPairMap = new Map();
     const hiddenTripleMap = new Map();
+    const xyWingMap = new Map();
+    const xyzWingMap = new Map();
+    const skyscraperMap = new Map();
+    const skyscraper2Map = new Map();
+    const xwingMap = new Map();
 
     for (let i = 0; i < extreme.length; i++) {
       // for (let i = 0; i < 200; i++) {
@@ -300,6 +305,22 @@ const Sudoku: React.FC = () => {
             case SOLUTION_METHODS.HIDDEN_TRIPLE_BOX:
               hiddenTripleMap.set(i, result.label);
               break;
+            case SOLUTION_METHODS.XY_WING:
+              xyWingMap.set(i, result.label);
+              break;
+            case SOLUTION_METHODS.XYZ_WING:
+              xyzWingMap.set(i, result.label);
+              break;
+            case SOLUTION_METHODS.SKYSCRAPER:
+              skyscraperMap.set(i, result.label);
+              break;
+            case SOLUTION_METHODS.SKYSCRAPER2:
+              skyscraper2Map.set(i, result.label);
+              break;
+            case SOLUTION_METHODS.X_WING_ROW:
+            case SOLUTION_METHODS.X_WING_COLUMN:
+              xwingMap.set(i, result.label);
+              break;
           }
           const newBoard = deepCopyBoard(board2);
           let isFalse = false;
@@ -361,6 +382,11 @@ const Sudoku: React.FC = () => {
     console.log("tripleColorChainMap", tripleColorChainMap);
     console.log("hiddenPairMap", hiddenPairMap);
     console.log("hiddenTripleMap", hiddenTripleMap);
+    console.log("xyWingMap", xyWingMap);
+    console.log("xyzWingMap", xyzWingMap);
+    console.log("skyscraperMap", skyscraperMap);
+    console.log("skyscraper2Map", skyscraper2Map);
+    console.log("xwingMap", xwingMap);
   };
 
   const generateBoard = () => {
@@ -388,10 +414,10 @@ const Sudoku: React.FC = () => {
       }))
     );
 
-    newBoard = deepCopyBoard(mockBoard);
+    // newBoard = deepCopyBoard(mockBoard);
 
-    updateBoard(newBoard, "生成新棋盘");
-    // updateBoard(convertToBoard(194), "生成新棋盘");
+    // updateBoard(newBoard, "生成新棋盘");
+    updateBoard(convertToBoard(194), "生成新棋盘");
 
     // 生成解决方案
     const solvedBoard = newBoard.map((row) => row.map((cell) => ({ ...cell })));
@@ -849,7 +875,7 @@ const Sudoku: React.FC = () => {
       Loop,
       uniqueRectangle,
       doubleColorChain,
-      // tripleColorChain,
+      tripleColorChain,
       BinaryUniversalGrave,
       trialAndErrorDIY,
     ];
