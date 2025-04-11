@@ -13,6 +13,7 @@ import {
   deepCopyBoard,
   copyOfficialDraft,
   createGraph,
+  createHyperGraph,
 } from "../tools";
 import {
   hiddenSingle,
@@ -71,6 +72,7 @@ const Sudoku: React.FC = () => {
     currentStep,
     candidateMap,
     graph,
+    hyperGraph,
     answerBoard,
     clearHistory,
   } = useSudokuBoard(initialBoard);
@@ -83,7 +85,6 @@ const Sudoku: React.FC = () => {
   );
   const [lastErrorTime, setLastErrorTime] = useState<number | null>(null);
   const errorCooldownPeriod = 1000; // 错误冷却时间，单位毫秒
-  const time = useTimer();
   const [selectedCell, setSelectedCell] = useState<{
     row: number;
     col: number;
@@ -102,7 +103,9 @@ const Sudoku: React.FC = () => {
   const [inputValue, setInputValue] = useState<string>("");
 
   const convertToBoard = (index: number): CellData[][] => {
-    const board = extreme[index].puzzle;
+    // const board = extreme[index].puzzle;
+    const board =
+      "2...8.....3....7.81....3.2..1..2..7....3....5.7..15.3.......9...2..3..8...46.....";
 
     const result: CellData[][] = [];
     for (let i = 0; i < 9; i++) {
@@ -180,8 +183,9 @@ const Sudoku: React.FC = () => {
       });
     });
     let graph = createGraph(newBoard, newCandidateMap);
+    let hyperGraph = createHyperGraph(newBoard, newCandidateMap, graph);
     let candidateMap = newCandidateMap;
-    return { candidateMap, graph };
+    return { candidateMap, graph, hyperGraph };
   };
 
   const testExtreme = () => {
@@ -206,7 +210,7 @@ const Sudoku: React.FC = () => {
       Loop,
       uniqueRectangle,
       doubleColorChain,
-      // tripleColorChain,
+      tripleColorChain,
       BinaryUniversalGrave,
     ];
 
@@ -235,7 +239,7 @@ const Sudoku: React.FC = () => {
         (acc, row) => acc + row.filter((cell) => cell.value !== null).length,
         0
       );
-      let { candidateMap, graph } = updateCandidateMap(board2);
+      let { candidateMap, graph, hyperGraph } = updateCandidateMap(board2);
       let result: Result | null = null;
       while (true) {
         let j = 0;
@@ -342,7 +346,7 @@ const Sudoku: React.FC = () => {
             break;
           }
           board2 = newBoard;
-          ({ candidateMap, graph } = updateCandidateMap(board2));
+          ({ candidateMap, graph, hyperGraph } = updateCandidateMap(board2));
           continue;
         }
         if (counts === 81) {
@@ -849,7 +853,7 @@ const Sudoku: React.FC = () => {
       Loop,
       uniqueRectangle,
       doubleColorChain,
-      // tripleColorChain,
+      tripleColorChain,
       BinaryUniversalGrave,
       trialAndErrorDIY,
     ];
@@ -1869,12 +1873,11 @@ const Sudoku: React.FC = () => {
 
   const handleGraph = () => {
     console.log(graph);
-    
-    for (const key in graph) {
-      for (const index in graph[key]) {
-        console.log(key, index, getGraphNodesCounts(graph[key][index]));
-      }
-    }
+  };
+
+  const handleHyperGraph = () => {
+    // const hyperGraph = createHyperGraph(board, candidateMap, graph);
+    console.log(hyperGraph);
   };
 
   const handleDraft = () => {
@@ -1918,7 +1921,6 @@ const Sudoku: React.FC = () => {
     <Card title="">
       <div className="gameInfo">
         <span>错误次数：{errorCount}</span>
-        <span>{time}</span>
       </div>
       <div className="sudokuGrid">
         {board.map((row, rowIndex) =>
@@ -2029,6 +2031,7 @@ const Sudoku: React.FC = () => {
         <Button onClick={handleHint}>提示</Button>
         <Button onClick={handlePrint}>打印</Button>
         <Button onClick={handleGraph}>图</Button>
+        <Button onClick={handleHyperGraph}>超图</Button>
         <Button onClick={handleDraft}>候选数</Button>
         <Button onClick={handleTest}>测试</Button>
       </div>
