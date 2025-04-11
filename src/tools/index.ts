@@ -593,215 +593,280 @@ export const createGraph = (
 
 export const createHyperGraph = (
   board: CellData[][],
-  candidateMap: CandidateMap,
-  graph: Graph
+  candidateMap: CandidateMap
 ): HyperGraph => {
   const hyperGraph: HyperGraph = {};
+
   for (let num = 1; num <= 9; num++) {
     hyperGraph[num] = [];
-    const graphNodes = graph[num] || [];
-    if (graphNodes.length === 0) continue;
+    const candidates = candidateMap[num]?.all ?? [];
+    if (candidates.length === 0) continue;
 
-    // 对每个图的起始节点，获取其所有相连节点
-    for (const graphNode of graphNodes) {
-      const visited = new Set<string>();
-      const queue: GraphNode[] = [];
-      visited.add(`${graphNode.row}-${graphNode.col}`);
-      const startHyperGraphNode: HyperGraphNode = {
-        cells: [
-          {
-            row: graphNode.row,
-            col: graphNode.col,
-            candidates: graphNode.candidates,
-          },
-        ],
-        next: [],
-      };
-      let lastHyperGraphNode
-      for(const next of graphNode.next){
-        if(visited.has(`${next.row}-${next.col}`)) continue;
-        queue.push(next);
-        startHyperGraphNode.next.push(next);
-        lastHyperGraphNode=startHyperGraphNode;
-      }
-      while (queue.length > 0) {
-          const current = queue.shift()!;
-        visited.add(`${current.row}-${current.col}`);
-        const hyperGraphNode = {
-          cells: [
-            {
-              row: current.row,
-              col: current.col,
-              candidates: current.candidates,
-            },
-          ],
-          next: [],
-        };
-        for (const next of current.next) {
-          console.log('num',num);
-          if (visited.has(`${next.row}-${next.col}`)) continue;
-          queue.push(next);
-          
-          lastHyperGraphNode.next.push(hyperGraphNode);
-          hyperGraphNode.next.push(lastHyperGraphNode);
-          lastHyperGraphNode = hyperGraphNode;
-          
-          
+    // 找出存在强链接的候选数对
+    const strongLinks: [Candidate, Candidate][] = [];
+    for (let i = 0; i < candidates.length; i++) {
+      for (let j = i + 1; j < candidates.length; j++) {
+        const pos1 = candidates[i];
+        const pos2 = candidates[j];
+        if (isUnitStrongLink(board, pos1, pos2, num, candidateMap)) {
+          strongLinks.push([pos1, pos2]);
         }
       }
-      hyperGraph[num].push(startHyperGraphNode);
+    }
+
+    if (strongLinks.length === 0) continue;
+
+    // 构建连通分量
+    const components: Set<string>[] = [];
+    const visited = new Set<string>();
+
+    for (const [pos1, pos2] of strongLinks) {
+      const key1 = `${pos1.row},${pos1.col}`;
+      const key2 = `${pos2.row},${pos2.col}`;
       
+      // 查找这两个位置所属的连通分量
+      let comp1Index = -1, comp2Index = -1;
+      
+      for (let i = 0; i < components.length; i++) {
+        if (components[i].has(key1)) comp1Index = i;
+        if (components[i].has(key2)) comp2Index = i;
+      }
+      
+      if (comp1Index === -1 && comp2Index === -1) {
+        // 两个位置都不在任何连通分量中，创建新的连通分量
+        const newComp = new Set<string>([key1, key2]);
+        components.push(newComp);
+      } else if (comp1Index !== -1 && comp2Index === -1) {
+        // 位置1在连通分量中，位置2不在
+        components[comp1Index].add(key2);
+      } else if (comp1Index === -1 && comp2Index !== -1) {
+        // 位置2在连通分量中，位置1不在
+        components[comp2Index].add(key1);
+      } else if (comp1Index !== comp2Index) {
+        // 两个位置分别在不同的连通分量中，合并它们
+        for (const key of components[comp2Index]) {
+          components[comp1Index].add(key);
+        }
+        components.splice(comp2Index, 1);
+      }
+    }
+
+    // 过滤掉太小的连通分量
+    const validComponents = components.filter(comp => comp.size >= 2);
+    
+    // 为每个连通分量创建超图结构
+    for (const component of validComponents) {
+      // 为连通分量中的每个位置创建超图节点
+      const nodeMap = new Map<string, HyperGraphNode>();
+      
+      // 创建节点
+      for (const key of component) {
+        const [row, col] = key.split(',').map(Number);
+        const candidate = candidates.find(c => c.row === row && c.col === col);
+        if (!candidate) continue;
+        
+        nodeMap.set(key, {
+          cells: [{
+            row: candidate.row,
+            col: candidate.col,
+            candidates: candidate.candidates
+          }],
+          next: []
+        });
+      }
+      
+      // 添加强链接
+      for (const [pos1, pos2] of strongLinks) {
+        const key1 = `${pos1.row},${pos1.col}`;
+        const key2 = `${pos2.row},${pos2.col}`;
+        
+        if (component.has(key1) && component.has(key2)) {
+          const node1 = nodeMap.get(key1);
+          const node2 = nodeMap.get(key2);
+          
+          if (node1 && node2) {
+            // 添加双向连接
+            if (!node1.next.includes(node2)) {
+              node1.next.push(node2);
+            }
+            if (!node2.next.includes(node1)) {
+              node2.next.push(node1);
+            }
+          }
+        }
+      }
+      
+      // 从连通分量中选择一个起始节点
+      const startKey = Array.from(component)[0];
+      const startNode = nodeMap.get(startKey);
+      
+      if (startNode) {
+        hyperGraph[num].push(startNode);
+        
+        // 使用BFS处理超图结构（处理行、列、宫）
+        const processedKeys = new Set<string>();
+        const queue: HyperGraphNode[] = [startNode];
+        
+        while (queue.length > 0) {
+          const current = queue.shift()!;
+          const key = current.cells
+            .map(cell => `${cell.row}-${cell.col}`)
+            .sort()
+            .join(",");
+          
+          if (processedKeys.has(key)) continue;
+          processedKeys.add(key);
+          
+          if (current.cells.length === 1) {
+            const cell = current.cells[0];
+            
+            // 处理行
+            const rowData = candidateMap[num].row.get(cell.row);
+            if (rowData?.count !== undefined && rowData.count >= 3 && rowData.count <= 4) {
+              const currentRow = cell.row;
+              const currentCol = cell.col;
+              const currentBox = Math.floor(currentCol / 3);
+              
+              const cellsInSameRow = rowData.positions.filter(
+                pos => pos.row === currentRow && Math.floor(pos.col / 3) !== currentBox
+              );
+              
+              if (cellsInSameRow.length >= 2) {
+                const hyperEdge: HyperGraphNode = {
+                  cells: cellsInSameRow,
+                  next: []
+                };
+                
+                const hyperEdgeKey = cellsInSameRow
+                  .map(c => `${c.row}-${c.col}`)
+                  .sort()
+                  .join(",");
+                
+                if (!processedKeys.has(hyperEdgeKey)) {
+                  current.next.push(hyperEdge);
+                  hyperEdge.next.push(current);
+                  queue.push(hyperEdge);
+                }
+              }
+            }
+            
+            // 处理列
+            const colData = candidateMap[num].col.get(cell.col);
+            if (colData?.count !== undefined && colData.count >= 3 && colData.count <= 4) {
+              const currentCol = cell.col;
+              const currentRow = cell.row;
+              const currentBox = Math.floor(currentRow / 3);
+              
+              const cellsInSameCol = colData.positions.filter(
+                pos => pos.col === currentCol && Math.floor(pos.row / 3) !== currentBox
+              );
+              
+              if (cellsInSameCol.length >= 2) {
+                const hyperEdge: HyperGraphNode = {
+                  cells: cellsInSameCol,
+                  next: []
+                };
+                
+                const hyperEdgeKey = cellsInSameCol
+                  .map(c => `${c.row}-${c.col}`)
+                  .sort()
+                  .join(",");
+                
+                if (!processedKeys.has(hyperEdgeKey)) {
+                  current.next.push(hyperEdge);
+                  hyperEdge.next.push(current);
+                  queue.push(hyperEdge);
+                }
+              }
+            }
+            
+            // 处理宫
+            const boxIndex = Math.floor(cell.row / 3) * 3 + Math.floor(cell.col / 3);
+            const boxData = candidateMap[num].box.get(boxIndex);
+            if (boxData?.count !== undefined && boxData.count >= 3 && boxData.count <= 4) {
+              const currentRow = cell.row;
+              const currentCol = cell.col;
+              
+              const cellsInSameBox = boxData.positions.filter(
+                pos => !(pos.row === currentRow && pos.col === currentCol)
+              );
+              
+              // 同行分组
+              const rowGroups = new Map<number, Candidate[]>();
+              cellsInSameBox.forEach(pos => {
+                if (!rowGroups.has(pos.row)) {
+                  rowGroups.set(pos.row, []);
+                }
+                rowGroups.get(pos.row)!.push(pos);
+              });
+              
+              rowGroups.forEach((cells, row) => {
+                if (cells.length >= 2 && row !== currentRow) {
+                  const hyperEdge: HyperGraphNode = {
+                    cells: cells,
+                    next: []
+                  };
+                  
+                  const hyperEdgeKey = cells
+                    .map(c => `${c.row}-${c.col}`)
+                    .sort()
+                    .join(",");
+                  
+                  if (!processedKeys.has(hyperEdgeKey)) {
+                    current.next.push(hyperEdge);
+                    hyperEdge.next.push(current);
+                    queue.push(hyperEdge);
+                  }
+                }
+              });
+              
+              // 同列分组
+              const colGroups = new Map<number, Candidate[]>();
+              cellsInSameBox.forEach(pos => {
+                if (!colGroups.has(pos.col)) {
+                  colGroups.set(pos.col, []);
+                }
+                colGroups.get(pos.col)!.push(pos);
+              });
+              
+              colGroups.forEach((cells, col) => {
+                if (cells.length >= 2 && col !== currentCol) {
+                  const hyperEdge: HyperGraphNode = {
+                    cells: cells,
+                    next: []
+                  };
+                  
+                  const hyperEdgeKey = cells
+                    .map(c => `${c.row}-${c.col}`)
+                    .sort()
+                    .join(",");
+                  
+                  if (!processedKeys.has(hyperEdgeKey)) {
+                    current.next.push(hyperEdge);
+                    hyperEdge.next.push(current);
+                    queue.push(hyperEdge);
+                  }
+                }
+              });
+            }
+          }
+          
+          // 处理已连接的超边
+          for (const next of current.next) {
+            const nextKey = next.cells
+              .map(cell => `${cell.row}-${cell.col}`)
+              .sort()
+              .join(",");
+            
+            if (!processedKeys.has(nextKey)) {
+              queue.push(next);
+            }
+          }
+        }
+      }
     }
   }
-
-  // for (let num = 1; num <= 9; num++) {
-  //   const hyperGraphNodes = hyperGraph[num];
-  //   for (const startHyperGraphNode of hyperGraphNodes) {
-  //     const visited = new Set<string>();
-  //     const queue: HyperGraphNode[] = [startHyperGraphNode];
-  //     let lastHyperGraphNode: HyperGraphNode = startHyperGraphNode;
-  //     while (queue.length > 0) {
-  //       const current = queue.shift()!;
-  //       const key = current.cells
-  //         .map((cell) => `${cell.row}-${cell.col}`)
-  //         .join(",");
-  //       visited.add(key);
-  //       if (current.cells.length === 1) {
-  //         // 处理行的情况
-  //         const rowData = candidateMap[num].row.get(current.cells[0].row);
-  //         if (
-  //           rowData?.count !== undefined &&
-  //           rowData.count >= 3 &&
-  //           rowData.count <= 4
-  //         ) {
-  //           const startCell_row = rowData.positions[0].row;
-  //           const endCell_row = rowData.positions[rowData.count - 1].row;
-  //           if (current.cells[0].row === startCell_row) {
-  //             const col1 = rowData.positions[1].col;
-  //             const col2 = rowData.positions[rowData.count - 1].col;
-  //             if (Math.floor(col1 / 3) === Math.floor(col2 / 3)) {
-  //               const hyperGraphNode: HyperGraphNode = {
-  //                 cells: [],
-  //                 next: [],
-  //               };
-  //               for (let i = 1; i < rowData.count; i++) {
-  //                 const cell = rowData.positions[i];
-  //                 hyperGraphNode.cells.push(cell);
-  //               }
-  //               lastHyperGraphNode.next.push(hyperGraphNode);
-  //               hyperGraphNode.next.push(lastHyperGraphNode);
-  //               lastHyperGraphNode = hyperGraphNode;
-  //             }
-  //           } else if (current.cells[0].row === endCell_row) {
-  //             const col1 = rowData.positions[0].col;
-  //             const col2 = rowData.positions[rowData.count - 2].col;
-  //             if (Math.floor(col1 / 3) === Math.floor(col2 / 3)) {
-  //               const hyperGraphNode: HyperGraphNode = {
-  //                 cells: [],
-  //                 next: [],
-  //               };
-  //               for (let i = 0; i < rowData.count - 1; i++) {
-  //                 const cell = rowData.positions[i];
-  //                 hyperGraphNode.cells.push(cell);
-  //               }
-  //               lastHyperGraphNode.next.push(hyperGraphNode);
-  //               hyperGraphNode.next.push(lastHyperGraphNode);
-  //               lastHyperGraphNode = hyperGraphNode;
-  //             }
-  //           }
-  //         }
-          
-  //         // 处理列的情况
-  //         const colData = candidateMap[num].col.get(current.cells[0].col);
-  //         if (
-  //           colData?.count !== undefined &&
-  //           colData.count >= 3 &&
-  //           colData.count <= 4
-  //         ) {
-  //           const startCell_col = colData.positions[0].col;
-  //           const endCell_col = colData.positions[colData.count - 1].col;
-  //           if (current.cells[0].col === startCell_col) {
-  //             const row1 = colData.positions[1].row;
-  //             const row2 = colData.positions[colData.count - 1].row;
-  //             if (Math.floor(row1 / 3) === Math.floor(row2 / 3)) {
-  //               const hyperGraphNode: HyperGraphNode = {
-  //                 cells: [],
-  //                 next: [],
-  //               };
-  //               for (let i = 1; i < colData.count; i++) {
-  //                 const cell = colData.positions[i];
-  //                 hyperGraphNode.cells.push(cell);
-  //               }
-  //               lastHyperGraphNode.next.push(hyperGraphNode);
-  //               hyperGraphNode.next.push(lastHyperGraphNode);
-  //               lastHyperGraphNode = hyperGraphNode;
-  //             }
-  //           } else if (current.cells[0].col === endCell_col) {
-  //             const row1 = colData.positions[0].row;
-  //             const row2 = colData.positions[colData.count - 2].row;
-  //             if (Math.floor(row1 / 3) === Math.floor(row2 / 3)) {
-  //               const hyperGraphNode: HyperGraphNode = {
-  //                 cells: [],
-  //                 next: [],
-  //               };
-  //               for (let i = 0; i < colData.count - 1; i++) {
-  //                 const cell = colData.positions[i];
-  //                 hyperGraphNode.cells.push(cell);
-  //               }
-  //               lastHyperGraphNode.next.push(hyperGraphNode);
-  //               hyperGraphNode.next.push(lastHyperGraphNode);
-  //               lastHyperGraphNode = hyperGraphNode;
-  //             }
-  //           }
-  //         }
-          
-  //         // 处理宫的情况
-  //         const boxIndex = Math.floor(current.cells[0].row / 3) * 3 + Math.floor(current.cells[0].col / 3);
-  //         const boxData = candidateMap[num].box.get(boxIndex);
-  //         if (
-  //           boxData?.count !== undefined &&
-  //           boxData.count >= 3 &&
-  //           boxData.count <= 4
-  //         ) {
-  //           const restCells = boxData.positions.filter(
-  //             (cell) => !current.cells.some((c) => c.row === cell.row && c.col === cell.col)
-  //           );
-  //           const set_row = new Set<number>(restCells.map((cell) => cell.row));
-  //           const set_col = new Set<number>(restCells.map((cell) => cell.col));
-  //           if (set_row.size === 1) {
-  //             const hyperGraphNode: HyperGraphNode = {
-  //               cells: [],
-  //               next: [],
-  //             };
-  //             for (const cell of restCells) {
-  //               hyperGraphNode.cells.push(cell);
-  //             }
-  //             lastHyperGraphNode.next.push(hyperGraphNode);
-  //             hyperGraphNode.next.push(lastHyperGraphNode);
-  //             lastHyperGraphNode = hyperGraphNode;
-  //           }
-  //           if (set_col.size === 1) {
-  //             const hyperGraphNode: HyperGraphNode = {
-  //               cells: [],
-  //               next: [],
-  //             };
-  //             for (const cell of restCells) {
-  //               hyperGraphNode.cells.push(cell);
-  //             }
-  //             lastHyperGraphNode.next.push(hyperGraphNode);
-  //             hyperGraphNode.next.push(lastHyperGraphNode);
-  //             lastHyperGraphNode = hyperGraphNode;
-  //           }
-  //         }
-  //       }
-  //       for (const next of current.next) {
-  //         if (visited.has(`${next.cells[0].row}-${next.cells[0].col}`))
-  //           continue;
-  //         queue.push(next);
-  //       }
-  //     }
-  //   }
-  // }
+  
   return hyperGraph;
 };
 
@@ -826,7 +891,7 @@ export const useSudokuBoard = (initialBoard: CellData[][]) => {
   });
   const graphRef = useRef<Graph>(createGraph(initialBoard, candidateMap));
   const hyperGraphRef = useRef<HyperGraph>(
-    createHyperGraph(initialBoard, candidateMap, graphRef.current)
+    createHyperGraph(initialBoard, candidateMap)
   );
 
   const updateCandidateMap = (newBoard: CellData[][]) => {
@@ -871,11 +936,7 @@ export const useSudokuBoard = (initialBoard: CellData[][]) => {
       });
     });
     graphRef.current = createGraph(newBoard, newCandidateMap);
-    hyperGraphRef.current = createHyperGraph(
-      newBoard,
-      newCandidateMap,
-      graphRef.current
-    );
+    hyperGraphRef.current = createHyperGraph(newBoard, newCandidateMap);
     setCandidateMap(newCandidateMap);
   };
 
