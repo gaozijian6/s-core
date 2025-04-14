@@ -602,7 +602,27 @@ export const createHyperGraph = (
     const candidates = candidateMap[num]?.all ?? [];
     if (candidates.length === 0) continue;
 
-    // 找出存在强链接的候选数对
+    // 单位置到超图节点的映射
+    const nodeMap = new Map<string, HyperGraphNode>();
+    // 多位置到超图节点的映射
+    const multiNodeMap = new Map<string, HyperGraphNode>();
+
+    // 为每个候选数位置创建单节点
+    for (const candidate of candidates) {
+      const key = `${candidate.row},${candidate.col}`;
+      nodeMap.set(key, {
+        cells: [
+          {
+            row: candidate.row,
+            col: candidate.col,
+            candidates: candidate.candidates,
+          },
+        ],
+        next: [],
+      });
+    }
+
+    // 第一步：识别单单强链接
     const strongLinks: [Candidate, Candidate][] = [];
     for (let i = 0; i < candidates.length; i++) {
       for (let j = i + 1; j < candidates.length; j++) {
@@ -610,82 +630,14 @@ export const createHyperGraph = (
         const pos2 = candidates[j];
         if (isUnitStrongLink(board, pos1, pos2, num, candidateMap)) {
           strongLinks.push([pos1, pos2]);
-        }
-      }
-    }
 
-    if (strongLinks.length === 0) continue;
-
-    // 构建连通分量
-    const components: Set<string>[] = [];
-    const visited = new Set<string>();
-
-    for (const [pos1, pos2] of strongLinks) {
-      const key1 = `${pos1.row},${pos1.col}`;
-      const key2 = `${pos2.row},${pos2.col}`;
-      
-      // 查找这两个位置所属的连通分量
-      let comp1Index = -1, comp2Index = -1;
-      
-      for (let i = 0; i < components.length; i++) {
-        if (components[i].has(key1)) comp1Index = i;
-        if (components[i].has(key2)) comp2Index = i;
-      }
-      
-      if (comp1Index === -1 && comp2Index === -1) {
-        // 两个位置都不在任何连通分量中，创建新的连通分量
-        const newComp = new Set<string>([key1, key2]);
-        components.push(newComp);
-      } else if (comp1Index !== -1 && comp2Index === -1) {
-        // 位置1在连通分量中，位置2不在
-        components[comp1Index].add(key2);
-      } else if (comp1Index === -1 && comp2Index !== -1) {
-        // 位置2在连通分量中，位置1不在
-        components[comp2Index].add(key1);
-      } else if (comp1Index !== comp2Index) {
-        // 两个位置分别在不同的连通分量中，合并它们
-        for (const key of components[comp2Index]) {
-          components[comp1Index].add(key);
-        }
-        components.splice(comp2Index, 1);
-      }
-    }
-
-    // 过滤掉太小的连通分量
-    const validComponents = components.filter(comp => comp.size >= 2);
-    
-    // 为每个连通分量创建超图结构
-    for (const component of validComponents) {
-      // 为连通分量中的每个位置创建超图节点
-      const nodeMap = new Map<string, HyperGraphNode>();
-      
-      // 创建节点
-      for (const key of component) {
-        const [row, col] = key.split(',').map(Number);
-        const candidate = candidates.find(c => c.row === row && c.col === col);
-        if (!candidate) continue;
-        
-        nodeMap.set(key, {
-          cells: [{
-            row: candidate.row,
-            col: candidate.col,
-            candidates: candidate.candidates
-          }],
-          next: []
-        });
-      }
-      
-      // 添加强链接
-      for (const [pos1, pos2] of strongLinks) {
-        const key1 = `${pos1.row},${pos1.col}`;
-        const key2 = `${pos2.row},${pos2.col}`;
-        
-        if (component.has(key1) && component.has(key2)) {
+          // 建立单单强链接
+          const key1 = `${pos1.row},${pos1.col}`;
+          const key2 = `${pos2.row},${pos2.col}`;
           const node1 = nodeMap.get(key1);
           const node2 = nodeMap.get(key2);
-          
+
           if (node1 && node2) {
-            // 添加双向连接
             if (!node1.next.includes(node2)) {
               node1.next.push(node2);
             }
@@ -695,178 +647,836 @@ export const createHyperGraph = (
           }
         }
       }
-      
-      // 从连通分量中选择一个起始节点
-      const startKey = Array.from(component)[0];
-      const startNode = nodeMap.get(startKey);
-      
-      if (startNode) {
-        hyperGraph[num].push(startNode);
-        
-        // 使用BFS处理超图结构（处理行、列、宫）
-        const processedKeys = new Set<string>();
-        const queue: HyperGraphNode[] = [startNode];
-        
-        while (queue.length > 0) {
-          const current = queue.shift()!;
-          const key = current.cells
-            .map(cell => `${cell.row}-${cell.col}`)
-            .sort()
-            .join(",");
-          
-          if (processedKeys.has(key)) continue;
-          processedKeys.add(key);
-          
-          if (current.cells.length === 1) {
-            const cell = current.cells[0];
-            
-            // 处理行
-            const rowData = candidateMap[num].row.get(cell.row);
-            if (rowData?.count !== undefined && rowData.count >= 3 && rowData.count <= 4) {
-              const currentRow = cell.row;
-              const currentCol = cell.col;
-              const currentBox = Math.floor(currentCol / 3);
-              
-              const cellsInSameRow = rowData.positions.filter(
-                pos => pos.row === currentRow && Math.floor(pos.col / 3) !== currentBox
-              );
-              
-              if (cellsInSameRow.length >= 2) {
-                const hyperEdge: HyperGraphNode = {
-                  cells: cellsInSameRow,
-                  next: []
-                };
-                
-                const hyperEdgeKey = cellsInSameRow
-                  .map(c => `${c.row}-${c.col}`)
-                  .sort()
-                  .join(",");
-                
-                if (!processedKeys.has(hyperEdgeKey)) {
-                  current.next.push(hyperEdge);
-                  hyperEdge.next.push(current);
-                  queue.push(hyperEdge);
-                }
+    }
+
+    // 第二步：识别单多强链接
+
+    // 处理行的单多强链接
+    for (const [rowIndex, rowData] of candidateMap[num].row.entries()) {
+      if (rowData.count >= 3 && rowData.count <= 4) {
+        // 按宫分组
+        const boxGroups = new Map<number, Candidate[]>();
+        rowData.positions.forEach((pos) => {
+          const boxIndex = Math.floor(pos.col / 3);
+          if (!boxGroups.has(boxIndex)) {
+            boxGroups.set(boxIndex, []);
+          }
+          boxGroups.get(boxIndex)!.push(pos);
+        });
+
+        // 为每个至少有2个候选数的宫创建多节点
+        if (boxGroups.size !== 2) continue;
+        boxGroups.forEach((cells, boxIndex) => {
+          if (cells.length >= 2) {
+            // 计算其他宫的单元格数量
+            let remainingCellCount = 0;
+            boxGroups.forEach((otherCells, otherBoxIndex) => {
+              if (boxIndex !== otherBoxIndex) {
+                remainingCellCount += otherCells.length;
               }
-            }
-            
-            // 处理列
-            const colData = candidateMap[num].col.get(cell.col);
-            if (colData?.count !== undefined && colData.count >= 3 && colData.count <= 4) {
-              const currentCol = cell.col;
-              const currentRow = cell.row;
-              const currentBox = Math.floor(currentRow / 3);
-              
-              const cellsInSameCol = colData.positions.filter(
-                pos => pos.col === currentCol && Math.floor(pos.row / 3) !== currentBox
-              );
-              
-              if (cellsInSameCol.length >= 2) {
-                const hyperEdge: HyperGraphNode = {
-                  cells: cellsInSameCol,
-                  next: []
-                };
-                
-                const hyperEdgeKey = cellsInSameCol
-                  .map(c => `${c.row}-${c.col}`)
-                  .sort()
-                  .join(",");
-                
-                if (!processedKeys.has(hyperEdgeKey)) {
-                  current.next.push(hyperEdge);
-                  hyperEdge.next.push(current);
-                  queue.push(hyperEdge);
-                }
-              }
-            }
-            
-            // 处理宫
-            const boxIndex = Math.floor(cell.row / 3) * 3 + Math.floor(cell.col / 3);
-            const boxData = candidateMap[num].box.get(boxIndex);
-            if (boxData?.count !== undefined && boxData.count >= 3 && boxData.count <= 4) {
-              const currentRow = cell.row;
-              const currentCol = cell.col;
-              
-              const cellsInSameBox = boxData.positions.filter(
-                pos => !(pos.row === currentRow && pos.col === currentCol)
-              );
-              
-              // 同行分组
-              const rowGroups = new Map<number, Candidate[]>();
-              cellsInSameBox.forEach(pos => {
-                if (!rowGroups.has(pos.row)) {
-                  rowGroups.set(pos.row, []);
-                }
-                rowGroups.get(pos.row)!.push(pos);
-              });
-              
-              rowGroups.forEach((cells, row) => {
-                if (cells.length >= 2 && row !== currentRow) {
-                  const hyperEdge: HyperGraphNode = {
-                    cells: cells,
-                    next: []
-                  };
-                  
-                  const hyperEdgeKey = cells
-                    .map(c => `${c.row}-${c.col}`)
-                    .sort()
-                    .join(",");
-                  
-                  if (!processedKeys.has(hyperEdgeKey)) {
-                    current.next.push(hyperEdge);
-                    hyperEdge.next.push(current);
-                    queue.push(hyperEdge);
-                  }
-                }
-              });
-              
-              // 同列分组
-              const colGroups = new Map<number, Candidate[]>();
-              cellsInSameBox.forEach(pos => {
-                if (!colGroups.has(pos.col)) {
-                  colGroups.set(pos.col, []);
-                }
-                colGroups.get(pos.col)!.push(pos);
-              });
-              
-              colGroups.forEach((cells, col) => {
-                if (cells.length >= 2 && col !== currentCol) {
-                  const hyperEdge: HyperGraphNode = {
-                    cells: cells,
-                    next: []
-                  };
-                  
-                  const hyperEdgeKey = cells
-                    .map(c => `${c.row}-${c.col}`)
-                    .sort()
-                    .join(",");
-                  
-                  if (!processedKeys.has(hyperEdgeKey)) {
-                    current.next.push(hyperEdge);
-                    hyperEdge.next.push(current);
-                    queue.push(hyperEdge);
+            });
+
+            // 如果多元格+单元格等于行内候选数总数，才建立强链接
+            if (cells.length + remainingCellCount === rowData.count) {
+              const multiKey = cells
+                .map((c) => `${c.row}-${c.col}`)
+                .sort()
+                .join(",");
+
+              const multiNode: HyperGraphNode = {
+                cells: cells,
+                next: [],
+              };
+              multiNodeMap.set(multiKey, multiNode);
+
+              // 连接该多节点与其他宫的单节点
+              boxGroups.forEach((otherCells, otherBoxIndex) => {
+                if (boxIndex !== otherBoxIndex && otherCells.length === 1) {
+                  const singleCell = otherCells[0];
+                  const singleKey = `${singleCell.row},${singleCell.col}`;
+                  const singleNode = nodeMap.get(singleKey);
+
+                  if (singleNode) {
+                    if (!multiNode.next.includes(singleNode)) {
+                      multiNode.next.push(singleNode);
+                    }
+                    if (!singleNode.next.includes(multiNode)) {
+                      singleNode.next.push(multiNode);
+                    }
                   }
                 }
               });
             }
           }
-          
-          // 处理已连接的超边
-          for (const next of current.next) {
-            const nextKey = next.cells
-              .map(cell => `${cell.row}-${cell.col}`)
-              .sort()
-              .join(",");
-            
-            if (!processedKeys.has(nextKey)) {
-              queue.push(next);
+        });
+      }
+    }
+
+    // 处理列的单多强链接
+    for (const [colIndex, colData] of candidateMap[num].col.entries()) {
+      if (colData.count >= 3 && colData.count <= 4) {
+        // 按宫分组
+        const boxGroups = new Map<number, Candidate[]>();
+        colData.positions.forEach((pos) => {
+          const boxIndex = Math.floor(pos.row / 3);
+          if (!boxGroups.has(boxIndex)) {
+            boxGroups.set(boxIndex, []);
+          }
+          boxGroups.get(boxIndex)!.push(pos);
+        });
+
+        // 为每个至少有2个候选数的宫创建多节点
+        if (boxGroups.size !== 2) continue;
+        boxGroups.forEach((cells, boxIndex) => {
+          if (cells.length >= 2) {
+            // 计算其他宫的单元格数量
+            let remainingCellCount = 0;
+            boxGroups.forEach((otherCells, otherBoxIndex) => {
+              if (boxIndex !== otherBoxIndex) {
+                remainingCellCount += otherCells.length;
+              }
+            });
+
+            // 如果多元格+单元格等于列内候选数总数，才建立强链接
+            if (cells.length + remainingCellCount === colData.count) {
+              const multiKey = cells
+                .map((c) => `${c.row}-${c.col}`)
+                .sort()
+                .join(",");
+
+              // 避免重复创建节点
+              if (!multiNodeMap.has(multiKey)) {
+                const multiNode: HyperGraphNode = {
+                  cells: cells,
+                  next: [],
+                };
+                multiNodeMap.set(multiKey, multiNode);
+              }
+
+              const multiNode = multiNodeMap.get(multiKey)!;
+
+              // 连接该多节点与其他宫的单节点
+              boxGroups.forEach((otherCells, otherBoxIndex) => {
+                if (boxIndex !== otherBoxIndex && otherCells.length === 1) {
+                  const singleCell = otherCells[0];
+                  const singleKey = `${singleCell.row},${singleCell.col}`;
+                  const singleNode = nodeMap.get(singleKey);
+
+                  if (singleNode) {
+                    if (!multiNode.next.includes(singleNode)) {
+                      multiNode.next.push(singleNode);
+                    }
+                    if (!singleNode.next.includes(multiNode)) {
+                      singleNode.next.push(multiNode);
+                    }
+                  }
+                }
+              });
+            }
+          }
+        });
+      }
+    }
+
+    // 处理宫的单多强链接
+    for (const [boxIndex, boxData] of candidateMap[num].box.entries()) {
+      if (boxData.count >= 3 && boxData.count <= 4) {
+        // 按行分组
+        const rowGroups = new Map<number, Candidate[]>();
+        // 按列分组
+        const colGroups = new Map<number, Candidate[]>();
+
+        boxData.positions.forEach((pos) => {
+          if (!rowGroups.has(pos.row)) {
+            rowGroups.set(pos.row, []);
+          }
+          rowGroups.get(pos.row)!.push(pos);
+
+          if (!colGroups.has(pos.col)) {
+            colGroups.set(pos.col, []);
+          }
+          colGroups.get(pos.col)!.push(pos);
+        });
+
+        // 处理行分组中的单多强链接
+        if (rowGroups.size !== 2) continue;
+        rowGroups.forEach((cells, rowIndex) => {
+          if (cells.length >= 2) {
+            // 确保单多强链接的单元格和多元格总数等于宫内该候选数的总数
+            let remainingCellCount = 0;
+            rowGroups.forEach((otherCells, otherRowIndex) => {
+              if (rowIndex !== otherRowIndex) {
+                // 计算其他行的单元格总数
+                remainingCellCount += otherCells.length;
+              }
+            });
+
+            // 如果多元格+单元格等于宫内候选数总数，才建立强链接
+            if (cells.length + remainingCellCount === boxData.count) {
+              const multiKey = cells
+                .map((c) => `${c.row}-${c.col}`)
+                .sort()
+                .join(",");
+
+              // 避免重复创建节点
+              if (!multiNodeMap.has(multiKey)) {
+                const multiNode: HyperGraphNode = {
+                  cells: cells,
+                  next: [],
+                };
+                multiNodeMap.set(multiKey, multiNode);
+              }
+
+              const multiNode = multiNodeMap.get(multiKey)!;
+
+              // 找出同宫内其他行的单个候选位置
+              rowGroups.forEach((otherCells, otherRowIndex) => {
+                if (rowIndex !== otherRowIndex && otherCells.length === 1) {
+                  const singleCell = otherCells[0];
+                  const singleKey = `${singleCell.row},${singleCell.col}`;
+                  const singleNode = nodeMap.get(singleKey);
+
+                  if (singleNode) {
+                    if (!multiNode.next.includes(singleNode)) {
+                      multiNode.next.push(singleNode);
+                    }
+                    if (!singleNode.next.includes(multiNode)) {
+                      singleNode.next.push(multiNode);
+                    }
+                  }
+                }
+              });
+            }
+          }
+        });
+
+        // 处理列分组中的单多强链接
+        if (colGroups.size !== 2) continue;
+        colGroups.forEach((cells, colIndex) => {
+          if (cells.length >= 2) {
+            // 确保单多强链接的单元格和多元格总数等于宫内该候选数的总数
+            let remainingCellCount = 0;
+            colGroups.forEach((otherCells, otherColIndex) => {
+              if (colIndex !== otherColIndex) {
+                // 计算其他列的单元格总数
+                remainingCellCount += otherCells.length;
+              }
+            });
+
+            // 如果多元格+单元格等于宫内候选数总数，才建立强链接
+            if (cells.length + remainingCellCount === boxData.count) {
+              const multiKey = cells
+                .map((c) => `${c.row}-${c.col}`)
+                .sort()
+                .join(",");
+
+              // 避免重复创建节点
+              if (!multiNodeMap.has(multiKey)) {
+                const multiNode: HyperGraphNode = {
+                  cells: cells,
+                  next: [],
+                };
+                multiNodeMap.set(multiKey, multiNode);
+              }
+
+              const multiNode = multiNodeMap.get(multiKey)!;
+
+              // 找出同宫内其他列的单个候选位置
+              colGroups.forEach((otherCells, otherColIndex) => {
+                if (colIndex !== otherColIndex && otherCells.length === 1) {
+                  const singleCell = otherCells[0];
+                  const singleKey = `${singleCell.row},${singleCell.col}`;
+                  const singleNode = nodeMap.get(singleKey);
+
+                  if (singleNode) {
+                    if (!multiNode.next.includes(singleNode)) {
+                      multiNode.next.push(singleNode);
+                    }
+                    if (!singleNode.next.includes(multiNode)) {
+                      singleNode.next.push(multiNode);
+                    }
+                  }
+                }
+              });
+            }
+          }
+        });
+      }
+    }
+
+    // 处理行的多多强链接
+    for (const [rowIndex, rowData] of candidateMap[num].row.entries()) {
+      if (rowData.count >= 4) {
+        // 至少需要4个候选数才能形成多多强链（每个多节点至少2个单元格）
+        // 按宫分组
+        const boxGroups = new Map<number, Candidate[]>();
+        rowData.positions.forEach((pos) => {
+          const boxIndex = Math.floor(pos.col / 3);
+          if (!boxGroups.has(boxIndex)) {
+            boxGroups.set(boxIndex, []);
+          }
+          boxGroups.get(boxIndex)!.push(pos);
+        });
+
+        // 必须至少有2个宫，且每个宫内至少有2个候选数
+        if (boxGroups.size >= 2) {
+          // 遍历所有可能的宫对组合
+          const boxIndices = Array.from(boxGroups.keys());
+          for (let i = 0; i < boxIndices.length; i++) {
+            for (let j = i + 1; j < boxIndices.length; j++) {
+              const boxIndex1 = boxIndices[i];
+              const boxIndex2 = boxIndices[j];
+
+              const cells1 = boxGroups.get(boxIndex1)!;
+              const cells2 = boxGroups.get(boxIndex2)!;
+
+              // 确保两个宫各自至少有2个候选数
+              if (cells1.length >= 2 && cells2.length >= 2) {
+                // 检查两个多节点总和是否等于行内候选数总数
+                if (cells1.length + cells2.length === rowData.count) {
+                  // 创建第一个多节点 - 添加row_前缀区分
+                  const multiKey1 =
+                    "row_" +
+                    cells1
+                      .map((c) => `${c.row}-${c.col}`)
+                      .sort()
+                      .join(",");
+
+                  // 避免重复创建节点
+                  if (!multiNodeMap.has(multiKey1)) {
+                    const multiNode1: HyperGraphNode = {
+                      cells: cells1,
+                      next: [],
+                    };
+                    multiNodeMap.set(multiKey1, multiNode1);
+                  }
+
+                  // 创建第二个多节点 - 添加row_前缀区分
+                  const multiKey2 =
+                    "row_" +
+                    cells2
+                      .map((c) => `${c.row}-${c.col}`)
+                      .sort()
+                      .join(",");
+
+                  // 避免重复创建节点
+                  if (!multiNodeMap.has(multiKey2)) {
+                    const multiNode2: HyperGraphNode = {
+                      cells: cells2,
+                      next: [],
+                    };
+                    multiNodeMap.set(multiKey2, multiNode2);
+                  }
+
+                  const multiNode1 = multiNodeMap.get(multiKey1)!;
+                  const multiNode2 = multiNodeMap.get(multiKey2)!;
+
+                  // 建立多多强链接
+                  if (!multiNode1.next.includes(multiNode2)) {
+                    multiNode1.next.push(multiNode2);
+                  }
+                  if (!multiNode2.next.includes(multiNode1)) {
+                    multiNode2.next.push(multiNode1);
+                  }
+                }
+              }
             }
           }
         }
       }
     }
+
+    // 处理列的多多强链接
+    for (const [colIndex, colData] of candidateMap[num].col.entries()) {
+      if (colData.count >= 4) {
+        // 至少需要4个候选数才能形成多多强链（每个多节点至少2个单元格）
+        // 按宫分组
+        const boxGroups = new Map<number, Candidate[]>();
+        colData.positions.forEach((pos) => {
+          const boxIndex = Math.floor(pos.row / 3);
+          if (!boxGroups.has(boxIndex)) {
+            boxGroups.set(boxIndex, []);
+          }
+          boxGroups.get(boxIndex)!.push(pos);
+        });
+
+        // 必须至少有2个宫，且每个宫内至少有2个候选数
+        if (boxGroups.size >= 2) {
+          // 遍历所有可能的宫对组合
+          const boxIndices = Array.from(boxGroups.keys());
+          for (let i = 0; i < boxIndices.length; i++) {
+            for (let j = i + 1; j < boxIndices.length; j++) {
+              const boxIndex1 = boxIndices[i];
+              const boxIndex2 = boxIndices[j];
+
+              const cells1 = boxGroups.get(boxIndex1)!;
+              const cells2 = boxGroups.get(boxIndex2)!;
+
+              // 确保两个宫各自至少有2个候选数
+              if (cells1.length >= 2 && cells2.length >= 2) {
+                // 检查两个多节点总和是否等于列内候选数总数
+                if (cells1.length + cells2.length === colData.count) {
+                  // 创建第一个多节点 - 添加col_前缀区分
+                  const multiKey1 =
+                    "col_" +
+                    cells1
+                      .map((c) => `${c.row}-${c.col}`)
+                      .sort()
+                      .join(",");
+
+                  // 避免重复创建节点
+                  if (!multiNodeMap.has(multiKey1)) {
+                    const multiNode1: HyperGraphNode = {
+                      cells: cells1,
+                      next: [],
+                    };
+                    multiNodeMap.set(multiKey1, multiNode1);
+                  }
+
+                  // 创建第二个多节点 - 添加col_前缀区分
+                  const multiKey2 =
+                    "col_" +
+                    cells2
+                      .map((c) => `${c.row}-${c.col}`)
+                      .sort()
+                      .join(",");
+
+                  // 避免重复创建节点
+                  if (!multiNodeMap.has(multiKey2)) {
+                    const multiNode2: HyperGraphNode = {
+                      cells: cells2,
+                      next: [],
+                    };
+                    multiNodeMap.set(multiKey2, multiNode2);
+                  }
+
+                  const multiNode1 = multiNodeMap.get(multiKey1)!;
+                  const multiNode2 = multiNodeMap.get(multiKey2)!;
+
+                  // 建立多多强链接
+                  if (!multiNode1.next.includes(multiNode2)) {
+                    multiNode1.next.push(multiNode2);
+                  }
+                  if (!multiNode2.next.includes(multiNode1)) {
+                    multiNode2.next.push(multiNode1);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // 处理宫的多多强链接
+    for (const [boxIndex, boxData] of candidateMap[num].box.entries()) {
+      if (boxData.count >= 4) {
+        // 至少需要4个候选数才能形成多多强链（每个多节点至少2个单元格）
+        // 按行分组
+        const rowGroups = new Map<number, Candidate[]>();
+        // 按列分组
+        const colGroups = new Map<number, Candidate[]>();
+
+        boxData.positions.forEach((pos) => {
+          if (!rowGroups.has(pos.row)) {
+            rowGroups.set(pos.row, []);
+          }
+          rowGroups.get(pos.row)!.push(pos);
+
+          if (!colGroups.has(pos.col)) {
+            colGroups.set(pos.col, []);
+          }
+          colGroups.get(pos.col)!.push(pos);
+        });
+
+        // 处理行分组中的多多强链接
+        if (rowGroups.size >= 2) {
+          // 遍历所有可能的行对组合
+          const rowIndices = Array.from(rowGroups.keys());
+          for (let i = 0; i < rowIndices.length; i++) {
+            for (let j = i + 1; j < rowIndices.length; j++) {
+              const rowIndex1 = rowIndices[i];
+              const rowIndex2 = rowIndices[j];
+
+              const cells1 = rowGroups.get(rowIndex1)!;
+              const cells2 = rowGroups.get(rowIndex2)!;
+
+              // 确保两个行各自至少有2个候选数
+              if (cells1.length >= 2 && cells2.length >= 2) {
+                // 检查两个多节点总和是否等于宫内候选数总数
+                if (cells1.length + cells2.length === boxData.count) {
+                  // 创建第一个多节点 - 添加前缀box_row_来区分
+                  const multiKey1 =
+                    "box_row_" +
+                    cells1
+                      .map((c) => `${c.row}-${c.col}`)
+                      .sort()
+                      .join(",");
+
+                  // 避免重复创建节点
+                  if (!multiNodeMap.has(multiKey1)) {
+                    const multiNode1: HyperGraphNode = {
+                      cells: cells1,
+                      next: [],
+                    };
+                    multiNodeMap.set(multiKey1, multiNode1);
+                  }
+
+                  // 创建第二个多节点 - 添加前缀box_row_来区分
+                  const multiKey2 =
+                    "box_row_" +
+                    cells2
+                      .map((c) => `${c.row}-${c.col}`)
+                      .sort()
+                      .join(",");
+
+                  // 避免重复创建节点
+                  if (!multiNodeMap.has(multiKey2)) {
+                    const multiNode2: HyperGraphNode = {
+                      cells: cells2,
+                      next: [],
+                    };
+                    multiNodeMap.set(multiKey2, multiNode2);
+                  }
+
+                  const multiNode1 = multiNodeMap.get(multiKey1)!;
+                  const multiNode2 = multiNodeMap.get(multiKey2)!;
+
+                  // 建立多多强链接
+                  if (!multiNode1.next.includes(multiNode2)) {
+                    multiNode1.next.push(multiNode2);
+                  }
+                  if (!multiNode2.next.includes(multiNode1)) {
+                    multiNode2.next.push(multiNode1);
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        // 处理列分组中的多多强链接
+        if (colGroups.size >= 2) {
+          // 遍历所有可能的列对组合
+          const colIndices = Array.from(colGroups.keys());
+          for (let i = 0; i < colIndices.length; i++) {
+            for (let j = i + 1; j < colIndices.length; j++) {
+              const colIndex1 = colIndices[i];
+              const colIndex2 = colIndices[j];
+
+              const cells1 = colGroups.get(colIndex1)!;
+              const cells2 = colGroups.get(colIndex2)!;
+
+              // 确保两个列各自至少有2个候选数
+              if (cells1.length >= 2 && cells2.length >= 2) {
+                // 检查两个多节点总和是否等于宫内候选数总数
+                if (cells1.length + cells2.length === boxData.count) {
+                  // 创建第一个多节点 - 添加前缀box_col_来区分
+                  const multiKey1 =
+                    "box_col_" +
+                    cells1
+                      .map((c) => `${c.row}-${c.col}`)
+                      .sort()
+                      .join(",");
+
+                  // 避免重复创建节点
+                  if (!multiNodeMap.has(multiKey1)) {
+                    const multiNode1: HyperGraphNode = {
+                      cells: cells1,
+                      next: [],
+                    };
+                    multiNodeMap.set(multiKey1, multiNode1);
+                  }
+
+                  // 创建第二个多节点 - 添加前缀box_col_来区分
+                  const multiKey2 =
+                    "box_col_" +
+                    cells2
+                      .map((c) => `${c.row}-${c.col}`)
+                      .sort()
+                      .join(",");
+
+                  // 避免重复创建节点
+                  if (!multiNodeMap.has(multiKey2)) {
+                    const multiNode2: HyperGraphNode = {
+                      cells: cells2,
+                      next: [],
+                    };
+                    multiNodeMap.set(multiKey2, multiNode2);
+                  }
+
+                  const multiNode1 = multiNodeMap.get(multiKey1)!;
+                  const multiNode2 = multiNodeMap.get(multiKey2)!;
+
+                  // 建立多多强链接
+                  if (!multiNode1.next.includes(multiNode2)) {
+                    multiNode1.next.push(multiNode2);
+                  }
+                  if (!multiNode2.next.includes(multiNode1)) {
+                    multiNode2.next.push(multiNode1);
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        // 处理行列交叉的多多强链接（实验性）
+        // 这种情况是指宫内的一组位于同一行的单元格与另一组位于同一列的单元格形成的强链
+        if (rowGroups.size >= 1 && colGroups.size >= 1) {
+          for (const [rowIndex, rowCells] of rowGroups.entries()) {
+            if (rowCells.length >= 2) {
+              for (const [colIndex, colCells] of colGroups.entries()) {
+                if (colCells.length >= 2) {
+                  // 检查两组是否有重叠单元格
+                  const rowCellsSet = new Set(
+                    rowCells.map((c) => `${c.row},${c.col}`)
+                  );
+                  const colCellsSet = new Set(
+                    colCells.map((c) => `${c.row},${c.col}`)
+                  );
+
+                  // 获取交集
+                  const intersection = [...rowCellsSet].filter((key) =>
+                    colCellsSet.has(key)
+                  );
+
+                  // 如果没有交集或交集很小，并且两组单元格总数（减去交集）等于宫内候选数总数
+                  if (
+                    (intersection.length === 0 || intersection.length === 1) &&
+                    rowCells.length + colCells.length - intersection.length ===
+                      boxData.count
+                  ) {
+                    // 创建不重叠的行单元格集合
+                    const uniqueRowCells = rowCells.filter(
+                      (c) => !intersection.includes(`${c.row},${c.col}`)
+                    );
+
+                    // 创建不重叠的列单元格集合
+                    const uniqueColCells = colCells.filter(
+                      (c) => !intersection.includes(`${c.row},${c.col}`)
+                    );
+
+                    if (
+                      uniqueRowCells.length >= 2 &&
+                      uniqueColCells.length >= 2
+                    ) {
+                      // 创建行多节点 - 添加前缀box_cross_row_来区分
+                      const multiKeyRow =
+                        "box_cross_row_" +
+                        uniqueRowCells
+                          .map((c) => `${c.row}-${c.col}`)
+                          .sort()
+                          .join(",");
+
+                      // 避免重复创建节点
+                      if (!multiNodeMap.has(multiKeyRow)) {
+                        const multiNodeRow: HyperGraphNode = {
+                          cells: uniqueRowCells,
+                          next: [],
+                        };
+                        multiNodeMap.set(multiKeyRow, multiNodeRow);
+                      }
+
+                      // 创建列多节点 - 添加前缀box_cross_col_来区分
+                      const multiKeyCol =
+                        "box_cross_col_" +
+                        uniqueColCells
+                          .map((c) => `${c.row}-${c.col}`)
+                          .sort()
+                          .join(",");
+
+                      // 避免重复创建节点
+                      if (!multiNodeMap.has(multiKeyCol)) {
+                        const multiNodeCol: HyperGraphNode = {
+                          cells: uniqueColCells,
+                          next: [],
+                        };
+                        multiNodeMap.set(multiKeyCol, multiNodeCol);
+                      }
+
+                      const multiNodeRow = multiNodeMap.get(multiKeyRow)!;
+                      const multiNodeCol = multiNodeMap.get(multiKeyCol)!;
+
+                      // 建立多多强链接
+                      if (!multiNodeRow.next.includes(multiNodeCol)) {
+                        multiNodeRow.next.push(multiNodeCol);
+                      }
+                      if (!multiNodeCol.next.includes(multiNodeRow)) {
+                        multiNodeCol.next.push(multiNodeRow);
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // 将所有连通的节点集加入超图
+    const visited = new Set<HyperGraphNode>();
+    const allNodes = [...nodeMap.values(), ...multiNodeMap.values()];
+
+    // 第一步：清理所有节点的next列表，确保没有自引用
+    for (const node of allNodes) {
+      node.next = node.next.filter(next => next !== node);
+    }
+
+    // 第二步：创建按单元格内容分组的映射
+    const cellsContentMap = new Map<string, HyperGraphNode[]>();
+
+    // 基于单元格内容而非前缀分组，这样可以找到具有相同单元格的所有节点
+    allNodes.forEach(node => {
+      const cellsContent = node.cells
+        .map(cell => `${cell.row},${cell.col}`)
+        .sort()
+        .join('|');
+      
+      if (!cellsContentMap.has(cellsContent)) {
+        cellsContentMap.set(cellsContent, []);
+      }
+      cellsContentMap.get(cellsContent)!.push(node);
+    });
+
+    // 第三步：合并具有相同单元格内容的节点的连接
+    for (const [cellsContent, nodes] of cellsContentMap.entries()) {
+      if (nodes.length > 1) {
+        // 首先，收集所有这些节点的next引用
+        const allNextNodes = new Set<HyperGraphNode>();
+        nodes.forEach(node => {
+          node.next.forEach(next => {
+            if (next !== node) {  // 防止自引用
+              allNextNodes.add(next);
+            }
+          });
+        });
+
+        // 然后，确保每个节点都连接到所有收集到的next节点
+        nodes.forEach(node => {
+          // 清空当前next列表
+          node.next = [];
+          
+          // 添加所有非自引用的next节点
+          allNextNodes.forEach(next => {
+            if (next !== node) {  // 再次检查以防止自引用
+              node.next.push(next);
+            }
+          });
+
+          // 还要添加与其共享单元格内容但不是自身的节点
+          nodes.forEach(otherNode => {
+            if (otherNode !== node && !node.next.includes(otherNode)) {
+              node.next.push(otherNode);
+            }
+          });
+        });
+      }
+    }
+
+    // 第四步和第五步的改进实现：通过比较cells内容而非引用来判断节点是否相同
+
+    // 辅助函数：生成节点的cells的唯一标识
+    const getCellsSignature = (node: HyperGraphNode): string => {
+      return node.cells
+        .map(cell => `${cell.row},${cell.col}`)
+        .sort()
+        .join('|');
+    };
+
+    // 辅助函数：检查两个节点是否代表相同的cells组合
+    const isSameNodeCells = (node1: HyperGraphNode, node2: HyperGraphNode): boolean => {
+      const sig1 = getCellsSignature(node1);
+      const sig2 = getCellsSignature(node2);
+      return sig1 === sig2;
+    };
+
+    // 第四步：修复所有互相引用并去除重复节点
+    for (const nodeA of allNodes) {
+      // 使用Map来存储唯一的next节点，键是cells内容的标识
+      const uniqueNextNodes = new Map<string, HyperGraphNode>();
+      
+      // 收集所有唯一的next节点，忽略自身
+      nodeA.next.forEach(nextNode => {
+        // 检查是否是自引用（基于cells内容而非引用）
+        if (!isSameNodeCells(nodeA, nextNode)) {
+          const signature = getCellsSignature(nextNode);
+          uniqueNextNodes.set(signature, nextNode);
+        }
+      });
+      
+      // 重置next列表，只包含唯一的next节点
+      nodeA.next = Array.from(uniqueNextNodes.values());
+    }
+
+    // 第五步：确保互相引用
+    for (const nodeA of allNodes) {
+      for (const nodeB of allNodes) {
+        // 跳过相同的节点（基于cells内容）
+        if (isSameNodeCells(nodeA, nodeB)) continue;
+        
+        // 检查nodeA的next是否包含nodeB
+        const nodeAHasNodeB = nodeA.next.some(next => isSameNodeCells(next, nodeB));
+        
+        // 检查nodeB的next是否包含nodeA
+        const nodeBHasNodeA = nodeB.next.some(next => isSameNodeCells(next, nodeA));
+        
+        // 如果一方包含另一方，但另一方不包含一方，则添加互相引用
+        if (nodeAHasNodeB && !nodeBHasNodeA) {
+          nodeB.next.push(nodeA);
+        } else if (!nodeAHasNodeB && nodeBHasNodeA) {
+          nodeA.next.push(nodeB);
+        }
+      }
+    }
+
+    // 第六步：再次清理所有节点的next列表，确保没有重复项和自引用
+    for (const node of allNodes) {
+      // 使用Map来去除重复节点（基于cells内容）
+      const uniqueNext = new Map<string, HyperGraphNode>();
+      
+      node.next.forEach(nextNode => {
+        // 跳过自引用
+        if (!isSameNodeCells(node, nextNode)) {
+          const signature = getCellsSignature(nextNode);
+          uniqueNext.set(signature, nextNode);
+        }
+      });
+      
+      node.next = Array.from(uniqueNext.values());
+    }
+
+    // 第七步：使用BFS找出所有连通组件
+    for (const node of allNodes) {
+      if (!visited.has(node)) {
+        const component: HyperGraphNode[] = [];
+        const queue: HyperGraphNode[] = [node];
+        const componentVisited = new Set<HyperGraphNode>();
+
+        while (queue.length > 0) {
+          const current = queue.shift()!;
+          if (componentVisited.has(current)) continue;
+
+          componentVisited.add(current);
+          component.push(current);
+          visited.add(current);
+
+          for (const next of current.next) {
+            if (next !== current && !componentVisited.has(next)) {
+              queue.push(next);
+            }
+          }
+        }
+
+        // 只有当连通分量中至少有2个节点时才加入超图
+        if (component.length >= 2) {
+          hyperGraph[num].push(component[0]);
+        }
+      }
+    }
   }
-  
+
   return hyperGraph;
 };
 

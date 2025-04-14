@@ -42,6 +42,7 @@ import {
   tripleColorChain,
   hiddenTriple,
   getGraphNodesCounts,
+  nakedQuadruple,
 } from "../tools/solution";
 import "./sudoku.less";
 import type {
@@ -54,9 +55,11 @@ import type { Result } from "../tools/solution";
 import { SOLUTION_METHODS } from "../constans";
 import mockBoard from "./mock";
 import DLX from "../tools/DLX";
-import extreme from "./extreme";
-import hard from "./hard";
+import extreme from "./5extreme";
+import hard from "./4hard";
 import medium from "./3medium";
+import entry from "./1entry";
+import easy from "./2easy";
 import { SudokuSolver } from "../tools/DLX";
 
 const Sudoku: React.FC = () => {
@@ -103,9 +106,9 @@ const Sudoku: React.FC = () => {
   const [inputValue, setInputValue] = useState<string>("");
 
   const convertToBoard = (index: number): CellData[][] => {
-    // const board = extreme[index].puzzle;
-    const board =
-      "2...8.....3....7.81....3.2..1..2..7....3....5.7..15.3.......9...2..3..8...46.....";
+    const board = hard[index].puzzle;
+    // const board =
+    //   "2...8.....3....7.81....3.2..1..2..7....3....5.7..15.3.......9...2..3..8...46.....";
 
     const result: CellData[][] = [];
     for (let i = 0; i < 9; i++) {
@@ -124,7 +127,7 @@ const Sudoku: React.FC = () => {
   };
 
   const convertToAnswer = (index: number): CellData[][] => {
-    const board = medium[index].solution;
+    const board = hard[index].solution;
     const result: CellData[][] = [];
     for (let i = 0; i < 9; i++) {
       const row: CellData[] = [];
@@ -183,7 +186,7 @@ const Sudoku: React.FC = () => {
       });
     });
     let graph = createGraph(newBoard, newCandidateMap);
-    let hyperGraph = createHyperGraph(newBoard, newCandidateMap, graph);
+    // let hyperGraph = createHyperGraph(newBoard, newCandidateMap, graph);
     let candidateMap = newCandidateMap;
     return { candidateMap, graph, hyperGraph };
   };
@@ -204,6 +207,7 @@ const Sudoku: React.FC = () => {
       xyzWing,
       skyscraper,
       skyscraper2,
+      nakedQuadruple,
       combinationChain,
       swordfish,
       jellyfish,
@@ -219,17 +223,8 @@ const Sudoku: React.FC = () => {
     const falseSolutionMap = new Map();
     const doubleColorChainMap = new Map();
     const labelArray: string[] = [];
-    const skyscraperMap_4 = new Map();
-    const skyscraperMap_6 = new Map();
-    const skyscraperMap2 = new Map();
-    const tripleColorChainMap = new Map();
-    const hiddenPairMap = new Map();
-    const hiddenTripleMap = new Map();
-    const xyWingMap = new Map();
-    const xyzWingMap = new Map();
-    const skyscraperMap = new Map();
-    const skyscraper2Map = new Map();
-    const xwingMap = new Map();
+    const nakedQuadrupleMap = new Map();
+    const combinationChainMap = new Map();
 
     for (let i = 0; i < extreme.length; i++) {
       // for (let i = 0; i < 200; i++) {
@@ -258,9 +253,6 @@ const Sudoku: React.FC = () => {
           }
         }
         if (j === solveFunctions.length && !result && counts !== 81) {
-          const endTime = performance.now();
-          const executionTime = endTime - startTime;
-          console.log(`求不出解 用时：${executionTime}ms`, i);
           failureMap.set(i, false);
           break;
         }
@@ -296,34 +288,13 @@ const Sudoku: React.FC = () => {
                 labelArray.push(result.label);
               }
               break;
-            case SOLUTION_METHODS.TRIPLE_COLOR_CHAIN:
-              tripleColorChainMap.set(i, result.label);
+            case SOLUTION_METHODS.NAKED_QUADRUPLE_BOX:
+            case SOLUTION_METHODS.NAKED_QUADRUPLE_ROW:
+            case SOLUTION_METHODS.NAKED_QUADRUPLE_COLUMN:
+              nakedQuadrupleMap.set(i, result.label);
               break;
-            case SOLUTION_METHODS.HIDDEN_PAIR_ROW:
-            case SOLUTION_METHODS.HIDDEN_PAIR_COLUMN:
-            case SOLUTION_METHODS.HIDDEN_PAIR_BOX:
-              hiddenPairMap.set(i, result.label);
-              break;
-            case SOLUTION_METHODS.HIDDEN_TRIPLE_ROW:
-            case SOLUTION_METHODS.HIDDEN_TRIPLE_COLUMN:
-            case SOLUTION_METHODS.HIDDEN_TRIPLE_BOX:
-              hiddenTripleMap.set(i, result.label);
-              break;
-            case SOLUTION_METHODS.XY_WING:
-              xyWingMap.set(i, result.label);
-              break;
-            case SOLUTION_METHODS.XYZ_WING:
-              xyzWingMap.set(i, result.label);
-              break;
-            case SOLUTION_METHODS.SKYSCRAPER:
-              skyscraperMap.set(i, result.label);
-              break;
-            case SOLUTION_METHODS.SKYSCRAPER2:
-              skyscraper2Map.set(i, result.label);
-              break;
-            case SOLUTION_METHODS.X_WING_ROW:
-            case SOLUTION_METHODS.X_WING_COLUMN:
-              xwingMap.set(i, result.label);
+            case SOLUTION_METHODS.COMBINATION_CHAIN:
+              combinationChainMap.set(i, result.label);
               break;
           }
           const newBoard = deepCopyBoard(board2);
@@ -380,17 +351,22 @@ const Sudoku: React.FC = () => {
     console.log("falseSolutionMap", falseSolutionMap);
     console.log("doubleColorChainMap", doubleColorChainMap);
     console.log("labelArray", labelArray);
-    console.log("skyscraperMap_4", skyscraperMap_4);
-    console.log("skyscraperMap_6", skyscraperMap_6);
-    console.log("skyscraperMap2", skyscraperMap2);
-    console.log("tripleColorChainMap", tripleColorChainMap);
-    console.log("hiddenPairMap", hiddenPairMap);
-    console.log("hiddenTripleMap", hiddenTripleMap);
-    console.log("xyWingMap", xyWingMap);
-    console.log("xyzWingMap", xyzWingMap);
-    console.log("skyscraperMap", skyscraperMap);
-    console.log("skyscraper2Map", skyscraper2Map);
-    console.log("xwingMap", xwingMap);
+    console.log("nakedQuadrupleMap", nakedQuadrupleMap);
+    console.log("combinationChainMap", combinationChainMap);
+  };
+
+  const verifyAnswer = () => {
+    const falseMap = new Map();
+    for (let i = 0; i < entry.length; i++) {
+      const solver = new SudokuSolver();
+      const solution = solver.solve(entry[i].puzzle);
+      if (solution !== entry[i].solution) {
+        console.log(entry[i].solution);
+        console.log(solution);
+        falseMap.set(i, false);
+      }
+    }
+    console.log("falseMap", falseMap);
   };
 
   const generateBoard = () => {
@@ -418,10 +394,10 @@ const Sudoku: React.FC = () => {
       }))
     );
 
-    newBoard = deepCopyBoard(mockBoard);
+    // newBoard = deepCopyBoard(mockBoard);
 
-    updateBoard(newBoard, "生成新棋盘");
-    // updateBoard(convertToBoard(194), "生成新棋盘");
+    // updateBoard(newBoard, "生成新棋盘");
+    updateBoard(convertToBoard(156), "生成新棋盘");
 
     // 生成解决方案
     const solvedBoard = newBoard.map((row) => row.map((cell) => ({ ...cell })));
@@ -873,6 +849,7 @@ const Sudoku: React.FC = () => {
       xyzWing,
       skyscraper,
       skyscraper2,
+      nakedQuadruple,
       combinationChain,
       swordfish,
       jellyfish,
@@ -1902,7 +1879,6 @@ const Sudoku: React.FC = () => {
   };
 
   const handleHyperGraph = () => {
-    // const hyperGraph = createHyperGraph(board, candidateMap, graph);
     console.log(hyperGraph);
   };
 
@@ -2060,6 +2036,7 @@ const Sudoku: React.FC = () => {
         <Button onClick={handleHyperGraph}>超图</Button>
         <Button onClick={handleDraft}>候选数</Button>
         <Button onClick={handleTest}>测试</Button>
+        <Button onClick={verifyAnswer}>验证答案</Button>
       </div>
       <div className="numberButtons">
         {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((number) => (
