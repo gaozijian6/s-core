@@ -209,8 +209,8 @@ const Sudoku: React.FC = () => {
       jellyfish,
       Loop,
       uniqueRectangle,
-      doubleColorChain,
-      tripleColorChain,
+      // doubleColorChain,
+      // tripleColorChain,
       BinaryUniversalGrave,
     ];
 
@@ -852,8 +852,8 @@ const Sudoku: React.FC = () => {
       jellyfish,
       Loop,
       uniqueRectangle,
-      doubleColorChain,
-      tripleColorChain,
+      // doubleColorChain,
+      // tripleColorChain,
       BinaryUniversalGrave,
       trialAndErrorDIY,
     ];
