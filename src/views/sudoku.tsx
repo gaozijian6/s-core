@@ -76,6 +76,7 @@ const Sudoku: React.FC = () => {
     candidateMap,
     graph,
     hyperGraph,
+    globalNodeMap,
     answerBoard,
     clearHistory,
   } = useSudokuBoard(initialBoard);
@@ -186,9 +187,9 @@ const Sudoku: React.FC = () => {
       });
     });
     let graph = createGraph(newBoard, newCandidateMap);
-    // let hyperGraph = createHyperGraph(newBoard, newCandidateMap, graph);
+    let { hyperGraph, globalNodeMap } = createHyperGraph(newBoard, newCandidateMap);
     let candidateMap = newCandidateMap;
-    return { candidateMap, graph, hyperGraph };
+    return { candidateMap, graph, hyperGraph, globalNodeMap };
   };
 
   const testExtreme = () => {
@@ -226,8 +227,8 @@ const Sudoku: React.FC = () => {
     const nakedQuadrupleMap = new Map();
     const combinationChainMap = new Map();
 
-    for (let i = 0; i < extreme.length; i++) {
-      // for (let i = 0; i < 200; i++) {
+    // for (let i = 0; i < extreme.length; i++) {
+      for (let i = 0; i < 200; i++) {
       if (i % 100 === 0) {
         console.log(`正在处理第${i}个数独...`);
       }
@@ -239,13 +240,13 @@ const Sudoku: React.FC = () => {
         (acc, row) => acc + row.filter((cell) => cell.value !== null).length,
         0
       );
-      let { candidateMap, graph, hyperGraph } = updateCandidateMap(board2);
+      let { candidateMap, graph, hyperGraph, globalNodeMap } = updateCandidateMap(board2);
       let result: Result | null = null;
       while (true) {
         let j = 0;
         const startTime = performance.now();
         for (j = 0; j < solveFunctions.length; j++) {
-          result = solveFunctions[j](board2, candidateMap, graph);
+          result = solveFunctions[j](board2, candidateMap, graph, globalNodeMap);
           if (result === null) {
             continue;
           } else {
@@ -338,7 +339,7 @@ const Sudoku: React.FC = () => {
             break;
           }
           board2 = newBoard;
-          ({ candidateMap, graph, hyperGraph } = updateCandidateMap(board2));
+          ({ candidateMap, graph, hyperGraph, globalNodeMap } = updateCandidateMap(board2));
           continue;
         }
         if (counts === 81) {
@@ -394,10 +395,10 @@ const Sudoku: React.FC = () => {
       }))
     );
 
-    // newBoard = deepCopyBoard(mockBoard);
+    newBoard = deepCopyBoard(mockBoard);
 
-    // updateBoard(newBoard, "生成新棋盘");
-    updateBoard(convertToBoard(156), "生成新棋盘");
+    updateBoard(newBoard, "生成新棋盘");
+    // updateBoard(convertToBoard(58), "生成新棋盘");
 
     // 生成解决方案
     const solvedBoard = newBoard.map((row) => row.map((cell) => ({ ...cell })));
@@ -850,13 +851,13 @@ const Sudoku: React.FC = () => {
       skyscraper,
       skyscraper2,
       nakedQuadruple,
-      combinationChain,
+      // combinationChain,
       swordfish,
       jellyfish,
       Loop,
       uniqueRectangle,
-      // doubleColorChain,
-      // tripleColorChain,
+      doubleColorChain,
+      tripleColorChain,
       BinaryUniversalGrave,
       trialAndErrorDIY,
     ];
@@ -1880,6 +1881,7 @@ const Sudoku: React.FC = () => {
 
   const handleHyperGraph = () => {
     console.log(hyperGraph);
+    console.log(globalNodeMap);
   };
 
   const handleDraft = () => {

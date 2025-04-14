@@ -594,8 +594,10 @@ export const createGraph = (
 export const createHyperGraph = (
   board: CellData[][],
   candidateMap: CandidateMap
-): HyperGraph => {
+): { hyperGraph: HyperGraph; globalNodeMap: Map<string, HyperGraphNode> } => {
   const hyperGraph: HyperGraph = {};
+  // 创建一个全局的节点映射，以 num-cells内容 为键
+  const globalNodeMap = new Map<string, HyperGraphNode>();
 
   for (let num = 1; num <= 9; num++) {
     hyperGraph[num] = [];
@@ -610,7 +612,7 @@ export const createHyperGraph = (
     // 为每个候选数位置创建单节点
     for (const candidate of candidates) {
       const key = `${candidate.row},${candidate.col}`;
-      nodeMap.set(key, {
+      const node = {
         cells: [
           {
             row: candidate.row,
@@ -619,7 +621,12 @@ export const createHyperGraph = (
           },
         ],
         next: [],
-      });
+      };
+      nodeMap.set(key, node);
+      
+      // 添加到全局映射，使用 num-row,col 格式作为键
+      const globalKey = `${num}-${candidate.row},${candidate.col}`;
+      globalNodeMap.set(globalKey, node);
     }
 
     // 第一步：识别单单强链接
@@ -649,8 +656,8 @@ export const createHyperGraph = (
       }
     }
 
-    // 第二步：识别单多强链接
-
+    // 第二步：识别单多强链接 (多节点处理)
+    
     // 处理行的单多强链接
     for (const [rowIndex, rowData] of candidateMap[num].row.entries()) {
       if (rowData.count >= 3 && rowData.count <= 4) {
@@ -688,6 +695,14 @@ export const createHyperGraph = (
                 next: [],
               };
               multiNodeMap.set(multiKey, multiNode);
+              
+              // 添加到全局映射，使用 num-cells内容 格式作为键
+              const cellsStr = cells
+                .map((c) => `${c.row},${c.col}`)
+                .sort()
+                .join("|");
+              const globalKey = `${num}-${cellsStr}`;
+              globalNodeMap.set(globalKey, multiNode);
 
               // 连接该多节点与其他宫的单节点
               boxGroups.forEach((otherCells, otherBoxIndex) => {
@@ -751,6 +766,14 @@ export const createHyperGraph = (
                   next: [],
                 };
                 multiNodeMap.set(multiKey, multiNode);
+                
+                // 添加到全局映射，使用 num-cells内容 格式作为键
+                const cellsStr = cells
+                  .map((c) => `${c.row},${c.col}`)
+                  .sort()
+                  .join("|");
+                const globalKey = `${num}-${cellsStr}`;
+                globalNodeMap.set(globalKey, multiNode);
               }
 
               const multiNode = multiNodeMap.get(multiKey)!;
@@ -825,6 +848,14 @@ export const createHyperGraph = (
                   next: [],
                 };
                 multiNodeMap.set(multiKey, multiNode);
+                
+                // 添加到全局映射，使用 num-cells内容 格式作为键
+                const cellsStr = cells
+                  .map((c) => `${c.row},${c.col}`)
+                  .sort()
+                  .join("|");
+                const globalKey = `${num}-${cellsStr}`;
+                globalNodeMap.set(globalKey, multiNode);
               }
 
               const multiNode = multiNodeMap.get(multiKey)!;
@@ -877,6 +908,14 @@ export const createHyperGraph = (
                   next: [],
                 };
                 multiNodeMap.set(multiKey, multiNode);
+
+                // 添加到全局映射，使用 num-cells内容 格式作为键
+                const cellsStr = cells
+                  .map((c) => `${c.row},${c.col}`)
+                  .sort()
+                  .join("|");
+                const globalKey = `${num}-${cellsStr}`;
+                globalNodeMap.set(globalKey, multiNode);
               }
 
               const multiNode = multiNodeMap.get(multiKey)!;
@@ -949,6 +988,14 @@ export const createHyperGraph = (
                       next: [],
                     };
                     multiNodeMap.set(multiKey1, multiNode1);
+                    
+                    // 添加到全局映射，使用 num-cells内容 格式作为键
+                    const cellsStr = cells1
+                      .map((c) => `${c.row},${c.col}`)
+                      .sort()
+                      .join("|");
+                    const globalKey = `${num}-${cellsStr}`;
+                    globalNodeMap.set(globalKey, multiNode1);
                   }
 
                   // 创建第二个多节点 - 添加row_前缀区分
@@ -966,6 +1013,14 @@ export const createHyperGraph = (
                       next: [],
                     };
                     multiNodeMap.set(multiKey2, multiNode2);
+                    
+                    // 添加到全局映射，使用 num-cells内容 格式作为键
+                    const cellsStr = cells2
+                      .map((c) => `${c.row},${c.col}`)
+                      .sort()
+                      .join("|");
+                    const globalKey = `${num}-${cellsStr}`;
+                    globalNodeMap.set(globalKey, multiNode2);
                   }
 
                   const multiNode1 = multiNodeMap.get(multiKey1)!;
@@ -1031,6 +1086,14 @@ export const createHyperGraph = (
                       next: [],
                     };
                     multiNodeMap.set(multiKey1, multiNode1);
+                    
+                    // 添加到全局映射，使用 num-cells内容 格式作为键
+                    const cellsStr = cells1
+                      .map((c) => `${c.row},${c.col}`)
+                      .sort()
+                      .join("|");
+                    const globalKey = `${num}-${cellsStr}`;
+                    globalNodeMap.set(globalKey, multiNode1);
                   }
 
                   // 创建第二个多节点 - 添加col_前缀区分
@@ -1048,6 +1111,14 @@ export const createHyperGraph = (
                       next: [],
                     };
                     multiNodeMap.set(multiKey2, multiNode2);
+                    
+                    // 添加到全局映射，使用 num-cells内容 格式作为键
+                    const cellsStr = cells2
+                      .map((c) => `${c.row},${c.col}`)
+                      .sort()
+                      .join("|");
+                    const globalKey = `${num}-${cellsStr}`;
+                    globalNodeMap.set(globalKey, multiNode2);
                   }
 
                   const multiNode1 = multiNodeMap.get(multiKey1)!;
@@ -1120,6 +1191,14 @@ export const createHyperGraph = (
                       next: [],
                     };
                     multiNodeMap.set(multiKey1, multiNode1);
+                    
+                    // 添加到全局映射，使用 num-cells内容 格式作为键
+                    const cellsStr = cells1
+                      .map((c) => `${c.row},${c.col}`)
+                      .sort()
+                      .join("|");
+                    const globalKey = `${num}-${cellsStr}`;
+                    globalNodeMap.set(globalKey, multiNode1);
                   }
 
                   // 创建第二个多节点 - 添加前缀box_row_来区分
@@ -1137,6 +1216,14 @@ export const createHyperGraph = (
                       next: [],
                     };
                     multiNodeMap.set(multiKey2, multiNode2);
+                    
+                    // 添加到全局映射，使用 num-cells内容 格式作为键
+                    const cellsStr = cells2
+                      .map((c) => `${c.row},${c.col}`)
+                      .sort()
+                      .join("|");
+                    const globalKey = `${num}-${cellsStr}`;
+                    globalNodeMap.set(globalKey, multiNode2);
                   }
 
                   const multiNode1 = multiNodeMap.get(multiKey1)!;
@@ -1186,6 +1273,14 @@ export const createHyperGraph = (
                       next: [],
                     };
                     multiNodeMap.set(multiKey1, multiNode1);
+                    
+                    // 添加到全局映射，使用 num-cells内容 格式作为键
+                    const cellsStr = cells1
+                      .map((c) => `${c.row},${c.col}`)
+                      .sort()
+                      .join("|");
+                    const globalKey = `${num}-${cellsStr}`;
+                    globalNodeMap.set(globalKey, multiNode1);
                   }
 
                   // 创建第二个多节点 - 添加前缀box_col_来区分
@@ -1203,6 +1298,14 @@ export const createHyperGraph = (
                       next: [],
                     };
                     multiNodeMap.set(multiKey2, multiNode2);
+                    
+                    // 添加到全局映射，使用 num-cells内容 格式作为键
+                    const cellsStr = cells2
+                      .map((c) => `${c.row},${c.col}`)
+                      .sort()
+                      .join("|");
+                    const globalKey = `${num}-${cellsStr}`;
+                    globalNodeMap.set(globalKey, multiNode2);
                   }
 
                   const multiNode1 = multiNodeMap.get(multiKey1)!;
@@ -1276,6 +1379,14 @@ export const createHyperGraph = (
                           next: [],
                         };
                         multiNodeMap.set(multiKeyRow, multiNodeRow);
+                        
+                        // 添加到全局映射，使用 num-cells内容 格式作为键
+                        const cellsStr = uniqueRowCells
+                          .map((c) => `${c.row},${c.col}`)
+                          .sort()
+                          .join("|");
+                        const globalKey = `${num}-${cellsStr}`;
+                        globalNodeMap.set(globalKey, multiNodeRow);
                       }
 
                       // 创建列多节点 - 添加前缀box_cross_col_来区分
@@ -1293,6 +1404,14 @@ export const createHyperGraph = (
                           next: [],
                         };
                         multiNodeMap.set(multiKeyCol, multiNodeCol);
+
+                        // 添加到全局映射，使用 num-cells内容 格式作为键
+                        const cellsStr = uniqueColCells
+                          .map((c) => `${c.row},${c.col}`)
+                          .sort()
+                          .join("|");
+                        const globalKey = `${num}-${cellsStr}`;
+                        globalNodeMap.set(globalKey, multiNodeCol);
                       }
 
                       const multiNodeRow = multiNodeMap.get(multiKeyRow)!;
@@ -1477,7 +1596,7 @@ export const createHyperGraph = (
     }
   }
 
-  return hyperGraph;
+  return { hyperGraph, globalNodeMap };
 };
 
 // 创建一个新的 hook 来管理棋盘状态和历史
@@ -1503,6 +1622,7 @@ export const useSudokuBoard = (initialBoard: CellData[][]) => {
   const hyperGraphRef = useRef<HyperGraph>(
     createHyperGraph(initialBoard, candidateMap)
   );
+  const globalNodeMapRef = useRef<Map<string, HyperGraphNode>>(new Map());
 
   const updateCandidateMap = (newBoard: CellData[][]) => {
     const newCandidateMap: CandidateMap = {};
@@ -1546,7 +1666,9 @@ export const useSudokuBoard = (initialBoard: CellData[][]) => {
       });
     });
     graphRef.current = createGraph(newBoard, newCandidateMap);
-    hyperGraphRef.current = createHyperGraph(newBoard, newCandidateMap);
+    const { hyperGraph, globalNodeMap } = createHyperGraph(newBoard, newCandidateMap);
+    hyperGraphRef.current = hyperGraph;
+    globalNodeMapRef.current = globalNodeMap;
     setCandidateMap(newCandidateMap);
   };
 
@@ -1636,6 +1758,7 @@ export const useSudokuBoard = (initialBoard: CellData[][]) => {
     candidateMap,
     graph: graphRef.current,
     hyperGraph: hyperGraphRef.current,
+    globalNodeMap: globalNodeMapRef.current,
     answerBoard,
     clearHistory,
   };
