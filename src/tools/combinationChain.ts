@@ -57,7 +57,7 @@ export const getAffectedCells_Hyper = (
     if (node.cells[0].row === node.cells[1].row) {
       const row = node.cells[0].row;
       affectedCells = [...candidateMap[num].row.get(row)!.positions];
-    } else {
+    } else if (node.cells[0].col === node.cells[1].col) {
       const col = node.cells[0].col;
       affectedCells = [...candidateMap[num].col.get(col)!.positions];
     }
@@ -89,8 +89,8 @@ export const getCommonAffectedCells_Hyper = (
   candidateMap: CandidateMap,
   num: number
 ): Position[] => {
-  const affectedCells1=getAffectedCells_Hyper(node1,candidateMap,num);
-  const affectedCells2=getAffectedCells_Hyper(node2,candidateMap,num);
+  const affectedCells1 = getAffectedCells_Hyper(node1, candidateMap, num);
+  const affectedCells2 = getAffectedCells_Hyper(node2, candidateMap, num);
   const visited = new Set<string>();
   const commonAffectedCells: Position[] = [];
   for (const cell of affectedCells1) {
@@ -101,7 +101,7 @@ export const getCommonAffectedCells_Hyper = (
       commonAffectedCells.push(cell);
     }
   }
-  
+
   return commonAffectedCells;
 };
 
@@ -119,19 +119,32 @@ export function combinationChain(
     type1Array: string[],
     type2Array: string[]
   ): Result | null => {
-    if(depth>6) return null;
-    if (depth === 4||depth===6) {
-      const affectedCells=getCommonAffectedCells_Hyper(path[0],path[path.length-1],candidateMap,num);
-      const prompt=[];
-      for(let i=0;i<path.length;i++){
-        for(let j=0;j<path[i].cells.length;j++){
-          prompt.push({row:path[i].cells[j].row,col:path[i].cells[j].col});
+    if (depth > 6) return null;
+    // if (
+    //   path[0].cells[0].row === 5 &&
+    //   path[0].cells[0].col === 7 &&
+    //   num === 5 &&
+    //   depth === 6
+    // ) {
+    //   console.log(path, type2Array);
+    // }
+    if (depth === 4 || depth === 6) {
+      const affectedCells = getCommonAffectedCells_Hyper(
+        path[0],
+        path[path.length - 1],
+        candidateMap,
+        num
+      );
+      const prompt = [];
+      for (let i = 0; i < path.length; i++) {
+        for (let j = 0; j < path[i].cells.length; j++) {
+          prompt.push({ row: path[i].cells[j].row, col: path[i].cells[j].col });
         }
       }
-      if (affectedCells.length>0) {
+      if (affectedCells.length > 0) {
         return {
-          label1: type1Array.join(''),
-          label2: type2Array.join(''),
+          label1: type1Array.join(""),
+          label2: type2Array.join(""),
           position: affectedCells,
           prompt: prompt,
           method: SOLUTION_METHODS.LOOP,
@@ -143,6 +156,31 @@ export function combinationChain(
     const node = path[path.length - 1];
     let result: Result | null = null;
     for (const nextNode of node.next) {
+      const key1 = nextNode.cells
+        .map((cell) => `${cell.row},${cell.col}`)
+        .sort()
+        .join("|");
+      let isSame = depth >= 2 ? false : true;
+      if (depth >= 2) {
+        for (let i = path.length - 2; i >= 0; i--) {
+          const key2 = path[i].cells
+            .map((cell) => `${cell.row},${cell.col}`)
+            .sort()
+            .join("|");
+          if (key1 === key2) {
+            if (
+              path[0].cells[0].row === 5 &&
+              path[0].cells[0].col === 7 &&
+              num === 5
+            ) {
+              console.log(path, key2);
+            }
+            isSame = true;
+            break;
+          }
+        }
+      }
+      if (isSame && depth >= 2) continue;
       if (nextNode.cells.length >= 2) {
         result = dfs(
           num,
@@ -162,26 +200,67 @@ export function combinationChain(
         );
         if (result) return result;
       }
-      if (depth === 2) {
-        const affectedCells = getAffectedCells_Hyper(node, candidateMap, num);
-        // 找单个方格
-        for (const pos of affectedCells) {
+    }
+    if (depth === 2 || depth === 4) {
+      
+      const affectedCells = getAffectedCells_Hyper(node, candidateMap, num);
+      if (
+        path[0].cells[0].row === 5 &&
+        path[0].cells[0].col === 7 &&
+        num === 5
+      ) {
+        console.log("弱", affectedCells,node);
+      }
+      // 找单个方格
+      for (const pos of affectedCells) {
+        const key =
+          "num-" +
+          [pos]
+            .map((c) => `${c.row},${c.col}`)
+            .sort()
+            .join("|");
+        if (globalNodeMap.has(key)) {
+          
           result = dfs(
             num,
-            [...path, nextNode],
+            [...path, globalNodeMap.get(key)!],
             depth + 1,
             [...type1Array, "单"],
             [...type2Array, "弱"]
           );
           if (result) return result;
         }
-        // 找多格
-        if (affectedCells.length > 1) {
-          for (let i = 0; i < affectedCells.length; i++) {
-            for (let j = i + 1; j < affectedCells.length; j++) {
+      }
+      // 找多格
+      if (affectedCells.length > 1) {
+        for (let i = 0; i < affectedCells.length; i++) {
+          for (let j = i + 1; j < affectedCells.length; j++) {
+            const key =
+              "num-" +
+              [affectedCells[i], affectedCells[j]]
+                .map((c) => `${c.row},${c.col}`)
+                .sort()
+                .join("|");
+            if (globalNodeMap.has(key)) {
+              result = dfs(
+                num,
+                [...path, globalNodeMap.get(key)!],
+                depth + 1,
+                [...type1Array, "多"],
+                [...type2Array, "弱"]
+              );
+              if (result) return result;
+            }
+          }
+        }
+      }
+      if (affectedCells.length > 2) {
+        for (let i = 0; i < affectedCells.length; i++) {
+          for (let j = i + 1; j < affectedCells.length; j++) {
+            for (let k = j + 1; k < affectedCells.length; k++) {
               const key =
                 "num-" +
-                [affectedCells[i], affectedCells[j]]
+                [affectedCells[i], affectedCells[j], affectedCells[k]]
                   .map((c) => `${c.row},${c.col}`)
                   .sort()
                   .join("|");
@@ -194,30 +273,6 @@ export function combinationChain(
                   [...type2Array, "弱"]
                 );
                 if (result) return result;
-              }
-            }
-          }
-        }
-        if (affectedCells.length > 2) {
-          for (let i = 0; i < affectedCells.length; i++) {
-            for (let j = i + 1; j < affectedCells.length; j++) {
-              for (let k = j + 1; k < affectedCells.length; k++) {
-                const key =
-                  "num-" +
-                  [affectedCells[i], affectedCells[j], affectedCells[k]]
-                    .map((c) => `${c.row},${c.col}`)
-                    .sort()
-                    .join("|");
-                if (globalNodeMap.has(key)) {
-                  result = dfs(
-                    num,
-                    [...path, globalNodeMap.get(key)!],
-                    depth + 1,
-                    [...type1Array, "多"],
-                    [...type2Array, "弱"]
-                  );
-                  if (result) return result;
-                }
               }
             }
           }
