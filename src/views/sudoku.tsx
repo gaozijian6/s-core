@@ -33,7 +33,7 @@ import {
   trialAndErrorDIY,
   isUnitStrongLink,
   getGraphNode,
-  combinationChain,
+  // combinationChain,
   Loop,
   uniqueRectangle,
   BinaryUniversalGrave,
@@ -44,6 +44,7 @@ import {
   getGraphNodesCounts,
   nakedQuadruple,
 } from "../tools/solution";
+import {combinationChain} from "../tools/combinationChain";
 import "./sudoku.less";
 import type {
   CandidateMap,
@@ -851,7 +852,7 @@ const Sudoku: React.FC = () => {
       skyscraper,
       skyscraper2,
       nakedQuadruple,
-      // combinationChain,
+      combinationChain,
       swordfish,
       jellyfish,
       Loop,
@@ -865,7 +866,7 @@ const Sudoku: React.FC = () => {
 
     const startTime = performance.now();
     for (const solveFunction of solveFunctions) {
-      result = solveFunction(board, candidateMap, graph);
+      result = solveFunction(board, candidateMap, graph, hyperGraph, globalNodeMap);
       if (result) {
         const endTime = performance.now();
         console.log(`${solveFunction.name} 用时: ${endTime - startTime} 毫秒`);

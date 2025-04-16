@@ -28,6 +28,8 @@ export interface Result {
   isWeakLink?: boolean;
   chainStructure?: string;
   label?: string;
+  label1?: string;
+  label2?: string;
   highlightPromts1?: {
     row: number;
     col: number;
