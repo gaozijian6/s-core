@@ -20,12 +20,9 @@ export const SOLUTION_METHODS = {
   HIDDEN_PAIR_ROW: "隐形数对法(行)",
   HIDDEN_PAIR_COLUMN: "隐形数对法(列)",
   HIDDEN_PAIR_BOX: "隐形数对法(宫)",
-  HIDDEN_TRIPLE_ROW1: "隐形三数对(行)",
-  HIDDEN_TRIPLE_COLUMN1: "隐形三数对(列)",
-  HIDDEN_TRIPLE_BOX1: "隐形三数对(宫)",
-  HIDDEN_TRIPLE_ROW2: "隐形三数对(行)",
-  HIDDEN_TRIPLE_COLUMN2: "隐形三数对(列)",
-  HIDDEN_TRIPLE_BOX2: "隐形三数对(宫)",
+  HIDDEN_QUADRUPLE_BOX: "隐形四数对法(宫)",
+  HIDDEN_QUADRUPLE_ROW: "隐形四数对法(行)",
+  HIDDEN_QUADRUPLE_COLUMN: "隐形四数对法(列)",
   NAKED_QUADRUPLE_ROW: "显性四数对法(行)",
   NAKED_QUADRUPLE_COLUMN: "显性四数对法(列)",
   NAKED_QUADRUPLE_BOX: "显性四数对法(宫)",
@@ -57,6 +54,7 @@ export const SOLUTION_METHODS = {
   HIDDEN_TRIPLE_COLUMN: "隐形三数对(列)",
   HIDDEN_TRIPLE_BOX: "隐形三数对(宫)",
   TRIPLE_COLOR_CHAIN: "三色链",
+  RECTANGLE_ELIMINATION: "矩形消除",
 };
 
 export const STRONG_LINK_TYPE = {

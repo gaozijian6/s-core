@@ -77,7 +77,6 @@ export const areCellsInSameUnit = (cell1: Position, cell2: Position) => {
   return sameRow || sameColumn || sameBox;
 };
 
-
 export const findDifferenceDraft = (
   beforeBoard: CellData[][],
   afterBoard: CellData[][],
@@ -90,7 +89,9 @@ export const findDifferenceDraft = (
       const afterDraft = afterBoard[row]?.[col]?.draft || [];
       const newCandidates: number[] = [];
       if (!beforeDraft.includes(answerBoard[row][col].value!)) {
-        newCandidates.push(...afterDraft.filter(num => !beforeDraft.includes(num)));
+        newCandidates.push(
+          ...afterDraft.filter((num) => !beforeDraft.includes(num))
+        );
       }
       if (newCandidates.length > 0) {
         differenceMap[`${row},${col}`] = newCandidates;
@@ -112,7 +113,9 @@ export const findDifferenceDraftAll = (
       const afterDraft = afterBoard[row]?.[col]?.draft || [];
       const newCandidates: number[] = [];
       if (JSON.stringify(beforeDraft) !== JSON.stringify(afterDraft)) {
-        newCandidates.push(...afterDraft.filter(num => !beforeDraft.includes(num)));
+        newCandidates.push(
+          ...afterDraft.filter((num) => !beforeDraft.includes(num))
+        );
       }
       if (newCandidates.length > 0) {
         differenceMap[`${row},${col}`] = newCandidates;
@@ -153,7 +156,9 @@ export const findDifferenceDraftDIY = (
       const afterDraft = afterBoard[row]?.[col]?.draft || [];
       const newCandidates: number[] = [];
       if (!beforeDraft.includes(answerBoard[row][col].value!)) {
-        newCandidates.push(...afterDraft.filter(num => !beforeDraft.includes(num)));
+        newCandidates.push(
+          ...afterDraft.filter((num) => !beforeDraft.includes(num))
+        );
       }
       if (newCandidates.length > 0) {
         differenceMap[`${row},${col}`] = newCandidates;
@@ -1207,7 +1212,14 @@ export const hiddenTriple = (
             count3: 0,
             positions3: [],
           };
-          if (count1 <= 3 && count2 <= 3 && count3 <= 3) {
+          if (
+            count1 <= 3 &&
+            count2 <= 3 &&
+            count3 <= 3 &&
+            count1 &&
+            count2 &&
+            count3
+          ) {
             const positionsArray = [
               ...(positions1 || []),
               ...(positions2 || []),
@@ -1260,7 +1272,14 @@ export const hiddenTriple = (
             count3: 0,
             positions3: [],
           };
-          if (count1 <= 3 && count2 <= 3 && count3 <= 3) {
+          if (
+            count1 <= 3 &&
+            count2 <= 3 &&
+            count3 <= 3 &&
+            count1 &&
+            count2 &&
+            count3
+          ) {
             const positionsArray = [
               ...(positions1 || []),
               ...(positions2 || []),
@@ -1313,7 +1332,14 @@ export const hiddenTriple = (
             count3: 0,
             positions3: [],
           };
-          if (count1 <= 3 && count2 <= 3 && count3 <= 3) {
+          if (
+            count1 <= 3 &&
+            count2 <= 3 &&
+            count3 <= 3 &&
+            count1 &&
+            count2 &&
+            count3
+          ) {
             const positionsArray = [
               ...(positions1 || []),
               ...(positions2 || []),
@@ -1344,6 +1370,263 @@ export const hiddenTriple = (
       }
     }
   }
+  return null;
+};
+
+export const hiddenQuad = (
+  board: CellData[][],
+  candidateMap: CandidateMap,
+  graph: Graph
+) => {
+  // 检查行
+  for (let row = 0; row < 9; row++) {
+    for (let num1 = 1; num1 <= 6; num1++) {
+      for (let num2 = num1 + 1; num2 <= 7; num2++) {
+        for (let num3 = num2 + 1; num3 <= 8; num3++) {
+          for (let num4 = num3 + 1; num4 <= 9; num4++) {
+            const { count: count1, positions: positions1 } = candidateMap[
+              num1
+            ].row.get(row) || {
+              count: 0,
+              positions: [],
+            };
+            const { count: count2, positions: positions2 } = candidateMap[
+              num2
+            ].row.get(row) || {
+              count: 0,
+              positions: [],
+            };
+            const { count: count3, positions: positions3 } = candidateMap[
+              num3
+            ].row.get(row) || {
+              count: 0,
+              positions: [],
+            };
+            const { count: count4, positions: positions4 } = candidateMap[
+              num4
+            ].row.get(row) || {
+              count: 0,
+              positions: [],
+            };
+
+            if (
+              count1 <= 4 &&
+              count2 <= 4 &&
+              count3 <= 4 &&
+              count4 <= 4 &&
+              count1 &&
+              count2 &&
+              count3 &&
+              count4
+            ) {
+              const positionsArray = [
+                ...(positions1 || []),
+                ...(positions2 || []),
+                ...(positions3 || []),
+                ...(positions4 || []),
+              ].map((pos) => ({ row: pos.row, col: pos.col }));
+
+              const uniquePositions = Array.from(
+                new Set(positionsArray.map((pos) => JSON.stringify(pos)))
+              ).map((str) => JSON.parse(str));
+
+              if (uniquePositions.length === 4) {
+                const allCandidates = uniquePositions.map(
+                  (pos) => board[pos.row][pos.col].draft
+                );
+                const allCandidatesSet = new Set(allCandidates.flat());
+
+                if (allCandidatesSet.size !== 4) {
+                  console.log("allCandidatesSet", allCandidatesSet);
+                  console.log("num1", num1);
+                  console.log("num2", num2);
+                  console.log("num3", num3);
+                  console.log("num4", num4);
+
+                  return {
+                    isFill: false,
+                    position: uniquePositions,
+                    prompt: uniquePositions,
+                    method: SOLUTION_METHODS.HIDDEN_QUADRUPLE_ROW,
+                    target: Array.from(allCandidatesSet).filter(
+                      (num) =>
+                        num !== num1 &&
+                        num !== num2 &&
+                        num !== num3 &&
+                        num !== num4
+                    ),
+                  };
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // 检查列
+  for (let col = 0; col < 9; col++) {
+    for (let num1 = 1; num1 <= 6; num1++) {
+      for (let num2 = num1 + 1; num2 <= 7; num2++) {
+        for (let num3 = num2 + 1; num3 <= 8; num3++) {
+          for (let num4 = num3 + 1; num4 <= 9; num4++) {
+            const { count: count1, positions: positions1 } = candidateMap[
+              num1
+            ].col.get(col) || {
+              count: 0,
+              positions: [],
+            };
+            const { count: count2, positions: positions2 } = candidateMap[
+              num2
+            ].col.get(col) || {
+              count: 0,
+              positions: [],
+            };
+            const { count: count3, positions: positions3 } = candidateMap[
+              num3
+            ].col.get(col) || {
+              count: 0,
+              positions: [],
+            };
+            const { count: count4, positions: positions4 } = candidateMap[
+              num4
+            ].col.get(col) || {
+              count: 0,
+              positions: [],
+            };
+
+            if (
+              count1 <= 4 &&
+              count2 <= 4 &&
+              count3 <= 4 &&
+              count4 <= 4 &&
+              count1 &&
+              count2 &&
+              count3 &&
+              count4
+            ) {
+              const positionsArray = [
+                ...(positions1 || []),
+                ...(positions2 || []),
+                ...(positions3 || []),
+                ...(positions4 || []),
+              ].map((pos) => ({ row: pos.row, col: pos.col }));
+
+              const uniquePositions = Array.from(
+                new Set(positionsArray.map((pos) => JSON.stringify(pos)))
+              ).map((str) => JSON.parse(str));
+
+              if (uniquePositions.length === 4) {
+                const allCandidates = uniquePositions.map(
+                  (pos) => board[pos.row][pos.col].draft
+                );
+                const allCandidatesSet = new Set(allCandidates.flat());
+
+                if (allCandidatesSet.size !== 4) {
+                  return {
+                    isFill: false,
+                    position: uniquePositions,
+                    prompt: uniquePositions,
+                    method: SOLUTION_METHODS.HIDDEN_QUADRUPLE_COLUMN,
+                    target: Array.from(allCandidatesSet).filter(
+                      (num) =>
+                        num !== num1 &&
+                        num !== num2 &&
+                        num !== num3 &&
+                        num !== num4
+                    ),
+                  };
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // 检查宫
+  for (let box = 0; box < 9; box++) {
+    for (let num1 = 1; num1 <= 6; num1++) {
+      for (let num2 = num1 + 1; num2 <= 7; num2++) {
+        for (let num3 = num2 + 1; num3 <= 8; num3++) {
+          for (let num4 = num3 + 1; num4 <= 9; num4++) {
+            const { count: count1, positions: positions1 } = candidateMap[
+              num1
+            ].box.get(box) || {
+              count: 0,
+              positions: [],
+            };
+            const { count: count2, positions: positions2 } = candidateMap[
+              num2
+            ].box.get(box) || {
+              count: 0,
+              positions: [],
+            };
+            const { count: count3, positions: positions3 } = candidateMap[
+              num3
+            ].box.get(box) || {
+              count: 0,
+              positions: [],
+            };
+            const { count: count4, positions: positions4 } = candidateMap[
+              num4
+            ].box.get(box) || {
+              count: 0,
+              positions: [],
+            };
+
+            if (
+              count1 <= 4 &&
+              count2 <= 4 &&
+              count3 <= 4 &&
+              count4 <= 4 &&
+              count1 &&
+              count2 &&
+              count3 &&
+              count4
+            ) {
+              const positionsArray = [
+                ...(positions1 || []),
+                ...(positions2 || []),
+                ...(positions3 || []),
+                ...(positions4 || []),
+              ].map((pos) => ({ row: pos.row, col: pos.col }));
+
+              const uniquePositions = Array.from(
+                new Set(positionsArray.map((pos) => JSON.stringify(pos)))
+              ).map((str) => JSON.parse(str));
+
+              if (uniquePositions.length === 4) {
+                const allCandidates = uniquePositions.map(
+                  (pos) => board[pos.row][pos.col].draft
+                );
+                const allCandidatesSet = new Set(allCandidates.flat());
+
+                if (allCandidatesSet.size !== 4) {
+                  return {
+                    isFill: false,
+                    position: uniquePositions,
+                    prompt: uniquePositions,
+                    method: SOLUTION_METHODS.HIDDEN_QUADRUPLE_BOX,
+                    target: Array.from(allCandidatesSet).filter(
+                      (num) =>
+                        num !== num1 &&
+                        num !== num2 &&
+                        num !== num3 &&
+                        num !== num4
+                    ),
+                  };
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
   return null;
 };
 
@@ -3147,7 +3430,7 @@ export const findSixPath = (
 };
 
 // 获取两个格子的共同区域
-const getCommonUnits = (
+export const getCommonUnits = (
   pos1: Position,
   pos2: Position,
   board: CellData[][]
@@ -4773,7 +5056,7 @@ export const BinaryUniversalGrave = (
   return null;
 };
 
-const getAffectedCells = (
+export const getAffectedCells = (
   position: Position,
   num: number,
   candidateMap: CandidateMap
@@ -6177,3 +6460,4 @@ export const getGraphNodesCounts = (graphNode: GraphNode): number => {
 
   return count;
 };
+

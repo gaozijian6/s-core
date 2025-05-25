@@ -1625,6 +1625,7 @@ export const useSudokuBoard = (initialBoard: CellData[][]) => {
   const globalNodeMapRef = useRef<Map<string, HyperGraphNode>>(new Map());
 
   const updateCandidateMap = (newBoard: CellData[][]) => {
+    console.log("updateCandidateMap",newBoard);
     const newCandidateMap: CandidateMap = {};
     for (let num = 1; num <= 9; num++) {
       newCandidateMap[num] = {

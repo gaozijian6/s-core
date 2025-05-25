@@ -43,8 +43,9 @@ import {
   hiddenTriple,
   getGraphNodesCounts,
   nakedQuadruple,
+  hiddenQuad,
 } from "../tools/solution";
-import {combinationChain} from "../tools/combinationChain";
+import { combinationChain } from "../tools/combinationChain";
 import "./sudoku.less";
 import type {
   CandidateMap,
@@ -188,7 +189,10 @@ const Sudoku: React.FC = () => {
       });
     });
     let graph = createGraph(newBoard, newCandidateMap);
-    let { hyperGraph, globalNodeMap } = createHyperGraph(newBoard, newCandidateMap);
+    let { hyperGraph, globalNodeMap } = createHyperGraph(
+      newBoard,
+      newCandidateMap
+    );
     let candidateMap = newCandidateMap;
     return { candidateMap, graph, hyperGraph, globalNodeMap };
   };
@@ -210,14 +214,14 @@ const Sudoku: React.FC = () => {
       skyscraper,
       skyscraper2,
       nakedQuadruple,
-      combinationChain,
       swordfish,
       jellyfish,
       Loop,
       uniqueRectangle,
-      // doubleColorChain,
-      // tripleColorChain,
       BinaryUniversalGrave,
+      combinationChain,
+      doubleColorChain,
+      tripleColorChain,
     ];
 
     const mapArray = [];
@@ -227,9 +231,11 @@ const Sudoku: React.FC = () => {
     const labelArray: string[] = [];
     const nakedQuadrupleMap = new Map();
     const combinationChainMap = new Map();
+    const hiddenQuadrupleMap = new Map();
 
     // for (let i = 0; i < extreme.length; i++) {
-      for (let i = 0; i < 200; i++) {
+    const startTime = performance.now();
+    for (let i = 1369; i < 1370; i++) {
       if (i % 100 === 0) {
         console.log(`正在处理第${i}个数独...`);
       }
@@ -241,13 +247,19 @@ const Sudoku: React.FC = () => {
         (acc, row) => acc + row.filter((cell) => cell.value !== null).length,
         0
       );
-      let { candidateMap, graph, hyperGraph, globalNodeMap } = updateCandidateMap(board2);
+      let { candidateMap, graph, hyperGraph, globalNodeMap } =
+        updateCandidateMap(board2);
       let result: Result | null = null;
       while (true) {
         let j = 0;
-        const startTime = performance.now();
         for (j = 0; j < solveFunctions.length; j++) {
-          result = solveFunctions[j](board2, candidateMap, graph, globalNodeMap);
+          result = solveFunctions[j](
+            board2,
+            candidateMap,
+            graph,
+            hyperGraph,
+            globalNodeMap
+          );
           if (result === null) {
             continue;
           } else {
@@ -269,20 +281,6 @@ const Sudoku: React.FC = () => {
           if (isFill) {
             counts++;
           }
-          // if (result.method === SOLUTION_METHODS.TRIPLE_COLOR_CHAIN) {
-          //   const endTime = performance.now();
-          //   const executionTime = endTime - startTime;
-          //   if (executionTime > 15) {
-          //     console.log(`${result.label} 用时：${executionTime}ms`, i);
-          //   }
-          // }
-          // if (result.method === SOLUTION_METHODS.DOUBLE_COLOR_CHAIN) {
-          //   const endTime = performance.now();
-          //   const executionTime = endTime - startTime;
-          //   if (executionTime > 15) {
-          //     console.log(`${result.label} 用时：${executionTime}ms`, i);
-          //   }
-          // }
           switch (result.method) {
             case SOLUTION_METHODS.DOUBLE_COLOR_CHAIN:
               doubleColorChainMap.set(i, result.label);
@@ -296,7 +294,12 @@ const Sudoku: React.FC = () => {
               nakedQuadrupleMap.set(i, result.label);
               break;
             case SOLUTION_METHODS.COMBINATION_CHAIN:
-              combinationChainMap.set(i, result.label);
+              combinationChainMap.set(i, result.label1);
+              break;
+            case SOLUTION_METHODS.HIDDEN_QUADRUPLE_BOX:
+            case SOLUTION_METHODS.HIDDEN_QUADRUPLE_ROW:
+            case SOLUTION_METHODS.HIDDEN_QUADRUPLE_COLUMN:
+              hiddenQuadrupleMap.set(i, result.label);
               break;
           }
           const newBoard = deepCopyBoard(board2);
@@ -340,7 +343,8 @@ const Sudoku: React.FC = () => {
             break;
           }
           board2 = newBoard;
-          ({ candidateMap, graph, hyperGraph, globalNodeMap } = updateCandidateMap(board2));
+          ({ candidateMap, graph, hyperGraph, globalNodeMap } =
+            updateCandidateMap(board2));
           continue;
         }
         if (counts === 81) {
@@ -349,12 +353,15 @@ const Sudoku: React.FC = () => {
       }
       mapArray.push(map);
     }
+    const endTime = performance.now();
+    console.log(`运行时间: ${endTime - startTime} 毫秒`);
     console.log("failureMap", failureMap);
     console.log("falseSolutionMap", falseSolutionMap);
     console.log("doubleColorChainMap", doubleColorChainMap);
     console.log("labelArray", labelArray);
     console.log("nakedQuadrupleMap", nakedQuadrupleMap);
     console.log("combinationChainMap", combinationChainMap);
+    console.log("hiddenQuadrupleMap", hiddenQuadrupleMap);
   };
 
   const verifyAnswer = () => {
@@ -396,10 +403,10 @@ const Sudoku: React.FC = () => {
       }))
     );
 
-    newBoard = deepCopyBoard(mockBoard);
+    // newBoard = deepCopyBoard(mockBoard);
 
-    updateBoard(newBoard, "生成新棋盘");
-    // updateBoard(convertToBoard(58), "生成新棋盘");
+    // updateBoard(newBoard, "生成新棋盘");
+    updateBoard(convertToBoard(1369), "生成新棋盘");
 
     // 生成解决方案
     const solvedBoard = newBoard.map((row) => row.map((cell) => ({ ...cell })));
@@ -852,11 +859,12 @@ const Sudoku: React.FC = () => {
       skyscraper,
       skyscraper2,
       nakedQuadruple,
-      combinationChain,
+      // hiddenQuad,
       swordfish,
       jellyfish,
       Loop,
       uniqueRectangle,
+      combinationChain,
       doubleColorChain,
       tripleColorChain,
       BinaryUniversalGrave,
@@ -866,7 +874,13 @@ const Sudoku: React.FC = () => {
 
     const startTime = performance.now();
     for (const solveFunction of solveFunctions) {
-      result = solveFunction(board, candidateMap, graph, hyperGraph, globalNodeMap);
+      result = solveFunction(
+        board,
+        candidateMap,
+        graph,
+        hyperGraph,
+        globalNodeMap
+      );
       if (result) {
         const endTime = performance.now();
         console.log(`${solveFunction.name} 用时: ${endTime - startTime} 毫秒`);
@@ -1218,126 +1232,6 @@ const Sudoku: React.FC = () => {
             1
           }宫中，因为候选数${candStr}只出现在${posStr}这两个方格中，因此这两个方格不应出现其他候选数`;
           break;
-        case SOLUTION_METHODS.HIDDEN_TRIPLE_ROW1:
-          boardWithHighlight = applyHintHighlight(board, result, "both");
-          promptCandidates = [
-            ...new Set(
-              prompt.flatMap((p) => board[p.row]?.[p.col]?.draft ?? [])
-            ),
-          ];
-          uniquePromptCandidates = promptCandidates.filter(
-            (cand) => !target.includes(cand)
-          );
-          setPrompts(uniquePromptCandidates);
-          setPositions(target);
-          posStr = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
-            prompt[1].row + 1
-          }C${prompt[1].col + 1}、R${prompt[2].row + 1}C${prompt[2].col + 1}`;
-          candStr = [...new Set(prompts)].join(",");
-          hintContent = `在第${
-            position[0].row + 1
-          }行中，因为候选数${candStr}只出现在${posStr}这三个方格中，因此这三个方格不应出现其他候选数`;
-          break;
-        case SOLUTION_METHODS.HIDDEN_TRIPLE_COLUMN1:
-          boardWithHighlight = applyHintHighlight(board, result, "both");
-          promptCandidates = [
-            ...new Set(
-              prompt.flatMap((p) => board[p.row]?.[p.col]?.draft ?? [])
-            ),
-          ];
-          uniquePromptCandidates = promptCandidates.filter(
-            (cand) => !target.includes(cand)
-          );
-          setPrompts(uniquePromptCandidates);
-          setPositions(target);
-          posStr = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
-            prompt[1].row + 1
-          }C${prompt[1].col + 1}、R${prompt[2].row + 1}C${prompt[2].col + 1}`;
-          candStr = [...new Set(prompts)].join(",");
-          hintContent = `在第${
-            position[0].col + 1
-          }列中，因为候选数${candStr}只出现在${posStr}这三个方格中，因此这三个方格不应出现其他候选数`;
-          break;
-        case SOLUTION_METHODS.HIDDEN_TRIPLE_BOX1:
-          boardWithHighlight = applyHintHighlight(board, result, "both");
-          promptCandidates = [
-            ...new Set(
-              prompt.flatMap((p) => board[p.row]?.[p.col]?.draft ?? [])
-            ),
-          ];
-          uniquePromptCandidates = promptCandidates.filter(
-            (cand) => !target.includes(cand)
-          );
-          setPrompts(uniquePromptCandidates);
-          posStr = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
-            prompt[1].row + 1
-          }C${prompt[1].col + 1}、R${prompt[2].row + 1}C${prompt[2].col + 1}`;
-          candStr = [...new Set(prompts)].join(",");
-          hintContent = `在第${
-            Math.floor(prompt[0].row / 3) * 3 +
-            Math.floor(prompt[0].col / 3) +
-            1
-          }宫中，因为候选数${candStr}只出现在${posStr}这三个方格中，因此这三个方格不应出现其他候选数`;
-          break;
-        case SOLUTION_METHODS.HIDDEN_TRIPLE_ROW2:
-          boardWithHighlight = applyHintHighlight(board, result, "both");
-          promptCandidates = [
-            ...new Set(
-              prompt.flatMap((p) => board[p.row]?.[p.col]?.draft ?? [])
-            ),
-          ];
-          uniquePromptCandidates = promptCandidates.filter(
-            (cand) => !target.includes(cand)
-          );
-          setPrompts(uniquePromptCandidates);
-          posStr = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
-            prompt[1].row + 1
-          }C${prompt[1].col + 1}、R${prompt[2].row + 1}C${prompt[2].col + 1}`;
-          candStr = [...new Set(prompts)].join(",");
-          hintContent = `在第${
-            position[0].row + 1
-          }行中，因为候选数${candStr}只出现在${posStr}这三个方格中，因此这三个方格不应出现其他候选数`;
-          break;
-        case SOLUTION_METHODS.HIDDEN_TRIPLE_COLUMN2:
-          boardWithHighlight = applyHintHighlight(board, result, "both");
-          promptCandidates = [
-            ...new Set(
-              prompt.flatMap((p) => board[p.row]?.[p.col]?.draft ?? [])
-            ),
-          ];
-          uniquePromptCandidates = promptCandidates.filter(
-            (cand) => !target.includes(cand)
-          );
-          setPrompts(uniquePromptCandidates);
-          posStr = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
-            prompt[1].row + 1
-          }C${prompt[1].col + 1}、R${prompt[2].row + 1}C${prompt[2].col + 1}`;
-          candStr = [...new Set(prompts)].join(",");
-          hintContent = `在第${
-            position[0].col + 1
-          }列中，因为候选数${candStr}只出现在${posStr}这三个方格中，因此这三个方格不应出现其他候选数`;
-          break;
-        case SOLUTION_METHODS.HIDDEN_TRIPLE_BOX2:
-          boardWithHighlight = applyHintHighlight(board, result, "both");
-          promptCandidates = [
-            ...new Set(
-              prompt.flatMap((p) => board[p.row]?.[p.col]?.draft ?? [])
-            ),
-          ];
-          uniquePromptCandidates = promptCandidates.filter(
-            (cand) => !target.includes(cand)
-          );
-          setPrompts(uniquePromptCandidates);
-          posStr = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
-            prompt[1].row + 1
-          }C${prompt[1].col + 1}、R${prompt[2].row + 1}C${prompt[2].col + 1}`;
-          candStr = [...new Set(prompts)].join(",");
-          hintContent = `在第${
-            Math.floor(prompt[0].row / 3) * 3 +
-            Math.floor(prompt[0].col / 3) +
-            1
-          }宫中，因为候选数${candStr}只出现在${posStr}这三个方格中，因此这三个方格不应出现其他候选数`;
-          break;
         case SOLUTION_METHODS.NAKED_QUADRUPLE_ROW:
           boardWithHighlight = applyHintHighlight(board, result, "both");
           posStr = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
@@ -1542,118 +1436,7 @@ const Sudoku: React.FC = () => {
           boardWithHighlight = applyHintHighlight(board, result, "both");
           setPositions(target);
           setPrompts(target);
-          if (position.length === 1) {
-            posStr = `R${position[0].row + 1}C${position[0].col + 1}`;
-          } else if (position.length === 2) {
-            posStr = `R${position[0].row + 1}C${position[0].col + 1}、R${
-              position[1].row + 1
-            }C${position[1].col + 1}`;
-          }
-          if (!isWeakLink && chainStructure === "3-2-1") {
-            hintContent = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
-              prompt[1].row + 1
-            }C${prompt[1].col + 1}两个方格的组合与R${prompt[2].row + 1}C${
-              prompt[2].col + 1
-            }、R${prompt[3].row + 1}C${prompt[3].col + 1}、R${
-              prompt[4].row + 1
-            }C${prompt[4].col + 1}构成强链，无论R${prompt[0].row + 1}C${
-              prompt[0].col + 1
-            }、R${prompt[1].row + 1}C${prompt[1].col + 1}、R${
-              prompt[4].row + 1
-            }C${prompt[4].col + 1}谁为真，${posStr}内都不能出现候选数${
-              target[0]
-            }`;
-          } else if (isWeakLink && chainStructure === "3-2-1") {
-            hintContent = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
-              prompt[1].row + 1
-            }C${prompt[1].col + 1}两个方格的组合与R${prompt[2].row + 1}C${
-              prompt[2].col + 1
-            }构成强链，R${prompt[3].row + 1}C${prompt[3].col + 1}、R${
-              prompt[4].row + 1
-            }C${prompt[4].col + 1}两个方格构成强链，这两条强链通过R${
-              prompt[2].row + 1
-            }C${prompt[2].col + 1}、R${prompt[3].row + 1}C${
-              prompt[3].col + 1
-            }构成的弱链相连，无论R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
-              prompt[1].row + 1
-            }C${prompt[1].col + 1}、R${prompt[4].row + 1}C${
-              prompt[4].col + 1
-            }谁为真，${posStr}内都不能出现候选数${target[0]}`;
-          } else if (isWeakLink && chainStructure === "3-2-2") {
-            hintContent = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
-              prompt[1].row + 1
-            }C${prompt[1].col + 1}两个方格的组合与R${prompt[2].row + 1}C${
-              prompt[2].col + 1
-            }构成强链，R${prompt[3].row + 1}C${prompt[3].col + 1}、R${
-              prompt[4].row + 1
-            }C${prompt[4].col + 1}两个方格构成强链，这两条强链通过R${
-              prompt[3].row + 1
-            }C${prompt[3].col + 1}与R${prompt[0].row + 1}C${
-              prompt[0].col + 1
-            }、R${prompt[1].row + 1}C${
-              prompt[1].col + 1
-            }两方格的整体构成的弱链相连，无论R${prompt[2].row + 1}C${
-              prompt[2].col + 1
-            }、R${prompt[4].row + 1}C${
-              prompt[4].col + 1
-            }谁为真，${posStr}内都不能出现候选数${target[0]}`;
-          } else if (!isWeakLink && chainStructure === "3-2-2") {
-            hintContent = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
-              prompt[1].row + 1
-            }C${prompt[1].col + 1}两个方格的组合与R${prompt[2].row + 1}C${
-              prompt[2].col + 1
-            }构成强链，R${prompt[3].row + 1}C${prompt[3].col + 1}、R${
-              prompt[4].row + 1
-            }C${prompt[4].col + 1}两个方格构成强链，这两条强链通过R${
-              prompt[3].row + 1
-            }C${prompt[3].col + 1}与R${prompt[0].row + 1}C${
-              prompt[0].col + 1
-            }、R${prompt[1].row + 1}C${
-              prompt[1].col + 1
-            }两方格的整体构成的强链相连，无论R${prompt[2].row + 1}C${
-              prompt[2].col + 1
-            }、R${prompt[4].row + 1}C${
-              prompt[4].col + 1
-            }谁为真，${posStr}内都不能出现候选数${target[0]}`;
-          } else if (!isWeakLink && chainStructure === "3-4-1") {
-            hintContent = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
-              prompt[1].row + 1
-            }C${prompt[1].col + 1}两个方格的组合与R${prompt[2].row + 1}C${
-              prompt[2].col + 1
-            }、R${prompt[3].row + 1}C${prompt[3].col + 1}、R${
-              prompt[4].row + 1
-            }C${prompt[4].col + 1}、R${prompt[5].row + 1}C${
-              prompt[5].col + 1
-            }、R${prompt[6].row + 1}C${prompt[6].col + 1}构成强链，无论R${
-              prompt[0].row + 1
-            }C${prompt[0].col + 1}、R${prompt[1].row + 1}C${
-              prompt[1].col + 1
-            }、R${prompt[6].row + 1}C${
-              prompt[6].col + 1
-            }谁为真，${posStr}内都不能出现候选数${prompt[4].row + 1}C${
-              prompt[4].col + 1
-            }谁为真，${posStr}内都不能出现候选数${target[0]}`;
-          } else if (isWeakLink && chainStructure === "3-4-1") {
-            hintContent = `R${prompt[0].row + 1}C${prompt[0].col + 1}、R${
-              prompt[1].row + 1
-            }C${prompt[1].col + 1}两个方格的组合与R${prompt[2].row + 1}C${
-              prompt[2].col + 1
-            }构成强链，R${prompt[3].row + 1}C${prompt[3].col + 1}、R${
-              prompt[4].row + 1
-            }C${prompt[4].col + 1}、R${prompt[5].row + 1}C${
-              prompt[5].col + 1
-            }、R${prompt[6].row + 1}C${
-              prompt[6].col + 1
-            }四个方格构成强链，这两条强链通过R${prompt[2].row + 1}C${
-              prompt[2].col + 1
-            }、R${prompt[3].row + 1}C${prompt[3].col + 1}构成的弱链相连，无论R${
-              prompt[0].row + 1
-            }C${prompt[0].col + 1}、R${prompt[1].row + 1}C${
-              prompt[1].col + 1
-            }、R${prompt[4].row + 1}C${
-              prompt[4].col + 1
-            }谁为真，${posStr}内都不能出现候选数${target[0]}`;
-          }
+          console.log(result);
           break;
         case SOLUTION_METHODS.SWORDFISH_ROW:
           setPositions(target);
@@ -1803,6 +1586,13 @@ const Sudoku: React.FC = () => {
           setPrompts(target);
           break;
         case SOLUTION_METHODS.TRIPLE_COLOR_CHAIN:
+          boardWithHighlight = applyHintHighlight(board, result, "both");
+          setPositions(target);
+          setPrompts(target);
+          break;
+        case SOLUTION_METHODS.HIDDEN_QUADRUPLE_ROW:
+        case SOLUTION_METHODS.HIDDEN_QUADRUPLE_COLUMN:
+        case SOLUTION_METHODS.HIDDEN_QUADRUPLE_BOX:
           boardWithHighlight = applyHintHighlight(board, result, "both");
           setPositions(target);
           setPrompts(target);
