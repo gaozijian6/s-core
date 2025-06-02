@@ -1,4 +1,11 @@
-import { CandidateMap, Graph, HyperGraph, HyperGraphNode, Position } from ".";
+import {
+  CandidateMap,
+  createHyperGraph,
+  Graph,
+  HyperGraph,
+  HyperGraphNode,
+  Position,
+} from ".";
 
 import { CellData } from ".";
 import { SOLUTION_METHODS } from "../constans";
@@ -113,9 +120,10 @@ export function combinationChain(
   board: CellData[][],
   candidateMap: CandidateMap,
   graph: Graph,
-  hyperGraph: HyperGraph,
-  globalNodeMap: Map<string, HyperGraphNode>
+  // hyperGraph: HyperGraph,
+  // globalNodeMap: Map<string, HyperGraphNode>
 ): Result | null {
+  const { hyperGraph, globalNodeMap } = createHyperGraph(board, candidateMap);
   const dfs = (
     num: number,
     path: HyperGraphNode[],

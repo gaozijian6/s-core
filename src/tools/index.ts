@@ -623,7 +623,7 @@ export const createHyperGraph = (
         next: [],
       };
       nodeMap.set(key, node);
-      
+
       // 添加到全局映射，使用 num-row,col 格式作为键
       const globalKey = `${num}-${candidate.row},${candidate.col}`;
       globalNodeMap.set(globalKey, node);
@@ -657,7 +657,7 @@ export const createHyperGraph = (
     }
 
     // 第二步：识别单多强链接 (多节点处理)
-    
+
     // 处理行的单多强链接
     for (const [rowIndex, rowData] of candidateMap[num].row.entries()) {
       if (rowData.count >= 3 && rowData.count <= 4) {
@@ -695,7 +695,7 @@ export const createHyperGraph = (
                 next: [],
               };
               multiNodeMap.set(multiKey, multiNode);
-              
+
               // 添加到全局映射，使用 num-cells内容 格式作为键
               const cellsStr = cells
                 .map((c) => `${c.row},${c.col}`)
@@ -766,7 +766,7 @@ export const createHyperGraph = (
                   next: [],
                 };
                 multiNodeMap.set(multiKey, multiNode);
-                
+
                 // 添加到全局映射，使用 num-cells内容 格式作为键
                 const cellsStr = cells
                   .map((c) => `${c.row},${c.col}`)
@@ -822,124 +822,126 @@ export const createHyperGraph = (
         });
 
         // 处理行分组中的单多强链接
-        if (rowGroups.size !== 2) continue;
-        rowGroups.forEach((cells, rowIndex) => {
-          if (cells.length >= 2) {
-            // 确保单多强链接的单元格和多元格总数等于宫内该候选数的总数
-            let remainingCellCount = 0;
-            rowGroups.forEach((otherCells, otherRowIndex) => {
-              if (rowIndex !== otherRowIndex) {
-                // 计算其他行的单元格总数
-                remainingCellCount += otherCells.length;
-              }
-            });
-
-            // 如果多元格+单元格等于宫内候选数总数，才建立强链接
-            if (cells.length + remainingCellCount === boxData.count) {
-              const multiKey = cells
-                .map((c) => `${c.row}-${c.col}`)
-                .sort()
-                .join(",");
-
-              // 避免重复创建节点
-              if (!multiNodeMap.has(multiKey)) {
-                const multiNode: HyperGraphNode = {
-                  cells: cells,
-                  next: [],
-                };
-                multiNodeMap.set(multiKey, multiNode);
-                
-                // 添加到全局映射，使用 num-cells内容 格式作为键
-                const cellsStr = cells
-                  .map((c) => `${c.row},${c.col}`)
-                  .sort()
-                  .join("|");
-                const globalKey = `${num}-${cellsStr}`;
-                globalNodeMap.set(globalKey, multiNode);
-              }
-
-              const multiNode = multiNodeMap.get(multiKey)!;
-
-              // 找出同宫内其他行的单个候选位置
+        if (rowGroups.size === 2) {
+          rowGroups.forEach((cells, rowIndex) => {
+            if (cells.length >= 2) {
+              // 确保单多强链接的单元格和多元格总数等于宫内该候选数的总数
+              let remainingCellCount = 0;
               rowGroups.forEach((otherCells, otherRowIndex) => {
-                if (rowIndex !== otherRowIndex && otherCells.length === 1) {
-                  const singleCell = otherCells[0];
-                  const singleKey = `${singleCell.row},${singleCell.col}`;
-                  const singleNode = nodeMap.get(singleKey);
-
-                  if (singleNode) {
-                    if (!multiNode.next.includes(singleNode)) {
-                      multiNode.next.push(singleNode);
-                    }
-                    if (!singleNode.next.includes(multiNode)) {
-                      singleNode.next.push(multiNode);
-                    }
-                  }
+                if (rowIndex !== otherRowIndex) {
+                  // 计算其他行的单元格总数
+                  remainingCellCount += otherCells.length;
                 }
               });
+
+              // 如果多元格+单元格等于宫内候选数总数，才建立强链接
+              if (cells.length + remainingCellCount === boxData.count) {
+                const multiKey = cells
+                  .map((c) => `${c.row}-${c.col}`)
+                  .sort()
+                  .join(",");
+
+                // 避免重复创建节点
+                if (!multiNodeMap.has(multiKey)) {
+                  const multiNode: HyperGraphNode = {
+                    cells: cells,
+                    next: [],
+                  };
+                  multiNodeMap.set(multiKey, multiNode);
+
+                  // 添加到全局映射，使用 num-cells内容 格式作为键
+                  const cellsStr = cells
+                    .map((c) => `${c.row},${c.col}`)
+                    .sort()
+                    .join("|");
+                  const globalKey = `${num}-${cellsStr}`;
+                  globalNodeMap.set(globalKey, multiNode);
+                }
+
+                const multiNode = multiNodeMap.get(multiKey)!;
+
+                // 找出同宫内其他行的单个候选位置
+                rowGroups.forEach((otherCells, otherRowIndex) => {
+                  if (rowIndex !== otherRowIndex && otherCells.length === 1) {
+                    const singleCell = otherCells[0];
+                    const singleKey = `${singleCell.row},${singleCell.col}`;
+                    const singleNode = nodeMap.get(singleKey);
+
+                    if (singleNode) {
+                      if (!multiNode.next.includes(singleNode)) {
+                        multiNode.next.push(singleNode);
+                      }
+                      if (!singleNode.next.includes(multiNode)) {
+                        singleNode.next.push(multiNode);
+                      }
+                    }
+                  }
+                });
+              }
             }
-          }
-        });
+          });
+        }
 
         // 处理列分组中的单多强链接
-        if (colGroups.size !== 2) continue;
-        colGroups.forEach((cells, colIndex) => {
-          if (cells.length >= 2) {
-            // 确保单多强链接的单元格和多元格总数等于宫内该候选数的总数
-            let remainingCellCount = 0;
-            colGroups.forEach((otherCells, otherColIndex) => {
-              if (colIndex !== otherColIndex) {
-                // 计算其他列的单元格总数
-                remainingCellCount += otherCells.length;
-              }
-            });
-
-            // 如果多元格+单元格等于宫内候选数总数，才建立强链接
-            if (cells.length + remainingCellCount === boxData.count) {
-              const multiKey = cells
-                .map((c) => `${c.row}-${c.col}`)
-                .sort()
-                .join(",");
-
-              // 避免重复创建节点
-              if (!multiNodeMap.has(multiKey)) {
-                const multiNode: HyperGraphNode = {
-                  cells: cells,
-                  next: [],
-                };
-                multiNodeMap.set(multiKey, multiNode);
-
-                // 添加到全局映射，使用 num-cells内容 格式作为键
-                const cellsStr = cells
-                  .map((c) => `${c.row},${c.col}`)
-                  .sort()
-                  .join("|");
-                const globalKey = `${num}-${cellsStr}`;
-                globalNodeMap.set(globalKey, multiNode);
-              }
-
-              const multiNode = multiNodeMap.get(multiKey)!;
-
-              // 找出同宫内其他列的单个候选位置
+        if (colGroups.size === 2) {
+          colGroups.forEach((cells, colIndex) => {
+            if (cells.length >= 2) {
+              // 确保单多强链接的单元格和多元格总数等于宫内该候选数的总数
+              let remainingCellCount = 0;
               colGroups.forEach((otherCells, otherColIndex) => {
-                if (colIndex !== otherColIndex && otherCells.length === 1) {
-                  const singleCell = otherCells[0];
-                  const singleKey = `${singleCell.row},${singleCell.col}`;
-                  const singleNode = nodeMap.get(singleKey);
-
-                  if (singleNode) {
-                    if (!multiNode.next.includes(singleNode)) {
-                      multiNode.next.push(singleNode);
-                    }
-                    if (!singleNode.next.includes(multiNode)) {
-                      singleNode.next.push(multiNode);
-                    }
-                  }
+                if (colIndex !== otherColIndex) {
+                  // 计算其他列的单元格总数
+                  remainingCellCount += otherCells.length;
                 }
               });
+
+              // 如果多元格+单元格等于宫内候选数总数，才建立强链接
+              if (cells.length + remainingCellCount === boxData.count) {
+                const multiKey = cells
+                  .map((c) => `${c.row}-${c.col}`)
+                  .sort()
+                  .join(",");
+
+                // 避免重复创建节点
+                if (!multiNodeMap.has(multiKey)) {
+                  const multiNode: HyperGraphNode = {
+                    cells: cells,
+                    next: [],
+                  };
+                  multiNodeMap.set(multiKey, multiNode);
+
+                  // 添加到全局映射，使用 num-cells内容 格式作为键
+                  const cellsStr = cells
+                    .map((c) => `${c.row},${c.col}`)
+                    .sort()
+                    .join("|");
+                  const globalKey = `${num}-${cellsStr}`;
+                  globalNodeMap.set(globalKey, multiNode);
+                }
+
+                const multiNode = multiNodeMap.get(multiKey)!;
+
+                // 找出同宫内其他列的单个候选位置
+                colGroups.forEach((otherCells, otherColIndex) => {
+                  if (colIndex !== otherColIndex && otherCells.length === 1) {
+                    const singleCell = otherCells[0];
+                    const singleKey = `${singleCell.row},${singleCell.col}`;
+                    const singleNode = nodeMap.get(singleKey);
+
+                    if (singleNode) {
+                      if (!multiNode.next.includes(singleNode)) {
+                        multiNode.next.push(singleNode);
+                      }
+                      if (!singleNode.next.includes(multiNode)) {
+                        singleNode.next.push(multiNode);
+                      }
+                    }
+                  }
+                });
+              }
             }
-          }
-        });
+          });
+        }
       }
     }
 
@@ -988,7 +990,7 @@ export const createHyperGraph = (
                       next: [],
                     };
                     multiNodeMap.set(multiKey1, multiNode1);
-                    
+
                     // 添加到全局映射，使用 num-cells内容 格式作为键
                     const cellsStr = cells1
                       .map((c) => `${c.row},${c.col}`)
@@ -1013,7 +1015,7 @@ export const createHyperGraph = (
                       next: [],
                     };
                     multiNodeMap.set(multiKey2, multiNode2);
-                    
+
                     // 添加到全局映射，使用 num-cells内容 格式作为键
                     const cellsStr = cells2
                       .map((c) => `${c.row},${c.col}`)
@@ -1086,7 +1088,7 @@ export const createHyperGraph = (
                       next: [],
                     };
                     multiNodeMap.set(multiKey1, multiNode1);
-                    
+
                     // 添加到全局映射，使用 num-cells内容 格式作为键
                     const cellsStr = cells1
                       .map((c) => `${c.row},${c.col}`)
@@ -1111,7 +1113,7 @@ export const createHyperGraph = (
                       next: [],
                     };
                     multiNodeMap.set(multiKey2, multiNode2);
-                    
+
                     // 添加到全局映射，使用 num-cells内容 格式作为键
                     const cellsStr = cells2
                       .map((c) => `${c.row},${c.col}`)
@@ -1191,7 +1193,7 @@ export const createHyperGraph = (
                       next: [],
                     };
                     multiNodeMap.set(multiKey1, multiNode1);
-                    
+
                     // 添加到全局映射，使用 num-cells内容 格式作为键
                     const cellsStr = cells1
                       .map((c) => `${c.row},${c.col}`)
@@ -1216,7 +1218,7 @@ export const createHyperGraph = (
                       next: [],
                     };
                     multiNodeMap.set(multiKey2, multiNode2);
-                    
+
                     // 添加到全局映射，使用 num-cells内容 格式作为键
                     const cellsStr = cells2
                       .map((c) => `${c.row},${c.col}`)
@@ -1273,7 +1275,7 @@ export const createHyperGraph = (
                       next: [],
                     };
                     multiNodeMap.set(multiKey1, multiNode1);
-                    
+
                     // 添加到全局映射，使用 num-cells内容 格式作为键
                     const cellsStr = cells1
                       .map((c) => `${c.row},${c.col}`)
@@ -1298,7 +1300,7 @@ export const createHyperGraph = (
                       next: [],
                     };
                     multiNodeMap.set(multiKey2, multiNode2);
-                    
+
                     // 添加到全局映射，使用 num-cells内容 格式作为键
                     const cellsStr = cells2
                       .map((c) => `${c.row},${c.col}`)
@@ -1379,7 +1381,7 @@ export const createHyperGraph = (
                           next: [],
                         };
                         multiNodeMap.set(multiKeyRow, multiNodeRow);
-                        
+
                         // 添加到全局映射，使用 num-cells内容 格式作为键
                         const cellsStr = uniqueRowCells
                           .map((c) => `${c.row},${c.col}`)
@@ -1440,19 +1442,19 @@ export const createHyperGraph = (
 
     // 第一步：清理所有节点的next列表，确保没有自引用
     for (const node of allNodes) {
-      node.next = node.next.filter(next => next !== node);
+      node.next = node.next.filter((next) => next !== node);
     }
 
     // 第二步：创建按单元格内容分组的映射
     const cellsContentMap = new Map<string, HyperGraphNode[]>();
 
     // 基于单元格内容而非前缀分组，这样可以找到具有相同单元格的所有节点
-    allNodes.forEach(node => {
+    allNodes.forEach((node) => {
       const cellsContent = node.cells
-        .map(cell => `${cell.row},${cell.col}`)
+        .map((cell) => `${cell.row},${cell.col}`)
         .sort()
-        .join('|');
-      
+        .join("|");
+
       if (!cellsContentMap.has(cellsContent)) {
         cellsContentMap.set(cellsContent, []);
       }
@@ -1464,28 +1466,30 @@ export const createHyperGraph = (
       if (nodes.length > 1) {
         // 首先，收集所有这些节点的next引用
         const allNextNodes = new Set<HyperGraphNode>();
-        nodes.forEach(node => {
-          node.next.forEach(next => {
-            if (next !== node) {  // 防止自引用
+        nodes.forEach((node) => {
+          node.next.forEach((next) => {
+            if (next !== node) {
+              // 防止自引用
               allNextNodes.add(next);
             }
           });
         });
 
         // 然后，确保每个节点都连接到所有收集到的next节点
-        nodes.forEach(node => {
+        nodes.forEach((node) => {
           // 清空当前next列表
           node.next = [];
-          
+
           // 添加所有非自引用的next节点
-          allNextNodes.forEach(next => {
-            if (next !== node) {  // 再次检查以防止自引用
+          allNextNodes.forEach((next) => {
+            if (next !== node) {
+              // 再次检查以防止自引用
               node.next.push(next);
             }
           });
 
           // 还要添加与其共享单元格内容但不是自身的节点
-          nodes.forEach(otherNode => {
+          nodes.forEach((otherNode) => {
             if (otherNode !== node && !node.next.includes(otherNode)) {
               node.next.push(otherNode);
             }
@@ -1499,13 +1503,16 @@ export const createHyperGraph = (
     // 辅助函数：生成节点的cells的唯一标识
     const getCellsSignature = (node: HyperGraphNode): string => {
       return node.cells
-        .map(cell => `${cell.row},${cell.col}`)
+        .map((cell) => `${cell.row},${cell.col}`)
         .sort()
-        .join('|');
+        .join("|");
     };
 
     // 辅助函数：检查两个节点是否代表相同的cells组合
-    const isSameNodeCells = (node1: HyperGraphNode, node2: HyperGraphNode): boolean => {
+    const isSameNodeCells = (
+      node1: HyperGraphNode,
+      node2: HyperGraphNode
+    ): boolean => {
       const sig1 = getCellsSignature(node1);
       const sig2 = getCellsSignature(node2);
       return sig1 === sig2;
@@ -1515,16 +1522,16 @@ export const createHyperGraph = (
     for (const nodeA of allNodes) {
       // 使用Map来存储唯一的next节点，键是cells内容的标识
       const uniqueNextNodes = new Map<string, HyperGraphNode>();
-      
+
       // 收集所有唯一的next节点，忽略自身
-      nodeA.next.forEach(nextNode => {
+      nodeA.next.forEach((nextNode) => {
         // 检查是否是自引用（基于cells内容而非引用）
         if (!isSameNodeCells(nodeA, nextNode)) {
           const signature = getCellsSignature(nextNode);
           uniqueNextNodes.set(signature, nextNode);
         }
       });
-      
+
       // 重置next列表，只包含唯一的next节点
       nodeA.next = Array.from(uniqueNextNodes.values());
     }
@@ -1534,13 +1541,17 @@ export const createHyperGraph = (
       for (const nodeB of allNodes) {
         // 跳过相同的节点（基于cells内容）
         if (isSameNodeCells(nodeA, nodeB)) continue;
-        
+
         // 检查nodeA的next是否包含nodeB
-        const nodeAHasNodeB = nodeA.next.some(next => isSameNodeCells(next, nodeB));
-        
+        const nodeAHasNodeB = nodeA.next.some((next) =>
+          isSameNodeCells(next, nodeB)
+        );
+
         // 检查nodeB的next是否包含nodeA
-        const nodeBHasNodeA = nodeB.next.some(next => isSameNodeCells(next, nodeA));
-        
+        const nodeBHasNodeA = nodeB.next.some((next) =>
+          isSameNodeCells(next, nodeA)
+        );
+
         // 如果一方包含另一方，但另一方不包含一方，则添加互相引用
         if (nodeAHasNodeB && !nodeBHasNodeA) {
           nodeB.next.push(nodeA);
@@ -1554,15 +1565,15 @@ export const createHyperGraph = (
     for (const node of allNodes) {
       // 使用Map来去除重复节点（基于cells内容）
       const uniqueNext = new Map<string, HyperGraphNode>();
-      
-      node.next.forEach(nextNode => {
+
+      node.next.forEach((nextNode) => {
         // 跳过自引用
         if (!isSameNodeCells(node, nextNode)) {
           const signature = getCellsSignature(nextNode);
           uniqueNext.set(signature, nextNode);
         }
       });
-      
+
       node.next = Array.from(uniqueNext.values());
     }
 
@@ -1625,7 +1636,7 @@ export const useSudokuBoard = (initialBoard: CellData[][]) => {
   const globalNodeMapRef = useRef<Map<string, HyperGraphNode>>(new Map());
 
   const updateCandidateMap = (newBoard: CellData[][]) => {
-    console.log("updateCandidateMap",newBoard);
+    console.log("updateCandidateMap", newBoard);
     const newCandidateMap: CandidateMap = {};
     for (let num = 1; num <= 9; num++) {
       newCandidateMap[num] = {
@@ -1667,7 +1678,10 @@ export const useSudokuBoard = (initialBoard: CellData[][]) => {
       });
     });
     graphRef.current = createGraph(newBoard, newCandidateMap);
-    const { hyperGraph, globalNodeMap } = createHyperGraph(newBoard, newCandidateMap);
+    const { hyperGraph, globalNodeMap } = createHyperGraph(
+      newBoard,
+      newCandidateMap
+    );
     hyperGraphRef.current = hyperGraph;
     globalNodeMapRef.current = globalNodeMap;
     setCandidateMap(newCandidateMap);

@@ -109,7 +109,7 @@ const Sudoku: React.FC = () => {
   const [inputValue, setInputValue] = useState<string>("");
 
   const convertToBoard = (index: number): CellData[][] => {
-    const board = hard[index].puzzle;
+    const board = extreme[index].puzzle;
     // const board =
     //   "2...8.....3....7.81....3.2..1..2..7....3....5.7..15.3.......9...2..3..8...46.....";
 
@@ -130,7 +130,7 @@ const Sudoku: React.FC = () => {
   };
 
   const convertToAnswer = (index: number): CellData[][] => {
-    const board = hard[index].solution;
+    const board = extreme[index].solution;
     const result: CellData[][] = [];
     for (let i = 0; i < 9; i++) {
       const row: CellData[] = [];
@@ -189,12 +189,12 @@ const Sudoku: React.FC = () => {
       });
     });
     let graph = createGraph(newBoard, newCandidateMap);
-    let { hyperGraph, globalNodeMap } = createHyperGraph(
-      newBoard,
-      newCandidateMap
-    );
+    // let { hyperGraph, globalNodeMap } = createHyperGraph(
+    //   newBoard,
+    //   newCandidateMap
+    // );
     let candidateMap = newCandidateMap;
-    return { candidateMap, graph, hyperGraph, globalNodeMap };
+    return { candidateMap, graph, hyperGraph:null, globalNodeMap:null };
   };
 
   const testExtreme = () => {
@@ -233,9 +233,8 @@ const Sudoku: React.FC = () => {
     const combinationChainMap = new Map();
     const hiddenQuadrupleMap = new Map();
 
-    // for (let i = 0; i < extreme.length; i++) {
-    const startTime = performance.now();
-    for (let i = 1369; i < 1370; i++) {
+    for (let i = 0; i < extreme.length; i++) {
+    // for (let i = 0; i < 100; i++) {
       if (i % 100 === 0) {
         console.log(`正在处理第${i}个数独...`);
       }
@@ -353,8 +352,6 @@ const Sudoku: React.FC = () => {
       }
       mapArray.push(map);
     }
-    const endTime = performance.now();
-    console.log(`运行时间: ${endTime - startTime} 毫秒`);
     console.log("failureMap", failureMap);
     console.log("falseSolutionMap", falseSolutionMap);
     console.log("doubleColorChainMap", doubleColorChainMap);
@@ -405,8 +402,8 @@ const Sudoku: React.FC = () => {
 
     // newBoard = deepCopyBoard(mockBoard);
 
-    // updateBoard(newBoard, "生成新棋盘");
-    updateBoard(convertToBoard(1369), "生成新棋盘");
+    updateBoard(newBoard, "生成新棋盘");
+    // updateBoard(convertToBoard(819), "生成新棋盘");
 
     // 生成解决方案
     const solvedBoard = newBoard.map((row) => row.map((cell) => ({ ...cell })));
